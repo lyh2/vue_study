@@ -1,0 +1,8 @@
+@import './base.css';
+
+#app {
+  display: flex;
+  margin: 0;
+  padding: 2rem;
+  font-weight: normal;
+}
