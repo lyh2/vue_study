@@ -437,17 +437,17 @@ const fireworksInstances = [];// 存储实例
 let outputDom, isAutoLaunch = true;
 let canvasTexture;
 
-const gui = new GUI();
-const guiControls = new (function () {
-    this.particleSize = 300;
-    this.autoLaunch = true;
-})();
+// const gui = new GUI();
+// const guiControls = new (function () {
+//     this.particleSize = 300;
+//     this.autoLaunch = true;
+// })();
 
-gui.add(guiControls, 'autoLaunch').onChange(e => {
-    isAutoLaunch = e;
+// gui.add(guiControls, 'autoLaunch').onChange(e => {
+//     isAutoLaunch = e;
 
-});
-gui.add(guiControls, 'particleSize', 100, 600);
+// });
+// gui.add(guiControls, 'particleSize', 100, 600);
 
 const getOffsetRGBA = i => {
     const offset = 4;

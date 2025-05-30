@@ -14,7 +14,6 @@ import vue from '@vitejs/plugin-vue'
 import topLevelAwait from 'vite-plugin-top-level-await';
 import vuePlugin from '@vitejs/plugin-vue';
 
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -25,7 +24,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      // 'threeGpu': 'three/build/three.webgpu.js', // 确保指向模块化版本
+       //'threeGpu': 'three/build/three.webgpu.js', // 确保指向模块化版本
       // 'threeTsl':'three/build/three.webgpu.nodes.js'
     }
   },

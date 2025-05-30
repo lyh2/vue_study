@@ -5,6 +5,7 @@ import HallView from "../views/three/hall.vue";// 展馆页面
 import CesiumIndex from "../views/cesium/index.vue";//Cesium
 import CesiumProject from "../views/cesium/indexProject.vue";// Cesium 工程项目
 import world from "../views/three/world.vue";// 元宇宙项目
+import TslCom from "@/components/three/index.vue";
 
 const router = createRouter({
   mode: 'history',
@@ -49,10 +50,11 @@ const router = createRouter({
       path:"/school",
       name:"school",
       component:()=>import('../views/three/school.vue'),
-    },{
+    },
+    {
       path:'/tsl',
       name:'tsl',
-      component:()=>import('@/components/three/index.vue'),
+      component:TslCom,
     }
   ]
 })

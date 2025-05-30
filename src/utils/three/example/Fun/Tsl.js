@@ -1,5 +1,5 @@
  
-import * as THREE from 'three/webgpu'
+import * as THREEGPU from 'three/webgpu'
 import {
   color,
   cos,
@@ -19,6 +19,8 @@ import {
   output,
   Fn,
   If,
+  pow,
+  abs,
   max,min,
   rotate,
   normalWorld,
@@ -640,6 +642,7 @@ export class ProceduralTerrainClass {
     const colorRock = uniform(color(0xbfbd8d))
     const vNormal = varying(vec3())
     const vPosition = varying(vec3())
+    const vTestFloatNoiseFunc = varying(float());
 
     const terrainElevation = Fn(([position]) => {
       const wrapedPosition = position.add(offset).toVar() //
@@ -674,7 +677,27 @@ export class ProceduralTerrainClass {
       elevation.assign(elevation.abs().pow(2).mul(elevationSign).mul(strength))
       return elevation
     })
-
+    const noise_Func =  Fn(([p_immutable]) => {
+			const p = vec3(p_immutable).toVar();
+			const t = float(-0.5).toVar();
+		
+			Loop(
+			  { start: 1.0, end: 10.0, name: "f", type: "float", condition: "<=" },
+			  ({ f }) => {
+				const power = float(pow(2.0, f)).toVar();
+				t.addAssign(
+				  abs(mx_noise_float(vec3(power.mul(p)), vec3(1.0)).div(power))
+				);
+			  }
+			);
+		
+			return t;
+		  }).setLayout({
+			name: "noise_Func",
+			type: "float",
+			inputs: [{ name: "p", type: "vec3" }],
+            outputs:[{name:'t',type:'float'}]
+		  });
     material.positionNode = Fn(() => {
       // 相邻位置
       const neighbourA = positionLocal.xyz
@@ -686,7 +709,10 @@ export class ProceduralTerrainClass {
 
       const position = positionLocal.xyz.toVar()
       const elevation = terrainElevation(positionLocal.xz)
+      const tHight = noise_Func(positionLocal);
       position.y.addAssign(elevation)
+      //position.y.addAssign(tHight)// 调用没有问题
+      //vTestFloatNoiseFunc.assign(tHight);// 测试这样赋值
 
       neighbourA.y.addAssign(terrainElevation(neighbourA.xz)) // 相邻位置的高度值
       neighbourB.y.addAssign(terrainElevation(neighbourB.xz))

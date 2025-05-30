@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import fragmentShader01 from "../Shader/ArVr/fragmentShader01.glsl";
-import { LightningStorm } from "../../../../../../three.jsDevGameExamplesMustStudy/other.js/LightningStorm";
+import { LightningStorm } from "../../../../../../three.jsDevGameExamplesMustStudy/other.js-其他库/LightningStorm";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { Octree } from "three/examples/jsm/math/Octree.js";
 import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper";

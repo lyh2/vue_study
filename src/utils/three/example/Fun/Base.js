@@ -1,4 +1,4 @@
-import * as THREE from 'three/webgpu';
+import * as THREEGPU from 'three/webgpu';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 class BasePerspectiveCamera{
     constructor(_options={}){

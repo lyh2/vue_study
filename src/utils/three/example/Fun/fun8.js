@@ -14,9 +14,10 @@ import * as THREE from "three";
 import { GLTFLoader, Wireframe } from "three/examples/jsm/Addons.js";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { createMountainousTerrain } from "../DijkstrasNav/terrain";
-import { Graph, GraphFromMesh } from "../DijkstrasNav/graph";
-import { getShortestPath } from "../DijkstrasNav/dijkstra";
-import {Dijkstras} from '../../../Dijkstras3D'
+import {  GraphFromMesh } from "../DijkstrasNav/GraphFromMesh";
+import {Dijkstras} from '../DijkstrasNav/Dijkstras3D'
+import { CreateTextCanvasElement, TextSprite } from 'threejs-text-sprite-creator';
+
 
 /**
  * 实现室内导航功能
@@ -463,7 +464,7 @@ export class RoomNav{
         this._renderer.setSize(window.innerWidth,window.innerHeight);
     }
 }
-
+import { Text } from "troika-three-text";
 /**
  * 自定义导航Mesh，并使用Dijkstra算法实现导航
  */
@@ -481,7 +482,39 @@ export class DijkstrasThreeNav{
 
         this._scene = new THREE.Scene();
         this._scene.background = new THREE.Color(0xf5f5f5);
+ // Create:
+        this._myText = new Text()
+        this._scene.add(this._myText)
 
+        // Set properties to configure:
+        this._myText.font = './HarmonyOS_Sans_Light.ttf';
+        this._myText.text = 'Hello world!,我是中文,很牛逼的显示中文'
+        this._myText.fontSize = 0.2
+        this._myText.position.z = -2
+        this._myText.color = 0x9966FF
+
+        // 添加文字精灵 1
+        const text1 = new TextSprite('第一行文本\n测试\n第三行', {
+            fontSize: 100,
+            textHeight: 10,
+            padding: 3,
+            backgroundColor: 'rgba(255,0,0,0.4)',
+            borderRadius: [3, 0, 3, 0],
+            borderWidth: 0.1,
+            offsetY: 10,
+            strokeColor: 'green',
+            strokeWidth: 1,
+        });
+        text1.scaleFactor = 0.01;
+        text1.lineSpacing = 30;
+        this._scene.add(text1);
+        
+        // 添加文字精灵 2 ，样式复制文字精灵 1 的
+        const text2 = new TextSprite('复制', { color: 'yellow' });
+        text2.copy(text1);
+        text2.position.set(4, 0, 0);
+        this._scene.add(text2);
+        
         this._renderer = new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});
         this._renderer.setPixelRatio(window.devicePixelRatio);
         this._renderer.setSize(window.innerWidth,window.innerHeight);
@@ -516,10 +549,12 @@ export class DijkstrasThreeNav{
         //console.log(this._graph);
         //const paths = getShortestPath(0,12,this._graph.nodes);
         //console.log('paths=',paths);
-        // 下面是成功的代码，直接通过Mesh 获取路网信息
+        // 下面是成功的代码，直接通过Mesh 获取路网信息----------------------------
+        //plane.geometry.toNonIndexed();
         const graph = new GraphFromMesh(plane);
         console.log('graph',graph)
         const dijkstras = new Dijkstras(graph.nodes);
+        //console.log('显示权重：',dijkstras.graph)
         dijkstras.setGraph(graph.edges);
         let path = dijkstras.getPath('index_21','index_110');
         console.log(path)
@@ -561,6 +596,7 @@ export class DijkstrasThreeNav{
     _animate(){
         this._renderer.render(this._scene,this._perspectiveCamera);
         this._orbitControls.update();
+        this._myText.sync();// //this._myText.sync()
     }
 
     _windowResizeFun(params={}){

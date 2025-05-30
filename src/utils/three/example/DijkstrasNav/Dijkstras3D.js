@@ -1,32 +1,5 @@
 /**
- * Dijkstras 算法在3D空间的运用,完全可以使用的算法版本
-
-// 示例使用
-let nodes = [
-    { name: 'A', position: { x: 0, y: 0, z: 0 } },
-    { name: 'B', position: { x: 1, y: 0, z: 0 } },
-    { name: 'C', position: { x: 0, y: 1, z: 0 } },
-    { name: 'D', position: { x: 0, y: 0, z: 1 } }
-];
-
-let connections = [
-    ['A', ['B', 'C']], // A 与 B 和 C 相连
-    ['B', ['C', 'D']], // B 与 C 和 D 相连
-    ['C', ['D']]       // C 与 D 相连
-];
-
-let d = new Dijkstras(nodes);
-d.setGraph(connections);
-
-let path = d.getPath('A', 'D');
-console.log(path); // 输出路径
-
-
- */
-
-/**
- * Javascript implementation of Dijkstra's algorithm
- * Author: James Jackson (www.jamesdavidjackson.com)
+ * 这是最新完整版，在m.chisu.com 项目中实际使用过，请使用 three.js-nav-path-net 中的文件，完全优化的版本
  */
 export const Dijkstras = (function () {
 
@@ -113,23 +86,21 @@ export const Dijkstras = (function () {
      * @return {Array} - 到目标的路径
      */
     Dijkstras.prototype.getPath = function (source, target) {
-        if (typeof this.graph[source] === 'undefined') {
-            throw "source " + source + " doesn't exist";
+       
+        if (!this.graph[source] || !this.graph[target]) {
+            return [];
         }
-        if (typeof this.graph[target] === 'undefined') {
-            throw "target " + target + " doesn't exist";
-        }
-
         if (source === target) {
             return [];
         }
 
         this.queue = new MinHeap();
         this.queue.add(source, 0);
+        this.previous ={};
         this.previous[source] = null;
 
         let u = null;
-        while (u = this.queue.shift()) {
+        while ((u = this.queue.shift()) !== null) {
             if (u === target) {
                 let path = [];
                 while (this.previous[u] != null) {
@@ -144,26 +115,32 @@ export const Dijkstras = (function () {
                     position: this.graph[nodeName].position
                 }));
             }
-
+            
+            //console.log(this.queue.roots,21)
+            //console.log(this.queue.getDistance(u),22)
             if (this.queue.getDistance(u) === Infinity) {
-                return [];
+                break;
             }
-
+            //console.log(3,this.graph[u].edges);
             let uDistance = this.queue.getDistance(u);
             for (let neighbour in this.graph[u].edges) {
                 let nDistance = this.queue.getDistance(neighbour);
                 let aDistance = uDistance + this.graph[u].edges[neighbour];
-
+                //console.log('update:',aDistance ,nDistance)
                 if (aDistance < nDistance) {
+                    //console.log('this.queue:',this.queue)
+
                     this.queue.update(neighbour, aDistance);
                     this.previous[neighbour] = u;
                 }
             }
+          
         }
 
         return [];
     }
-
+  
+    
     // 最小堆实现
     let MinHeap = (function() {
         let MinHeap = function () {
@@ -282,18 +259,26 @@ export const Dijkstras = (function () {
                     this.roots.splice(pos, 1);
                 }
             } else {
-                while (parent) {
+                 // `node` 不是根节点，从 `parent.children` 中移除
+                this.nodes[parent].children = this.nodes[parent].children.filter(c => c !== node);
+
+                let visited = {};// 记录已经访问的parent，避免循环依赖
+                while (parent && !visited[parent]) {
+                    visited[parent] = parent;
                     this.nodes[parent].depth--;
                     parent = this.nodes[parent].parent;
                 }
             }
+
+             // 清除节点数据
+            //delete this.nodes[node];
         }
 
         MinHeap.prototype.getDistance = function(node) {
-            if (this.nodes[node]) {
-                return this.nodes[node].distance;
+            if (!this.nodes[node]) {
+                return Infinity;
             }
-            return Infinity;
+            return this.nodes[node].distance;
         }
 
         return MinHeap;
@@ -301,4 +286,3 @@ export const Dijkstras = (function () {
 
     return Dijkstras;
 })();
-

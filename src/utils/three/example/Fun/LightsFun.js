@@ -816,7 +816,7 @@ import fragmentShaderCode from "../Shader/Smooke/fragment.glsl";
  */
 export function initUseFireEffect(params={}){
     // 输出TWEEN 模块
-    console.log('TWEEN:',TWEEN);
+    //console.log('TWEEN:',TWEEN);
 
     // 效果参数
     const param = {

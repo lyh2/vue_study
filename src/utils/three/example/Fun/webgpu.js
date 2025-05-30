@@ -1,8 +1,6 @@
 
 export class WebGPUBase{
-    public _options:any;
-    public _webgpuStidyRenderer:WebGPUStudyRenderer;
-    constructor(_options:any={}){
+    constructor(_options){
         this._options = _options;
         this._init();
     }
@@ -18,32 +16,7 @@ export class WebGPUBase{
 }
 
 class WebGPUStudyRenderer{
-    // API Data Structures 
-    adapter:GPUAdapter;
-    device:GPUDevice;
-    queue:GPUQueue;
-
-    // Frame Backings 
-    context:GPUCanvasContext;
-    colorTexture:GPUTexture;
-    colorTextureView:GPUTextureView;
-    depthTexture:GPUTexture;
-    depthTextureView:GPUTextureView;
-
-    // resources
-    positionBuffer:GPUBuffer;
-    colorBuffer:GPUBuffer;
-    indexBuffer:GPUBuffer;
-    vertModule:GPUShaderModule;
-    fragModule:GPUShaderModule;
-    pipeline:GPURenderPipeline;
-
-    commandEncoder:GPUCommandEncoder;
-    passEncoder:GPURenderPassEncoder;
-
-
-
-    
+    // API Data Structures  
     constructor(_options={}){
         this._options=_options;
         this._initWGSL();
@@ -112,10 +85,10 @@ class WebGPUStudyRenderer{
         }
     }
 
-    async _initializeAPI():Promise<boolean>{
+    async _initializeAPI(){
         try{
             // WebGPU 入口
-            const entry:GPU = navigator.gpu;
+            const entry = navigator.gpu;
             if(!entry){
                 return false;
             }
@@ -140,7 +113,7 @@ class WebGPUStudyRenderer{
         if(!this.context){
             this.context = this._options.canvas.getContext('webgpu');
             // 配置设备上下文信息
-            const canvasConfig:GPUCanvasConfiguration = {
+            const canvasConfig= {
                 device:this.device,
                 alphaMode:'opaque',
                 format:'bgra8unorm',
@@ -149,7 +122,7 @@ class WebGPUStudyRenderer{
             this.context.configure(canvasConfig);
         }
 
-        const depthTextureSesc:GPUTextureDescriptor ={
+        const depthTextureSesc ={
             size:[this._options.canvas.width,this._options.canvas.height,1],
             dimension:'2d',
             format:'depth24plus-stencil8',
@@ -163,7 +136,7 @@ class WebGPUStudyRenderer{
      */
     async initializeResources(){
         // buffers 
-        let createBuffer = (arr:Float32Array | Uint16Array,usage:number)=>{
+        let createBuffer = (arr,usage)=>{
             // align to 4 bytes
             let desc = {
                 size:(arr.byteLength + 3) & ~3, // 计算一个数组 arr 的字节长度，并将其向上对齐到最接近的 4 字节边界
@@ -182,12 +155,12 @@ class WebGPUStudyRenderer{
         this.indexBuffer = createBuffer(indices,GPUBufferUsage.INDEX);
 
         // shaders 
-        const vsmDesc:any ={
+        const vsmDesc ={
             code:this.vertWgsl
         };
         this.vertModule = this.device.createShaderModule(vsmDesc);
 
-        const fsmDesc :any = {
+        const fsmDesc = {
             code:this.fragWgsl
         };
         this.fragModule = this.device.createShaderModule(fsmDesc);
@@ -210,30 +183,30 @@ class WebGPUStudyRenderer{
             shaderLocation, of type GPUIndex32
             The numeric location associated with this attribute, which will correspond with a "@location" attribute declared in the vertex.module.
         */
-        const positionAttributeDesc:GPUVertexAttribute={
+        const positionAttributeDesc={
             shaderLocation:0,// [[attribute(0)]]
             offset:0,
             format:'float32x3'
         };
 
-        const colorAttributeDesc:GPUVertexAttribute={
+        const colorAttributeDesc={
             shaderLocation:1,// [[attribute(1)]]
             offset:0,
             format:'float32x3'
         };
-        const positionBufferDesc:GPUVertexBufferLayout = {
+        const positionBufferDesc = {
             attributes:[positionAttributeDesc],
             arrayStride:4 * 3,// sizeof(float) * 3
             stepMode:'vertex',
         };
-        const colorBufferDesc:GPUVertexBufferLayout ={
+        const colorBufferDesc ={
             attributes:[colorAttributeDesc],
             arrayStride:4 * 3,// sizeof(float) * 3,
             stepMode:'vertex',
         };
 
         // depth
-        const depthStencil:GPUDepthStencilState ={
+        const depthStencil ={
             depthWriteEnabled:true,
             depthCompare:'less',
             format:'depth24plus-stencil8'
@@ -243,30 +216,30 @@ class WebGPUStudyRenderer{
         const layout = this.device.createPipelineLayout(pipelineLayoutDesc);
 
         // shader stages
-        const vertex:GPUVertexState ={
+        const vertex ={
             module:this.vertModule,
             entryPoint:'main',
             buffers:[positionBufferDesc,colorBufferDesc]
         };
 
         // color/blend state
-        const colorState:GPUColorTargetState={
+        const colorState={
             format:'bgra8unorm',
             writeMask:GPUColorWrite.ALL,
         };
 
-        const fragment:GPUFragmentState={
+        const fragment={
             module:this.fragModule,
             entryPoint:'main',
             targets:[colorState]
         };
         // 光栅化 Rasterization
-        const primitive:GPUPrimitiveState ={
+        const primitive ={
             frontFace:'cw',
             cullMode:'none',
             topology:'triangle-list',
         };
-        const pipelineDesc:GPURenderPipelineDescriptor={
+        const pipelineDesc={
             layout,
             vertex,
             fragment,
@@ -285,14 +258,14 @@ class WebGPUStudyRenderer{
     }
 
     encodeCommands(){
-        let colorAttachment:GPURenderPassColorAttachment = {
+        let colorAttachment = {
             view:this.colorTextureView,
             clearValue:{r:0,g:0,b:0,a:1},
             loadOp:'clear',
             storeOp:'store'
         };
 
-        const depthAttachment:GPURenderPassDepthStencilAttachment = {
+        const depthAttachment = {
             view:this.depthTextureView,
             depthClearValue:1,
             depthLoadOp:'clear',
@@ -302,7 +275,7 @@ class WebGPUStudyRenderer{
             stencilStoreOp:'store',
         };
 
-        const renderPassDesc :GPURenderPassDescriptor={
+        const renderPassDesc ={
             colorAttachments:[colorAttachment],
             depthStencilAttachment:depthAttachment,
         };
@@ -323,6 +296,21 @@ class WebGPUStudyRenderer{
     }
 }
 
+export class BaseGPU{
+    constructor(options={}){
+        this.options = options;
 
+        this.init();
+    }
+
+    init(){
+        const gpu = navigator.gpu;
+        console.log(gpu);
+    }
+
+    _windowResizeFun(){
+        
+    }
+}
 
 

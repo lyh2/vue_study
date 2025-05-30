@@ -2,13 +2,19 @@
     <div class="container" ref="container" id="container"></div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import { TslUseNoise } from '@/utils/three/example/Fun/TslExample.js';
 
 let obj = null;
 const container = ref(null);
 onMounted(() => {
-    obj = new TslUseNoise({ dom: container.value });
+    nextTick(() => {
+        if (!container.value) {
+            console.error("Container not found!");
+            return;
+        }
+        obj = new TslUseNoise({ dom: container.value });
+    });
 })
 </script>
 
