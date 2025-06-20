@@ -2,11 +2,11 @@
   <div class="container" ref="container"></div>
 </template>
 
-<script setup lang="ts">
+<script setup >
 import { ref, onMounted } from "vue";
 import * as THREE from "three/webgpu";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader";
+import { OrbitControls } from "three/examples/jsm/Addons.js";
+import { RGBELoader } from "three/examples/jsm/Addons.js";
 import {
   If,
   PI2,
@@ -18,9 +18,9 @@ import {
   Fn,
   uniform,
   vec4,
-} from "three/webgpu";
+} from "three/tsl";
 import { DRACOLoader } from "three/examples/jsm/Addons.js";
-import { GUI } from "three/examples/jsm/libs/lil-gui.module.min";
+import { GUI } from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 const container = ref(null);
 let _perspectiveCamera, _scene, _gui, _renderer, _orbitControls;
@@ -60,7 +60,7 @@ function _init(params = {}) {
   directionalLight.castShadow = true;
   directionalLight.shadow.mapSize.set(2048, 2048);
   directionalLight.shadow.camera.near = 0.1;
-  directionalLight.shadow.far = 30;
+  directionalLight.shadow.camera.far = 30;
   directionalLight.shadow.camera.top = 8;
   directionalLight.shadow.camera.right = 8;
   directionalLight.shadow.camera.bottom = -8;
@@ -69,7 +69,7 @@ function _init(params = {}) {
   _scene.add(directionalLight);
 
   // 定义TSL function
-  const inAngle = Fn(([position, angleStart, angleArc]) => {
+  const inAngle = Fn(([position, angleStart, angleArc] )=> {
     const angle = atan2(position.y, position.x)
       .sub(angleStart)
       .mod(PI2)

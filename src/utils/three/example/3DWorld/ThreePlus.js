@@ -10,7 +10,7 @@ import {FBXLoader} from "three/examples/jsm/loaders/FBXLoader";
 import {RGBELoader} from "three/examples/jsm/loaders/RGBELoader";
 import {EffectComposer} from "three/examples/jsm/postprocessing/EffectComposer"
 import {RenderPass} from "three/examples/jsm/postprocessing/RenderPass";
-import {DotScreenPass} from "three/examples/jsm/postprocessing/dotScreenPass";
+import {DotScreenPass} from "three/examples/jsm/postprocessing/DotScreenPass";
 import {SMAAPass} from "three/examples/jsm/postprocessing/SMAAPass";
 import {UnrealBloomPass} from "three/examples/jsm/postprocessing/UnrealBloomPass";
 import { Clouds, CloudsPlus } from "./Clouds";

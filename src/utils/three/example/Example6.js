@@ -4,7 +4,7 @@ export default class Example6{
 
     constructor(_options={}){
         this._options = _options;
-        this._options.url = "./sketchbook/assets/world.glb";
+        this._options.url = "./sketchbook/resouces/world.glb";
         this._init();
     }
 

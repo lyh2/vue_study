@@ -99,7 +99,7 @@ export class NodesClass {
     _loadTexture(){
         this._textureLoader = new THREE.TextureLoader();
         this._rgbeLoader = new RGBELoader();
-        this._rgbeLoader.load("./Assets/Noon_4k.hdr",envMap=>{
+        this._rgbeLoader.load("./resouces/Noon_4k.hdr",envMap=>{
             envMap.mapping = THREE.EquirectangularReflectionMapping;
             this._scene.background = envMap;
             this._scene.environment = envMap;

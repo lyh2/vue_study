@@ -1,6 +1,6 @@
 /**
  * 学习tsl 案例文件
- * tsl-texture 有案例案例需要学习
+ * tsl-texture 有案例需要学习
  * 
  */
 

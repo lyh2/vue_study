@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build --force",
+    "type-check": "vue-tsc --noEmit",
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "@recast-navigation/three": "^0.39.0",
     "@streamr/quick-dijkstra": "^1.2.4",
     "@turf/turf": "^7.0.0",
+    "@types/three": "^0.177.0",
     "@webgpu/types": "^0.1.55",
     "astar": "^0.0.1",
     "cannon-es": "^0.20.0",
@@ -41,6 +42,7 @@
     "three.quarks": "^0.11.2",
     "threejs-text-sprite-creator": "^1.0.0",
     "troika-three-text": "^0.52.3",
+    "vant": "^4.9.19",
     "vue": "^3.4.15",
     "vue-router": "^4.2.5",
     "vuex": "^4.0.2",
@@ -57,9 +59,9 @@
     "eslint-plugin-vue": "^9.32.0",
     "npm-run-all2": "^6.1.1",
     "prettier": "^3.4.2",
-    "typescript": "~5.3.0",
+    "typescript": "^5.8.3",
     "vite": "^5.0.11",
-    "vite-plugin-top-level-await": "^1.4.1",
-    "vue-tsc": "^1.8.27"
+    "vite-plugin-mkcert": "^1.17.8",
+    "vite-plugin-top-level-await": "^1.4.1"
   }
 }

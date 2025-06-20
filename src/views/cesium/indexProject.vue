@@ -17,7 +17,7 @@ import Radar from "@/utils/cesium/Radar";
 import LightSpread from "@/utils/cesium/LightSpread";
 import LightWall from "@/utils/cesium/LightWall";
 import ParticleLight from "@/utils/cesium/ParticleLight";
-import {createRadar} from "@/utils/cesium/studyRadar";
+import {createRadar} from "@/utils/cesium/StudyRadar";
 
 
 onMounted(() => {

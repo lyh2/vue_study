@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, shallowRef } from "vue";
-import Application from "@/utils/three/Application";
+import Application from "@/utils/three/Application.js";
 
 let exampleId = ref(7);
 let app = null, container = ref(null);
@@ -34,10 +34,27 @@ onMounted(() => {
 
 <style>
 .container {
-    display: flex;
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
+    position: relative;
+            width: 100%;
+            height: 100%;
+            display: block;
+            overflow: hidden;
+            line-height: 0;
 }
+.container > *{
+   position: absolute;
+            display: block;
+            user-select: none;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+ 
+}
+    canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
 </style>

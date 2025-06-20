@@ -6,9 +6,12 @@ import CesiumIndex from "../views/cesium/index.vue";//Cesium
 import CesiumProject from "../views/cesium/indexProject.vue";// Cesium 工程项目
 import world from "../views/three/world.vue";// 元宇宙项目
 import TslCom from "@/components/three/index.vue";
+import ttt from "../views/three/tictactoe.vue";// 类似排雷游戏
+import first from '@/views/three/first.vue';// yuka 第一人射击游戏，模拟子弹及碰撞
+
 
 const router = createRouter({
-  mode: 'history',
+  
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
@@ -55,6 +58,16 @@ const router = createRouter({
       path:'/tsl',
       name:'tsl',
       component:TslCom,
+    },
+    {
+      path:'/ttt',
+      name:'ttt',
+      component:ttt
+    },
+    {
+      path:'/first',
+      name:'first',
+      component:first
     }
   ]
 })

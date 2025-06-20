@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
     import {ref,onMounted} from 'vue';
-    import Application from "@/utils/three/Application";
+    import Application from "@/utils/three/Application.js";
     
     let exampleId = ref(4);
         
@@ -34,7 +34,7 @@
   
 </script>
 
-<style >
+<style scoped>
 .container{
     display:flex;
     margin:0;

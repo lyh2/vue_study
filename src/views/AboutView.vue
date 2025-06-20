@@ -27,7 +27,7 @@ import * as THREE from "three";
 // 导入控制器
 import { OrbitControls } from "three/addons";
 // 导入webgpu渲染器
-import WebGPURenderer from "three/webgpu";
+import * as THREEGPU from "three/webgpu"
 // 判断webgpu是否可用
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
 import * as Nodes from "three/tsl";
@@ -70,7 +70,7 @@ function init(){
   camera.position.set(0, 20, 20);
 
   // 创建渲染器
-  renderer = new WebGPURenderer({
+  renderer = new THREEGPU.WebGPURenderer({
     // 抗锯齿
     // antialias: true,
   });

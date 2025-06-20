@@ -1,22 +1,22 @@
 {
-  "files": [],
-  "compilerOptions":{
-    "noImplicitAny":true,//关闭隐式 any 类型检查  
-    "strict": true, // 关闭严格模式，包括块作用域变量提升的检查等 
-    "strictNullChecks":true,// 关闭空值检查
-    "paths":{
-      "@/*":[
-        "./src/*"
-      ]
-    }
-  },
- 
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "lib": ["dom", "esnext"],
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "noImplicitAny": false,
+    "strict": false,
+    "strictNullChecks": false,
+    "paths": {
+      "@/*": ["./src/*"]
     },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+    "types": ["vite/client"],
+    "allowImportingTsExtensions": false,
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.js"],
+  "exclude": ["node_modules"]
 }

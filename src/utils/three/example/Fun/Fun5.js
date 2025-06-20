@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import fragmentShader01 from "../Shader/ArVr/fragmentShader01.glsl";
-import { LightningStorm } from "../../../../../../three.jsDevGameExamplesMustStudy/other.js-其他库/LightningStorm";
+//import { LightningStorm } from "../../../../../../three.jsDevGameExamplesMustStudy/other.js-其他库/LightningStorm.js";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { Octree } from "three/examples/jsm/math/Octree.js";
 import { OctreeHelper } from "three/examples/jsm/helpers/OctreeHelper";
@@ -100,22 +100,22 @@ export function initArVr(options = {}) {
 
   //options.scene.add(sprite2);
 
-  const storm = new LightningStorm({
-    size: 100,
-    minHeight: 90,
-    maxHeight: 200,
-    maxSlope: 0.6,
-    maxLightnings: 8,
+  // const storm = new LightningStorm({
+  //   size: 100,
+  //   minHeight: 90,
+  //   maxHeight: 200,
+  //   maxSlope: 0.6,
+  //   maxLightnings: 8,
 
-    onLightningDown: function (lightning) {
-      console.log("lightning down:", lightning);
-    },
-  });
+  //   onLightningDown: function (lightning) {
+  //     console.log("lightning down:", lightning);
+  //   },
+  // });
   //options.scene.add(storm);
 
   options.camera.position.set(0, 5, 5);
 
-  return { planeShaderMaterial: planeShaderMaterial, storm: storm };
+  //return { planeShaderMaterial: planeShaderMaterial, storm: storm };
 }
 
 /**
@@ -1240,7 +1240,7 @@ export class World3D{
 
   _init(){
     this._threePlus = new ThreePlus(this._options);
-    this._threePlus.setBg("./world3D/assets/textures/sky11.hdr");
+    this._threePlus.setBg("./world3D/resouces/textures/sky11.hdr");
 
     this._threePlus.addCloudsPlus();
 

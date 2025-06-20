@@ -2,7 +2,7 @@
     <div id="cesiumContainer" ref="cesiumContainer"></div>
 </template>
 
-<script setup lang="ts">
+<script setup >
 import { onMounted, ref } from "vue";
 import * as Cesium from "cesium";
 import gsap from "gsap";
@@ -191,7 +191,7 @@ function initAir() {
 
 function initCzml() {
     // 加载kml数据
-    let czml = "./cesium/assets/box.czml";
+    let czml = "./cesium/resouces/box.czml";
     czml = [
         {
             id: "document",
@@ -233,7 +233,7 @@ function initCzml() {
  * 加载KML数据
  */
 function initKml() {
-    let kmlDataPriomise = Cesium.KmlDataSource.load("./cesium/assets/gdpPerCapita2008.kmz", {
+    let kmlDataPriomise = Cesium.KmlDataSource.load("./cesium/resouces/gdpPerCapita2008.kmz", {
         camera: viewer.scene.camera,
         canvas: viewer.scene.canvas,
         screenOverlayContainer: viewer.container,
@@ -268,7 +268,7 @@ function initLoadJson() {
 
 function initStudy() {
     // 角度转弧度
-    var radians: number = Cesium.Math.toRadians(90); // 把90°转成弧度
+    var radians = Cesium.Math.toRadians(90); // 把90°转成弧度
     console.log('90°转弧度=', radians, Cesium.Math.DEGREES_PER_RADIAN);
     var degrees = Cesium.Math.toDegrees(Math.PI / 2);
     console.log("Math.PI / 2 弧度转角度=", degrees);

@@ -1,9 +1,8 @@
 import * as THREE from 'three';
-import { Earcut } from '../../../../../../three.js/src/extras/Earcut';
 import GUI from "three/examples/jsm/libs/lil-gui.module.min";
 
 // 导入动画库
-import { AnimationClipCreator } from '../../../../../../three.js/examples/jsm/animation/AnimationClipCreator';
+import { AnimationClipCreator } from 'three/examples/jsm/Addons.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
@@ -17,7 +16,7 @@ import { wasm, isReady, ready, generateTangents } from "three/examples/jsm/libs/
  */
 export function initUseEarcut(params = {}) {
     const sourceArray = [0, 0, 40, 30, 60, 80, 90, 120, 20, 10, -10, 20, -40, 50, -60, 70, 0, 100];
-    const result = Earcut.triangulate(sourceArray);
+    const result = THREE.Earcut.triangulate(sourceArray);
     //console.log('Earcut.triangulate:',result)
 
     // 创建矩形几何体
@@ -33,7 +32,7 @@ export function initUseEarcut(params = {}) {
 
     geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     // 进行三角刨分
-    let indices = Earcut.triangulate(vertices, null, 3);
+    let indices = THREE.Earcut.triangulate(vertices, null, 3);
 
     // 将三角剖分的索引赋给几何体
     geometry.setIndex(indices);

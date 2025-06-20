@@ -2,7 +2,6 @@ import * as THREE from "three";
 import { CSS2DRenderer,CSS2DObject, EffectComposer, GLTFLoader, MTLLoader, OutputPass, RenderPass, UnrealBloomPass, OBJLoader } from "three/examples/jsm/Addons.js";
 import GUI from "three/examples/jsm/libs/lil-gui.module.min.js";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
-import { Earcut } from "../../../../../../three.js/src/extras/Earcut";
 import Delaunator from 'delaunator';
 import { SimplifyModifier ,GeometryUtils} from "three/examples/jsm/Addons.js";
 import {LoopSubdivision} from 'three-subdivide';
@@ -725,7 +724,7 @@ export class DrawPolygonUseEarcut{
 			//const flatVertices = filterPoints?.map(vertex=>[vertex.x,vertex.z]).flat();// 展开全部数据，变成一个一维数组
 			const flatVertices =[-36,11, 1,32, 28,0.129, -0.16,-22, -0.5,0.5, 0.5,0.5, 0.5,-0.5, -0.5,-0.5];
 			const flatVertices_ =[-36,0.1,11, 1,0.1,32, 28,0.1,0.129, -0.16,0.1,-22, -0.5,0.1,0.5, 0.5,0.1,0.5, 0.5,0.1,-0.5, -0.5,0.1,-0.5];// 3D 原始数据
-			const triangles = Earcut.triangulate (flatVertices,[[4]],2); // 挖洞的索引是一对数据开始，而不是数组的下标开始
+			const triangles = THREE.Earcut.triangulate (flatVertices,[[4]],2); // 挖洞的索引是一对数据开始，而不是数组的下标开始
 			//console.log('triangles::',triangles)
 
 			const geometry_ = new THREE.BufferGeometry();
@@ -877,7 +876,7 @@ export class DrawPolygonUseEarcut{
 		const filterPoints = inputPositions//.filter((current,index)=>index % 2 === 0); // 去掉一半的数据
 		const flatVertices = filterPoints?.map(vertex=>[vertex.x,vertex.z]).flat();// 展开全部数据，变成一个一维数组
 		console.log('过滤数据:',filterPoints);
-		const triangles = Earcut.triangulate (flatVertices); // three.js 中的分割，只是单纯的连接三角形，没有真正的细分
+		const triangles = THREE.Earcut.triangulate (flatVertices); // three.js 中的分割，只是单纯的连接三角形，没有真正的细分
 		console.log('数据平铺展开:',flatVertices);
 		console.log('三角划分:',triangles,flatVertices);
 		// 使用Delaunator

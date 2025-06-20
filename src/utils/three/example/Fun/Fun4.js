@@ -10,7 +10,7 @@ import fragmentShader from "../Shader/FlyLine/fragment.glsl";
 
 import { Water } from "three/examples/jsm/objects/Water2.js";
 import Fireworks from "../Example_4_Shader/Fireworks";
-import Heart from "../Example_4_Shader/heart";
+import Heart from "../Example_4_Shader/Heart";
 
 import fireVertexShader from "../Shader/FireEffect/vertex.glsl";
 import fireFragmentShader from "../Shader/FireEffect/fragment.glsl";
@@ -19,7 +19,7 @@ import vertexShaderEyes from "../Shader/eyes/vertex.glsl";
 import fragmentShaderEyes from "../Shader/eyes/fragment.glsl";
 import SimplexNoise from "../../../SimplexNoise";
 import gsap from "gsap";
-import City from "../City/city";
+import City from "../City/City";
 
 
 let fireworks = [];
@@ -1650,7 +1650,7 @@ import CityArea from "../City/CityArea";
 export function initUseVRRoom(params = {}) {
     // 加载全景图
     const loader = new THREE.TextureLoader();
-    const texture = loader.load("./assets/HdrSkyCloudy004_JPG_8K.jpg");
+    const texture = loader.load("./resouces/HdrSkyCloudy004_JPG_8K.jpg");
     texture.mapping = THREE.EquirectangularReflectionMapping;
     params.scene.background = texture;
     params.scene.environment = texture;

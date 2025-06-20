@@ -12,6 +12,7 @@
  * 节点开发
  */
 
+import { AlvaARCamera } from "./Fun/alvaAr";
 import { BiLuFire, DrawPolygonOfPoints3D, DrawPolygonUseEarcut, FireWork,Rain, PenEffect, SceneInScene, UseEffectComposer, UseGeometryUtils, WaterBubble, MoveBoxGame, ConvexBreakerGame, DeformationAnimate, UnlimitedRoadTree, PlaneWaterEffect, StarEffect, ShaderSmoke, ShortFirework, FireworkParticle, MouseNoise } from "./Fun/example";
 import {  TslAngularSlicing ,TslCoffeeSmoke, TslComputeAttractorsParticles, TslEarth} from "./Fun/Fun7";
 import {DijkstrasThreeNav, RoomNav} from "./Fun/fun8";
@@ -21,7 +22,7 @@ import { ClassGalaxy, HalftoneClass, InteroperabilityClass, ProceduralTerrainCla
 import { TslCubeToSphere, TslCustomVertexAndGeometry, TslStudyFireBall, TslStudyLesson2, TslStudyTslTexture, TslUseNoise, TslUseVarying } from "./Fun/TslExample";
 import { TslBakeAnimation, TslBakeMore, TslCreateFunRunGPU, TslMakeNoiseTexture, TslMakeNoiseTextureAddTime, TslMakeNoiseTextureOfTileable, TslMakeOutlineOfGLSL, TslMakeOutlineOfTsl, TslRaymarching } from "./Fun/TslStudyOfNiklever.com";
 import { BaseGPU } from "./Fun/webgpu";
-import { GoalDrivenAgentDesign, StateDriveAgentDesign } from "./Fun/yuka";
+import { Blackjack, FirstPersonControlsGame, FuzzyLogic, GoalDrivenAgentDesign, GraphBasic, LineOfSight, Navmesh, NavSpatial, SaveAndReload, StateDriveAgentDesign, UseMemorySystem, UseMoreCohesionSteering, UseSteering, YukaTrigger } from "./Fun/yuka";
 
 
 export default class Example7 {
@@ -148,7 +149,35 @@ export default class Example7 {
         // yuka state 状态驱动
         //this._obj = new StateDriveAgentDesign(this._options);
         // yuka 全局状态驱动
-        this._obj = new GoalDrivenAgentDesign(this._options);
+        //this._obj = new GoalDrivenAgentDesign(this._options);
+        // yuka 模糊计算
+        //this._obj = new FuzzyLogic(this._options);
+        // 路线查找
+        //this._obj = new GraphBasic(this._options);
+        // 导航
+        //this._obj = new Navmesh(this._options);
+        // 空间索引分割
+        //this._obj = new NavSpatial(this._options);
+        // 第一人称
+        //this._obj = new FirstPersonControlsGame(this._options);
+        // 保存数据
+        //this._obj = new SaveAndReload(this._options);
+        // 触发器
+        //this._obj = new YukaTrigger(this._options);
+        // 类似射线检测
+        //this._obj = new LineOfSight(this._options);
+        // 内存方式实现检测
+        //this._obj = new UseMemorySystem(this._options);
+        // steering
+        //this._obj = new UseSteering(this._options);
+        // 组合使用多个steeringBehavior
+        //this._obj = new UseMoreCohesionSteering(this._options);
+        // 12点卡牌游戏
+        //this._obj = new Blackjack(this._options);
+
+
+        // AlvaAR SLAM使用
+        //this._obj = new AlvaARCamera(this._options);
     }
 
     _onWindowResizeEvent(params={}){

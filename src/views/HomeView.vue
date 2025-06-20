@@ -42,8 +42,8 @@ import BusView from "../views/Bus.vue";
 import VuexView from "../views/Vuex.vue";
 
 
-import Bus from "../utils/Bus";
-import {useCounterStore } from "../stores/counter";
+import Bus from "@/utils/Bus.js"
+import {useCounterStore } from "../stores/counter.js"
 const counterStore = useCounterStore();
 
 import { onMounted, ref ,provide,readonly} from 'vue'
@@ -54,7 +54,7 @@ let modelMsg=ref({msg:"使用v-model传递数据给子组件....",value:0});
 let slotMsg = ref("slot 插槽使用....");
 let busMsg = ref("使用Bus消息总线的...原始数据");
 // 获取ExposeRef 组件
-const exposeRefCom = ref(["exposeRefCom"]);
+const exposeRefCom = ref("exposeRefCom");
 
 //console.log(1,useCounterStore().count)
 onMounted(()=>{
@@ -70,9 +70,11 @@ onMounted(()=>{
 function receiveMsgFun(data:any){
   console.log(data);
 }
-
+function slotClick(){
+  console.log('slotClick()...');
+}
 function callChildFunc(){
-   exposeRefCom.value.changeMessage("--> 在父组件中调用子组件暴露的方法，修改子组件的内容");
+   //exposeRefCom.value.changeMessage("--> 在父组件中调用子组件暴露的方法，修改子组件的内容");
    //exposeRefMsg.value = exposeRefCom.value.message;
 }
 

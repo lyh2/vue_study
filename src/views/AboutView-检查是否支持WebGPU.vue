@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup >
 
 // 学习案例：https://www.donmccurdy.com/2019/03/17/three-nodematerial-introduction/
 
@@ -7,10 +7,10 @@ import * as THREE from "three";
 // 导入控制器
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 // 导入webgpu渲染器
-import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
+import THREEGPU from "three/webgpu";
 // 判断webgpu是否可用
 import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
-import * as Nodes from "three/examples/jsm/nodes/Nodes.js";
+import * as Nodes from "three/tsl";
 // 判断webgpu是否可用
 if (WebGPU.isAvailable() === false) {
   alert("WebGPU is not available");
@@ -30,7 +30,7 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.set(0, 20, 60);
 
 // 创建渲染器
-const renderer = new WebGPURenderer({
+const renderer = new THREEGPU.WebGPURenderer({
   // 抗锯齿
   // antialias: true,
 });

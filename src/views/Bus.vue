@@ -6,7 +6,7 @@
 </template>
 
 <script setup>
-import Bus from "../utils/Bus.ts";
+import Bus from "../utils/Bus.js";
 
 function handleBusEmit(){
     Bus.$emit('changeMsg',"修改Msg 的值>>>>");
