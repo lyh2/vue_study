@@ -13,6 +13,7 @@
  */
 
 import { AlvaARCamera } from "./Fun/alvaAr";
+import { Smooke } from "./Fun/effectExample";
 import { BiLuFire, DrawPolygonOfPoints3D, DrawPolygonUseEarcut, FireWork,Rain, PenEffect, SceneInScene, UseEffectComposer, UseGeometryUtils, WaterBubble, MoveBoxGame, ConvexBreakerGame, DeformationAnimate, UnlimitedRoadTree, PlaneWaterEffect, StarEffect, ShaderSmoke, ShortFirework, FireworkParticle, MouseNoise } from "./Fun/example";
 import {  TslAngularSlicing ,TslCoffeeSmoke, TslComputeAttractorsParticles, TslEarth} from "./Fun/Fun7";
 import {DijkstrasThreeNav, RoomNav} from "./Fun/fun8";
@@ -174,6 +175,9 @@ export default class Example7 {
         //this._obj = new UseMoreCohesionSteering(this._options);
         // 12点卡牌游戏
         //this._obj = new Blackjack(this._options);
+
+        // Smoke 烟雾效果
+        this._obj = new Smooke(this._options);
 
 
         // AlvaAR SLAM使用

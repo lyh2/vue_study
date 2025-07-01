@@ -20,7 +20,7 @@ export default defineConfig({
     vue(),
     topLevelAwait(),
     //vuePlugin(),
-    mkcert()
+    //mkcert()
   ],
   resolve: {
     alias: {
@@ -30,8 +30,8 @@ export default defineConfig({
     }
   },
   server: {
-    host: '0.0.0.0',
-    port: 443,
-    https:true
+    // host: '0.0.0.0',
+    // port: 443,
+    // https:true
   },
 })
