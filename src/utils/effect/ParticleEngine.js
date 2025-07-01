@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const Type = Object.freeze({ "CUBE": 1, "SPHERE": 2 });
+export const ParticleType = Object.freeze({ "CUBE": 1, "SPHERE": 2 ,"CONE":3});
 
 const particleVertexShader =
     [
@@ -133,14 +133,14 @@ class Particle {
 export class ParticleEngine {
     constructor(parameters = {}) {
 
-        this.positionStyle = parameters?.positionStyle === undefined ? Type.CUBE : parameters.positionStyle; // 盒子 模型
+        this.positionStyle = parameters?.positionStyle === undefined ? ParticleType.CUBE : parameters.positionStyle; // 盒子 模型
         this.positionBase = parameters?.positionBase === undefined ? new THREE.Vector3() : parameters.positionBase;// 基础位置
         // cube shape data
         this.positionSpread = parameters?.positionSpread === undefined ? new THREE.Vector3(0.5, 0, 0.4) : parameters.positionSpread;// spread:传播；（使）蔓延，扩散，散开；展开；使分散；延伸；涂；张开；打开；使散开；摊开；伸开；分（若干次）进行
         // sphere shape data 球形模型需要的参数
         this.positionRadius = parameters?.positionRadius === undefined ? 1 : parameters.positionRadius; // distance from base at which particles start
 
-        this.velocityStyle = parameters?.velocityStyle === undefined ? Type.CUBE : parameters.velocityStyle;// 速度模式
+        this.velocityStyle = parameters?.velocityStyle === undefined ? ParticleType.CUBE : parameters.velocityStyle;// 速度模式
         // cube movement data 立方体速度
         this.velocityBase = parameters?.velocityBase === undefined ? new THREE.Vector3(0, 0, 0) : parameters.velocityBase;
         this.velocitySpread = parameters?.velocitySpread === undefined ? new THREE.Vector3(4, 16, 4) : parameters.velocitySpread;
@@ -149,6 +149,10 @@ export class ParticleEngine {
         //   direction vector calculated using initial position
         this.speedBase = 0;
         this.speedSpread = 0;
+        // 圆锥体的参数
+        this.radius_b = 0.4;
+        this.radius_t = 1.2;
+        this.radius_height = 2.4;
         // 加速度
         this.accelerationBase = parameters?.accelerationBase === undefined ? new THREE.Vector3(0, 9.8, 0) : parameters.accelerationBase;
         this.accelerationSpread = parameters?.accelerationSpread === undefined ? new THREE.Vector3() : parameters.accelerationSpread;
@@ -294,7 +298,7 @@ export class ParticleEngine {
         if (this.opacityTween !== undefined) particle.opacityTween = this.opacityTween;
 
         // 如果是Cube 模式
-        if (this.positionStyle == Type.CUBE)
+        if (this.positionStyle == ParticleType.CUBE)
             particle.position = this.randomVector3(this.positionBase, this.positionSpread);
         // Sphere 模式，在一个球体表面生成随机点（因为半径被归一化为1）
         /**
@@ -311,22 +315,50 @@ export class ParticleEngine {
             •   |   •
                 • (z=-1) 南极
          */
-        if (this.positionStyle == Type.SPHERE) {
+        if (this.positionStyle == ParticleType.SPHERE) {
             let z = 2 * Math.random() - 1;// -1 到 1 之间
             let t = 6.2832 * Math.random();// 可以用Math.PI * 2 代替
             let r = Math.sqrt(1 - z * z);// 设置半径为1
             let vec3 = new THREE.Vector3(r * Math.cos(t), r * Math.sin(t), z);
             particle.position = new THREE.Vector3().addVectors(this.positionBase, vec3.multiplyScalar(this.positionRadius));
         }
+
+        // Cone 圆柱体
+        if(this.positionStyle == ParticleType.CONE){
+            const r = this.radius_b * Math.sqrt(Math.random());
+            const theta = Math.random() * 2 * Math.PI;
+            let vec3 = new THREE.Vector3(r * Math.cos(theta), this.positionBase.y, r * Math.sin(theta));
+            particle.position = new THREE.Vector3().addVectors(this.positionBase, vec3);
+        }
         // Cube 的速度计算
-        if (this.velocityStyle == Type.CUBE) {
+        if (this.velocityStyle == ParticleType.CUBE) {
             particle.velocity = this.randomVector3(this.velocityBase, this.velocitySpread);
         }
         // Sphere 球体速度
-        if (this.velocityStyle == Type.SPHERE) {
+        if (this.velocityStyle == ParticleType.SPHERE) {
             //球体表面上点的方向 = 球体表面位置数据 - 球体中心点位置数据 
-            var direction = new THREE.Vector3().subVectors(particle.position, this.positionBase);
-            var speed = this.randomValue(this.speedBase, this.speedSpread);
+            let direction = new THREE.Vector3().subVectors(particle.position, this.positionBase);
+            let speed = this.randomValue(this.speedBase, this.speedSpread);
+            particle.velocity = direction.normalize().multiplyScalar(speed);
+        }
+        // Cone 圆柱体的速度
+        if(this.velocityStyle == ParticleType.CONE){
+            const r = this.radius_b * Math.sqrt(Math.random());
+            const theta = Math.random() * 2 * Math.PI;
+            const x1 = this.positionBase.x + r * Math.cos(theta);
+            const z1 = this.positionBase.z + r * Math.sin(theta);
+
+            const r2 = this.radius_t * Math.sqrt(Math.random());
+            const theta2 = Math.random() * 2 * Math.PI;
+            const x2 = x1 + r2 * Math.cos(theta2);
+            const z2 = z1 + r2 * Math.sin(theta2);
+
+            let dx = x2 - x1;
+            let dy = this.radius_height;
+            let dz = z2 - z1;
+
+            let direction = new THREE.Vector3(dx,dy,dz);
+            let speed = this.randomValue(this.speedBase, this.speedSpread);
             particle.velocity = direction.normalize().multiplyScalar(speed);
         }
         // 加速度
@@ -335,7 +367,8 @@ export class ParticleEngine {
         particle.angle = this.randomValue(this.angleBase, this.angleSpread);
         particle.angleVelocity = this.randomValue(this.angleVelocityBase, this.angleVelocitySpread);
         particle.angleAcceleration = this.randomValue(this.angleAccelerationBase, this.angleAccelerationSpread);
-
+        
+        if (!this.sizeTween !== undefined)
         particle.size = this.randomValue(this.sizeBase, this.sizeSpread);
         //console.log('color:',color)
         // 先取第一个颜色为主色

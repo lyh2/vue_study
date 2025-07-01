@@ -1,4 +1,4 @@
-import { ParticleEngine} from '@/utils/effect/ParticleEngine';
+import { ParticleEngine, ParticleType} from '@/utils/effect/ParticleEngine';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -61,7 +61,7 @@ export class Smooke {
 
         this.renderer.setAnimationLoop(this.animate.bind(this));
 
-        this.particleEngine  = new ParticleEngine({texture:this.fire});
+        this.particleEngine  = new ParticleEngine({texture:this.fire,positionStyle:ParticleType.CONE,velocityStyle:ParticleType.CONE});
         this.scene.add(this.particleEngine._mesh);
         //this.particleEngine._mesh.scale.set(0.25,0.25,0.25);
         //this.particleEngine._mesh.position.set(0,1,0);
