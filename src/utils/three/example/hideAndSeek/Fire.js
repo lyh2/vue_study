@@ -2,7 +2,7 @@
  * 火焰
  */
 
-import * as THREE from '../build/three.module.js';
+import * as THREE from 'three';
 
 let MyFire3 = function () {
 
@@ -92,7 +92,7 @@ void main() {
     pos += offset * vec3(life * 0.7 + 0.3, life * 0.9 + 0.1, life * 0.7 + 0.3);
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-    gl_PointSize = size * (80.0 / length());
+    gl_PointSize = size;
     gl_Position = projectionMatrix * mvPosition;
 }
 `;
@@ -279,13 +279,13 @@ void main() {
             _geometry = new THREE.InstancedBufferGeometry();
             _geometry.maxInstancedCount = _num;
 
-            var shape = new THREE.PlaneBufferGeometry(500, 500);
+            var shape = new THREE.PlaneGeometry(500, 500);
             shape.translate(0, 0.4, 0);
             var data = shape.attributes;
 
-            _geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(data.position.array), 3));
-            _geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(data.uv.array), 2));
-            _geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(data.normal.array), 3));
+            _geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(data.position.array), 3));
+            _geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(data.uv.array), 2));
+            _geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(data.normal.array), 3));
             _geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(shape.index.array), 1));
             shape.dispose();
         }
@@ -301,10 +301,10 @@ void main() {
                 life.setX(i, i / _num + 1);
             }
 
-            _geometry.addAttribute('orientation', orientation);
-            _geometry.addAttribute('scale', scale);
-            _geometry.addAttribute('life', life);
-            _geometry.addAttribute('random', randoms);
+            _geometry.setAttribute('orientation', orientation);
+            _geometry.setAttribute('scale', scale);
+            _geometry.setAttribute('life', life);
+            _geometry.setAttribute('random', randoms);
         }
 
         function initShader() {
@@ -417,12 +417,12 @@ void main() {
 
         function initGeometry() {
             _geometry = new THREE.BufferGeometry();
-            _geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(_num * 3), 3));
-            _geometry.addAttribute('offset', new THREE.BufferAttribute(new Float32Array(_num * 3), 3));
-            _geometry.addAttribute('size', new THREE.BufferAttribute(new Float32Array(_num), 1));
-            _geometry.addAttribute('life', new THREE.BufferAttribute(new Float32Array(_num), 1));
+            _geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(_num * 3), 3));
+            _geometry.setAttribute('offset', new THREE.BufferAttribute(new Float32Array(_num * 3), 3));
+            _geometry.setAttribute('size', new THREE.BufferAttribute(new Float32Array(_num), 1));
+            _geometry.setAttribute('life', new THREE.BufferAttribute(new Float32Array(_num), 1));
             var scale = new THREE.InstancedBufferAttribute(new Float32Array(_num * 2), 2);
-            _geometry.addAttribute('scale', scale);
+            _geometry.setAttribute('scale', scale);
 
             for (var i = 0; i < _num; i++) {
                 _geometry.attributes.life.setX(i, random(0, 1, 3) + 1);
@@ -519,12 +519,12 @@ void main() {
             _geometry = new THREE.InstancedBufferGeometry();
             _geometry.maxInstancedCount = _num;
 
-            var shape = new THREE.PlaneBufferGeometry(0.1, 0.1);
+            var shape = new THREE.PlaneGeometry(0.1, 0.1);
             var data = shape.attributes;
 
-            _geometry.addAttribute('position', new THREE.BufferAttribute(new Float32Array(data.position.array), 3));
-            _geometry.addAttribute('uv', new THREE.BufferAttribute(new Float32Array(data.uv.array), 2));
-            _geometry.addAttribute('normal', new THREE.BufferAttribute(new Float32Array(data.normal.array), 3));
+            _geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(data.position.array), 3));
+            _geometry.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(data.uv.array), 2));
+            _geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(data.normal.array), 3));
             _geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(shape.index.array), 1));
             shape.dispose();
         }
@@ -542,12 +542,12 @@ void main() {
                 life.setX(i, i / _num + 1);
             }
 
-            _geometry.addAttribute('base', base);
-            _geometry.addAttribute('offset', offset);
-            _geometry.addAttribute('orientation', orientation);
-            _geometry.addAttribute('scale', scale);
-            _geometry.addAttribute('rotation', rotation);
-            _geometry.addAttribute('life', life);
+            _geometry.setAttribute('base', base);
+            _geometry.setAttribute('offset', offset);
+            _geometry.setAttribute('orientation', orientation);
+            _geometry.setAttribute('scale', scale);
+            _geometry.setAttribute('rotation', rotation);
+            _geometry.setAttribute('life', life);
         }
 
         function initShader() {

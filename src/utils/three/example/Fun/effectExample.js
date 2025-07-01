@@ -1,7 +1,12 @@
 import { ParticleEngine, ParticleType} from '@/utils/effect/ParticleEngine';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { MyFire3 } from '../hideAndSeek/Fire';
+import { Fire } from '@/utils/effect/Fire';
 
+/**
+ * 很好的烟雾效果粒子
+ */
 export class Smooke {
     constructor(options = {}) {
         this.options = options;
@@ -58,14 +63,23 @@ export class Smooke {
         this._initGeometry();
         this._initFloor();
         this._initEmitters();// 创建粒子发射器,粒子发射器就是定义约束粒子的对象
-
+       
         this.renderer.setAnimationLoop(this.animate.bind(this));
 
         this.particleEngine  = new ParticleEngine({texture:this.fire,positionStyle:ParticleType.CONE,velocityStyle:ParticleType.CONE});
-        this.scene.add(this.particleEngine._mesh);
+        //this.scene.add(this.particleEngine._mesh);
         //this.particleEngine._mesh.scale.set(0.25,0.25,0.25);
         //this.particleEngine._mesh.position.set(0,1,0);
-   
+        
+        // // 测试Fire.js 
+        // this.myFire = new MyFire3();
+        // this.myFire.config(this.scene,this.renderer,this.perspectiveCamera,this.orbitControls);
+        // this.myFire.setPosition(0,0,0);
+        // this.myFire.showFire();
+
+        this._fire = new Fire({texture:this.fire,particle_total:150,radius_height:5});
+        this.scene.add(this._fire._mesh);
+        this._fire._mesh.scale.set(1.8,1.8,1.8);
     }
 
     _initLoadTexture() {
@@ -178,23 +192,22 @@ export class Smooke {
 
         this.scene.add(new THREE.AmbientLight(0xffcf, 3.2));
     }
-    // 初始化发粒子射器
-    // 初始化发粒子射器
+    // 初始化发粒子射器，通过修改下面的参数，可以调整火焰的效果
     _initEmitters() {
-        this.particle_emmiters = [
+        this.particle_emitters = [
             {
                 id:0,
                 name:'emitter_0',
-                position: { x: 0, y: 0, z: 0 },// 粒子发射器的位置，发射器在世界空间中的三维位置
-                total_particles: 150,
+                position: { x: -4, y: 0, z: -4 },// 粒子发射器的位置，发射器在世界空间中的三维位置
+                particle_total: 80,
                 emitted_particles: 0,
-                add_time: 0.05,// 每隔多少秒发射一个粒子（控制发射频率）
+                add_time: 0.005,// 每隔多少秒发射一个粒子（控制发射频率）
                 elapsed: 0,//总的时间，内部计时器，记录自上次发射后的时间
                 radius_1: 0.02,
                 radius_2: 0.4,
                 radius_height: 5,
-                live_time_from: 4,// 粒子最短时间
-                live_time_to: 6,
+                live_time_from: 3,// 粒子最短时间
+                live_time_to: 4.5,
                 rotation_from: 1,// 旋转
                 rotation_to: 2,
                 speed_from: 0.005,// 速度
@@ -216,15 +229,15 @@ export class Smooke {
                 id:1,
                 name:'emitter_1',
                 position: { x: -2, y: 0, z: -4 },
-                total_particles: 150,
+                particle_total: 120,
                 emitted_particles: 0,
-                radius_1: 0.02,
-                radius_2: 1,
-                radius_height: 5,
-                add_time: 0.1,
+                radius_1: 0.2,
+                radius_2: 4,
+                radius_height: 4,
+                add_time: 0.01,
                 elapsed: 0,
-                live_time_from: 7,
-                live_time_to: 7.5,
+                live_time_from: 0.6,
+                live_time_to: 14.95,
                 opacity_decrease: 0.008,
                 rotation_from: 0.5,
                 rotation_to: 1,
@@ -235,7 +248,7 @@ export class Smooke {
                 color_from: [2, 2, 2],
                 color_to: [0, 0, 0],
                 color_speed_from: 0.4,
-                color_speed_to: 0.4,
+                color_speed_to: 0.8,
                 brightness_from: 1,
                 brightness_to: 1,
                 opacity: 1,
@@ -245,15 +258,15 @@ export class Smooke {
                 id:2,
                 name:'emitter_2',
                 position: { x: 0, y: 0, z: -4 },
-                                total_particles: 150,
+                particle_total: 100,
                 emitted_particles: 0,
                 radius_1: 0.02,
                 radius_2: 1,
                 radius_height: 5,
-                add_time: 0.1,
+                add_time: 0.02,
                 elapsed: 0,
-                live_time_from: 10,
-                live_time_to: 10.5,
+                live_time_from: 0.8,
+                live_time_to: 1.5,
                 opacity_decrease: 0.008,
                 rotation_from: 0.5,
                 rotation_to: 1,
@@ -274,15 +287,15 @@ export class Smooke {
                 id:3,
                 name:'emitter_3',
                 position: { x: 2, y: 0, z: -4 },
-                                total_particles: 150,
+                particle_total: 98,
                 emitted_particles: 0,
-                radius_1: 0.02,
+                radius_1: 0.2,
                 radius_2: 0.4,
                 radius_height: 5,
-                add_time: 0.1,
+                add_time: 0.01,
                 elapsed: 0,
-                live_time_from: 4,
-                live_time_to: 4.5,
+                live_time_from: 1,
+                live_time_to: 1.5,
                 opacity_decrease: 0.004,
                 rotation_from: 2,
                 rotation_to: 3,
@@ -303,15 +316,15 @@ export class Smooke {
                 id:4,
                 name:'emitter_4',
                 position: { x: 4, y: 0, z: -4 },
-                                total_particles: 150,
+                                particle_total: 100,
                 emitted_particles: 0,
-                radius_1: 2,
-                radius_2: 2,
+                radius_1: 0.4,
+                radius_2: 1.2,
                 radius_height: 5,
-                add_time: 0.1,
+                add_time: 0.02,
                 elapsed: 0,
-                live_time_from: 1,
-                live_time_to: 1.5,
+                live_time_from: 0.8,
+                live_time_to: 1.2,
                 opacity_decrease: 0.004,
                 rotation_from: 2,
                 rotation_to: 3,
@@ -331,8 +344,8 @@ export class Smooke {
             }, {
                 id:5,
                 name:'emitter_5',
-                position: { x: 0, y: 1, z: 0 },
-                                total_particles: 150,
+                position: { x: 6, y: 1, z: -4 },
+                particle_total: 50,
                 emitted_particles: 0,
                 radius_1: 0.02,
                 radius_2: 1,
@@ -359,6 +372,12 @@ export class Smooke {
                 texture: 1,
             }
         ];
+
+        // 循环发射器数组，每个发射器数组里面定义了粒子个数
+        for (const emitter of this.particle_emitters) {
+            for(let i = 0; i < emitter.particle_total;i++)
+            this.particle_smoke_a.push(this.emitParticle(emitter));
+        }
     }
 
     animate() {
@@ -366,21 +385,23 @@ export class Smooke {
         this.delta = this.clock.getDelta();
         this.elapsedTime = this.clock.getElapsedTime();
         this.sprite.material.uniforms.time.value += this.delta;
-        this.particleEngine && this.particleEngine.update(this.delta);
+        //this.particleEngine && this.particleEngine.update(this.delta);
+
+        if(this._fire) this._fire.update(this.delta);
         this.renderer.render(this.scene, this.perspectiveCamera);
     }
 
     updateParticle() {
-        this.updateParticleEmmiter();// 更新发射器
+        // 更新发射器
         const cameraPos = this.perspectiveCamera.position;// 相机的位置
         this.particles = [...this.particle_smoke_a]//, ...this.particles_grass_a];// 去掉草
-        this.particles.forEach(p => {
-            const [x, y, z] = p.offset;
-            // 按照相机位置到粒子精灵的位置进行排序
-            p.d = Math.sqrt((cameraPos.x - x) ** 2 + (cameraPos.y - y) ** 2 + (cameraPos.z - z) ** 2);
+        // this.particles.forEach(p => {
+        //     const [x, y, z] = p.offset;
+        //     // 按照相机位置到粒子精灵的位置进行排序
+        //     p.d = Math.sqrt((cameraPos.x - x) ** 2 + (cameraPos.y - y) ** 2 + (cameraPos.z - z) ** 2);
             
-        });
-        this.particles.sort((a, b) => b.d - a.d);
+        // });
+        //this.particles.sort((a, b) => b.d - a.d);
         //console.log(this.particles)
         const count = this.particles.length; // 
         const offset = new Float32Array(count * 3);
@@ -392,7 +413,32 @@ export class Smooke {
         const texture = new Float32Array(count);
 
         for (let i = 0; i < count; i++) {
-            const p = this.particles[i];
+            // 首先判断粒子是否已经死亡，就重新创建
+            let p = this.particles[i];
+            const [dx, dy, dz] = p.quaternion;
+            p.offset[0] += dx + this.windX;
+            p.offset[1] += dy + this.windY;
+            p.offset[2] += dz + this.windZ;
+            p.scale[0] += p.scale_increase;
+            p.scale[1] += p.scale_increase;
+
+            if (p.color_process < 1) {
+                p.color[0] = p.color_from[0] + (p.color_to[0] - p.color_from[0]) * p.color_process;
+                p.color[1] = p.color_from[1] + (p.color_to[1] - p.color_from[1]) * p.color_process;
+                p.color[2] = p.color_from[2] + (p.color_to[2] - p.color_from[2]) * p.color_process;
+                p.color_process += this.delta * p.color_speed;
+            }
+
+            if (p.live > 0) {
+                p.live -= this.delta;
+            } else {
+                const nextAlpha = p.color[3] - p.opacity_decrease;
+                p.color[3] = nextAlpha;
+                // 已经死亡,重新创建粒子
+                this.particle_smoke_a[i] = this.emitParticle(this.particle_emitters[p.emitted_id]);
+                //console.log(this.particle_smoke_a[i]);
+                p = this.particle_smoke_a[i];
+            }
             offset.set(p.offset, i * 3);
             scale.set(p.scale, i * 2);
             quaternion.set(p.quaternion, i * 4);
@@ -413,54 +459,7 @@ export class Smooke {
         this.sprite.geometry.instanceCount  = count;
         //console.log(this.sprite)
     }
-    // 更新发射器
-    updateParticleEmmiter() {
-        for (const emitter of this.particle_emmiters) {
-            emitter.elapsed += this.delta;//增加发射器的累计时间，用于判断是否该发射粒子了
-            let addCount = Math.floor(emitter.elapsed / emitter.add_time);// 计算在本帧内应该发射多少个粒子
-            emitter.elapsed %= emitter.add_time;// 保留“多余的”时间，用于下一帧继续积累
-            //console.log(addCount  , emitter.emitted_particles , emitter.total_particles)
-            // 原始代码：addCount -- && emitter.emitted_particles < emitter.total_particles
-            addCount = Math.ceil( ( emitter.total_particles - emitter.emitted_particles ) * Math.random())
-            //console.log(addCount)
-            while ( addCount --) { // 这里发送粒子的时间太短了，频繁发射粒子导致颜色太重了，过渡很明显
-                this.emitParticle(emitter);
-                emitter.emitted_particles++;
-            }
-        }
-         // 过滤掉opacity 透明度< 0 的数据，表示生命时间已经结束(或者是live < 0 的)
-        this.particle_smoke_a = this.particle_smoke_a.filter(p => {
-            const [dx, dy, dz] = p.quaternion;
-            p.offset[0] += dx + this.windX;
-            p.offset[1] += dy + this.windY;
-            p.offset[2] += dz + this.windZ;
-            p.scale[0] += p.scale_increase;
-            p.scale[1] += p.scale_increase;
-
-            if (p.color_process < 1) {
-                p.color[0] = p.color_from[0] + (p.color_to[0] - p.color_from[0]) * p.color_process;
-                p.color[1] = p.color_from[1] + (p.color_to[1] - p.color_from[1]) * p.color_process;
-                p.color[2] = p.color_from[2] + (p.color_to[2] - p.color_from[2]) * p.color_process;
-                p.color_process += this.delta * p.color_speed;
-            }
-
-            if (p.live > 0) {
-                p.live -= this.delta;
-            } else {
-                const nextAlpha = p.color[3] - p.opacity_decrease;
-                p.color[3] = nextAlpha;
-                // 已经死亡
-                
-            }
-            // let stillAlive = p.color[3] > 0;
-
-            // if (!stillAlive) {
-            //     --this.particle_emmiters[p.emitted_id].emitted_particles;
-            // }
-            // return stillAlive;
-
-        });
-    }
+  
     // 发射粒子，从指定的粒子发射器配置中发射粒子
     emitParticle(emitter) {
         const r = emitter.radius_1 * Math.sqrt(Math.random());
@@ -485,10 +484,10 @@ export class Smooke {
         // 高光值
         const brightness = emitter.brightness_from + Math.random() * (emitter.brightness_to - emitter.brightness_from);
         // 
-        this.particle_smoke_a.push({
+        return {
             offset: [x1, emitter.position.y, z1],// 每一次offset偏移的值不一样
             scale: [emitter.scale_from, emitter.scale_from],
-            quaternion: [dx, dy, dz],
+            quaternion: [dx, dy, dz,1],
             rotation: emitter.rotation_from + Math.random() * (emitter.rotation_to - emitter.rotation_from),
             color: [1, 1, 1, emitter.opacity],
             blend: emitter.blend,
@@ -502,7 +501,7 @@ export class Smooke {
             color_process: 0,
             emitted_id:emitter.id,
             emitter_name:emitter.name
-        });
+        };
     }
 
     _windowResizeFun() {
@@ -513,71 +512,53 @@ export class Smooke {
 
     _initShader() {
         this.vertexShader = `
-            attribute vec3 offset;
-            attribute vec2 scale;
-            attribute vec4 quaternion;
-            attribute float rotation;
-            attribute vec4 color;
-            attribute float blend;
-            attribute float texture;
-            uniform float time;
+    attribute vec3 offset;
+    attribute vec2 scale;
+    attribute vec4 quaternion;
+    attribute float rotation;
+    attribute vec4 color;
+    attribute float blend;
+    attribute float texture;
+    uniform float time;
 
-            varying vec2 vUv;
-            varying vec4 vColor;
-            varying float vBlend;
-            varying float num;
-            vec3 localUpVector = vec3(0.0, 1.0, 0.0);// 定义Up 向量
+    varying vec2 vUv;
+    varying vec4 vColor;
+    varying float vBlend;
+    varying float num;
 
-            void main() {
-                float angle = time * rotation;
-                // 烟雾向上，Z轴不发生改变
-                // 对每个顶点的 二维平面坐标 (x, y) 做绕 Z 轴旋转，再乘上缩放（scale.x, scale.y），然后保持 z 不变
-                //这段代码模拟了一个“面朝相机的平面精灵”随时间绕 Z 轴旋转的行为：
-                //如果 angle 是 0，它就是原始方向；
-                //随着时间变化 angle 变化，会造成粒子图像在平面内打转的视觉效果；
-                //position.z 保持为 0，避免粒子顶点“偏离”原始平面，从而保持 billboard 的形状。
+    void main() {
+        float angle = time * rotation;
+        // 局部平面旋转
+        vec3 vRotated = vec3(
+            position.x * scale.x * cos(angle) - position.y * scale.y * sin(angle),
+            position.y * scale.y * cos(angle) + position.x * scale.x * sin(angle),
+            position.z
+        );
 
-                vec3 vRotated = vec3(
-                    position.x * scale.x * cos(angle) - position.y * scale.y * sin(angle),
-                    position.y * scale.y * cos(angle) + position.x * scale.x * sin(angle),
-                    position.z
-                );
+        vUv = uv;
+        vColor = color;
+        vBlend = blend;
+        num = texture;
 
-                vUv = uv;
-                vColor = color;
-                vBlend = blend;
-                num = texture;
-
-                /**
-                 vec3 vLook = offset - cameraPosition;// 粒子的位置 到相机的位置
-                  🖐️ 右手法则图示：
-                    假设：
-
-                    拇指 = 第一个向量 vLook
-
-                    食指 = 第二个向量 up（通常是 (0, 1, 0)）
-
-                    中指 = 叉乘结果 vRight
-
-                    右手摆出 3 指 —— 拇指指向 vLook，食指指向 up，中指自然就是叉乘结果方向。
-
-                    vec3 vRight = normalize(cross(vLook, localUpVector));// 得到向右的向量
-                 */
-
-                vec3 vForward = normalize(cameraPosition - offset);
-                vec3 vRight = normalize(cross(localUpVector, vForward));
-
-                // 得到新的位置数据
-                vec3 vPosition = vRotated.x * vRight + vRotated.y * localUpVector + vRotated.z;
-                //gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition + offset, 1.0);
-                
-                vec4 mPosition = modelMatrix * vec4(vPosition,1.);
-                mPosition.xyz += offset;
-                gl_Position = projectionMatrix * modelViewMatrix * mPosition;
-
-            }
-        `;
+        // === 新增 Billboarding 核心代码 ===
+        // 计算相机到粒子的方向向量
+        vec3 camToParticle = normalize(offset - cameraPosition);
         
+        // 构建正交基向量（使用世界空间的UP向量作为参考）
+        vec3 worldUp = vec3(0.0, 1.0, 0.0);
+        vec3 particleRight = normalize(cross(worldUp, camToParticle));
+        vec3 particleUp = normalize(cross(camToParticle, particleRight));
+        
+        // 将旋转后的顶点偏移到相机平面
+        vec3 billboardPos = offset 
+            + particleRight * vRotated.x 
+            + particleUp * vRotated.y;
+
+        // 转换到裁剪空间
+        vec4 mvPosition = modelViewMatrix * vec4(billboardPos, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+    }
+`;
 
         this.fragmentShader = `
             const int count = 3;// 纹理的个数
