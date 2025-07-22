@@ -73,10 +73,15 @@ export default class World {
         this.assetManager.init()
             .then((res) => {
                 World._instance = this;
-                //console.log('加载完毕:',res);
+                //console.log('加载完毕:',res,this.options);
                 // 执行成功之后，隐藏加载图层 // 消除overlay
+                this.options.isShowOverlay.value = false;
                 this.options.isLoading.value = false;
                 /////////////////////////////////////
+                const navMesh = this.assetManager.navMesh;
+
+                this.pathPlanner = new PathPlanner(navMesh);
+
                 this._initScene();
                 this._initLevel();
                 this._initEnemies();
@@ -109,7 +114,7 @@ export default class World {
             this.helpers.axesHelper.visible = false;
             this.scene.add(this.helpers.axesHelper);
         }
-
+        //this.scene.add(new THREE.AmbientLight(0xffffff,1.2));
         // lights
         const hemisphereLight = new THREE.HemisphereLight(0xffffff,0x444444,0.4);
         hemisphereLight.position.set(0,100,0);
@@ -199,19 +204,17 @@ export default class World {
     }
 
     /**
-     * 初始化敌人
+     * 初始化敌人,存在bug 敌人打不死
      */
     _initEnemies(){
         const enemyCount = this.enemyCount;// 敌人个数
-        const navMesh = this.assetManager.navMesh;
-
-        this.pathPlanner = new PathPlanner(navMesh);
-
+ 
         for(let i =0; i < enemyCount;i++){
+            const name = 'Enemy:'+i;
             const renderComponent = SceneUtils.cloneWithSkinning(this.assetManager.modelMaps.get('soldier'));// 这里为啥不用clone()
-
-            const enemy =new  EnemyVehicle(this/* world */);
-            enemy.name = 'Enemy:'+i;
+            renderComponent.name = name;
+            const enemy =new  EnemyVehicle(this /* world */);
+            enemy.name = name;
             enemy.setRenderComponent(renderComponent,this.sync.bind(this));
 
             // 设置动画
@@ -240,8 +243,8 @@ export default class World {
                 this.helpers.pathHelpers.push(pathHelper);
 
                 // 创建THREE.js中文字
-                const uuidHelper = SceneUtils.createUUIDLabel(enemy.uuid);
-                uuidHelper.position.y = 2;
+                const uuidHelper = SceneUtils.createUUIDLabel(enemy.name);
+                uuidHelper.position.y = 3;
                 uuidHelper.visible = false;
 
                 renderComponent.add(uuidHelper);
@@ -255,6 +258,7 @@ export default class World {
                 this.helpers.skeletonHelpers.push(skeletonHelper);
             }
         }
+       
         return this;
     }
     /**
@@ -262,13 +266,15 @@ export default class World {
      */
     _initPlayer(){
         const assetManager = this.assetManager;
-        const player =  new PlayerMovingEntity(this);
+        const player = new PlayerMovingEntity(this);
+        //console.log(4,player)
 
         // renderComponent 
         const body = new THREE.Object3D();
         body.matrixAutoUpdate = false;
+        body.name = "player";
         player.setRenderComponent(body,this.sync.bind(this));
-        //console.log(4,player)
+        
         // audio 
         const step1 = assetManager.cloneAudio(assetManager.audioMaps.get('step1'));
         const step2 = assetManager.cloneAudio(assetManager.audioMaps.get('step2'));
@@ -281,8 +287,8 @@ export default class World {
 		const impact6 = assetManager.audioMaps.get( 'impact6' );
 		const impact7 = assetManager.audioMaps.get( 'impact7' );
 
-		step1.setVolume( 0.5 );
-		step2.setVolume( 0.5 );
+		step1.setVolume( 3.5 );
+		step2.setVolume( 3.5 );
 
         body.add( step1, step2 );
 		body.add( impact1, impact2, impact3, impact4, impact5, impact6, impact7 );
@@ -320,10 +326,8 @@ export default class World {
         this.fpsControls.addEventListener( 'lock', ( ) => {
 
 			this.useFPSControls = true;
-
+            this.options.isFPSControls.value = true;
 			this.orbitControls.enabled = false;
-			this.perspectiveCamera.matrixAutoUpdate = false;
-
 			this.player.activate();
 			this.player.head.setRenderComponent( this.perspectiveCamera, this.sync.bind(this) );
 
@@ -334,15 +338,15 @@ export default class World {
 				this.uiManager.closeDebugUI();
 
 			}
-
+            
 		} );
 
 		this.fpsControls.addEventListener( 'unlock', () => {
 
 			this.useFPSControls = false;
+            this.options.isFPSControls.value = false;
 
 			this.orbitControls.enabled = true;
-			this.perspectiveCamera.matrixAutoUpdate = true;
 
 			this.player.deactivate();
 			this.player.head.setRenderComponent( null, null );
@@ -398,26 +402,58 @@ export default class World {
         const entities = this.entityManager.entities;
         let minDistance = Infinity;
         let hittedEntity = null;// 被击中的实体对象
-
+        //console.log('entities:',this.entityManager.entities)
         const owner = projectile.owner;/* 代表enemy 对象*/
         const ray = projectile.ray;
 
         for(let i =0; i < entities.length;i++){
             const entity = entities[i];
             //console.log('world entity:',entity);
-            if(entity !== owner/* 不与自己进行碰撞测试 */ && entity.active && entity.checkProjectileIntersection /* 对象是否存在某个方法 */){
+            if(entity !== owner/* 不与自己进行碰撞测试 */ && entity.active &&  entity.checkProjectileIntersection  /* 对象是否存在某个方法 */){
                 if(entity.checkProjectileIntersection(ray,currentIntersectionPoint) !== null){
                     const squaredDistance = currentIntersectionPoint .squaredDistanceTo(ray.origin);
                     if(squaredDistance < minDistance){
                         minDistance = squaredDistance;
                         hittedEntity = entity;
-
+                        //console.log('击中的是否是敌人:',entity.name)
                         intersectionPoint.copy(currentIntersectionPoint);
                     }
                 }
             }
         }
         return hittedEntity;
+    }
+    /**
+     * Finds the nearest item of the given item type for the given entity.
+     * @param {*} entity 
+     * @param {*} itemType 
+     * @param {*} result 
+     */
+    getClosestItem(entity,itemType,result){
+        let itemList = this.spawningManager.getItemList(itemType);
+        let closestItem = null;
+        let minDistance = Infinity;
+
+        for(let i =0; i < itemList.length;i++){
+            const item = itemList[i];
+            if(item.active){
+                const fromRegion = entity.currentRegion;
+                const toRegion = item.currentRegion;
+
+                const from = this.navMesh.getNodeIndex(fromRegion);
+                const to= this.navMesh.getNodeIndex(toRegion);
+
+                const distance = this.costTable.get(from,to);
+                if(distance < minDistance){
+                    minDistance = distance;
+                    closestItem = item;
+                }
+            }
+        }
+
+        result.item = closestItem;
+        result.distance = minDistance;
+        return result;
     }
     /**
      * 
@@ -455,6 +491,7 @@ export default class World {
     sync(entity,renderComponent){
         renderComponent.matrix.copy(entity.worldMatrix);
         renderComponent.matrix.decompose(renderComponent.position,renderComponent.quaternion,renderComponent.scale);
+        //console.log(renderComponent.name,renderComponent.position,renderComponent.quaternion,renderComponent.scale)
     }
     _animate(){
         this.renderer.setAnimationLoop(this.__loop.bind(this));
@@ -463,7 +500,7 @@ export default class World {
     __loop(){
         this.yukaTime.update();
         this.tick ++;
-
+        
         const delta = this.yukaTime.getDelta();
         if(this.debug){
             if(this.useFPSControls){

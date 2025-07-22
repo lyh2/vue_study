@@ -110,9 +110,11 @@ export default class AssetManager {
 
 		const step1 = new THREE.PositionalAudio( listener );
 		step1.matrixAutoUpdate = false;
+        step1.setVolume(GameConfig.AUDIO.VOLUME_2);
 
 		const step2 = new THREE.PositionalAudio( listener );
 		step2.matrixAutoUpdate = false;
+        step2.setVolume(GameConfig.AUDIO.VOLUME_2);
 
 		const impact1 = new THREE.PositionalAudio( listener );
 		impact1.setVolume( GameConfig.AUDIO.VOLUME_IMPACT );
@@ -343,10 +345,12 @@ export default class AssetManager {
         this.modelMaps.set('muzzle',muzzle);
 
         // 创建子弹
-        const bulletLineGeometry = new THREE.ConeGeometry(0.2,0.6,4);
+        const bulletLineGeometry = new THREE.BufferGeometry();
         const bulletLineMaterial = new THREE.MeshBasicMaterial({color:0xfbf8e6});
-        bulletLineGeometry.rotateX(Math.PI );// 绕X轴旋转
-        const bulletLineMesh = new THREE.Mesh(bulletLineGeometry,bulletLineMaterial);
+        //bulletLineGeometry.rotateX(Math.PI );// 绕X轴旋转
+        bulletLineGeometry.setFromPoints([new THREE.Vector3(),new THREE.Vector3(0,0,-1)]);
+
+        const bulletLineMesh = new THREE.LineSegments(bulletLineGeometry,bulletLineMaterial);
         bulletLineMesh.matrixAutoUpdate = false;
         bulletLineMesh.updateMatrix();
 
@@ -381,6 +385,7 @@ export default class AssetManager {
         this.loadingManager.itemStart('navmesh');
         this.navMeshLoader.load('./yuka-dive/navmeshes/navmesh.glb').then(navMesh=>{
             this.navMesh = navMesh; // 返回的是NavMesh 对象
+            //console.log(11,navMesh);
             this.loadingManager.itemEnd('navmesh');
         });
 

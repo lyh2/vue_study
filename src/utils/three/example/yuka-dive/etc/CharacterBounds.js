@@ -52,40 +52,40 @@ export default class CharacterBounds {
         const headBone = renderComponent.getObjectByName('Armature_mixamorigHead');
         const head = new YUKA.AABB(new YUKA.Vector3(-0.1,1.6,-0.1),new YUKA.Vector3(0.1,1.8,0.1));
         let bindMatrix = new THREE.Matrix4().copy(headBone.matrixWorld);// 初始化绑定姿态下的世界变换
-        let bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        let bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:head,mesh:headBone,bindMatrix:bindMatrix,bindMatrixInverse:bindMatrixInverse});
 
         // torso 躯干
         const spineBone = renderComponent.getObjectByName('Armature_mixamorigSpine1');
         const spine = new YUKA.AABB(new YUKA.Vector3(-0.2,1,-0.2),new YUKA.Vector3(0.2,1.6,0.2));
         bindMatrix = new THREE.Matrix4().copy(spineBone.matrixWorld);
-        bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:spine,mesh:spineBone,bindMatrix:bindMatrix,bindMatrixInverse:bindMatrixInverse});
 
         // arms
         const rightArmBone = renderComponent.getObjectByName('Armature_mixamorigRightArm');// 得到右手模型对象
         const rightArmAABB = new YUKA.AABB(new YUKA.Vector3(-0.4,1.42,-0.15),new YUKA.Vector3(-0.2,1.58,0.1));
         bindMatrix = new THREE.Matrix4().copy(rightArmBone.matrixWorld);
-        bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:rightArmAABB,mesh:rightArmBone,bindMatrix:bindMatrix,bindMatrixInverse:bindMatrixInverse});
         // 右前臂
         const rightForeArmBone = renderComponent.getObjectByName('Armature_mixamorigRightForeArm');
         const rightForeArmAABB = new YUKA.AABB(new YUKA.Vector3(-0.8,1.42,-0.15),new YUKA.Vector3(-0.4,1.55,0.05));
         bindMatrix = new THREE.Matrix4().copy(rightForeArmBone.matrixWorld);
-        bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:rightForeArmAABB,mesh:rightForeArmBone,bindMatrix,bindMatrixInverse});
 
         // 左臂
         const leftArmBone = renderComponent.getObjectByName('Armature_mixamorigLeftArm');
         const leftArmBoneAABB = new YUKA.AABB(new YUKA.Vector3(0.2,1.42,-0.15),new YUKA.Vector3(0.4,1.58,0.1));
         bindMatrix = new THREE.Matrix4().copy(leftArmBone.matrixWorld);
-        bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:leftArmBoneAABB,mesh:leftArmBone,bindMatrix,bindMatrixInverse});
 
         const leftForeArmBone = renderComponent.getObjectByName('Armature_mixamorigLeftForeArm');
         const leftForeArmBoneAABB = new YUKA.AABB(new YUKA.Vector3(0.4,1.42,-0.15),new YUKA.Vector3(0.8,1.55,0.05));
         bindMatrix = new THREE.Matrix4().copy(leftForeArmBone.matrixWorld);
-        bindMatrixInverse = new THREE.Matrix4().getInverse(bindMatrix);
+        bindMatrixInverse = new THREE.Matrix4().invert(bindMatrix);
         hitboxes.push({aabb:leftForeArmBoneAABB,mesh:leftForeArmBone,bindMatrix,bindMatrixInverse});
 
         // legs 腿
@@ -93,25 +93,25 @@ export default class CharacterBounds {
 		const rightUpLegBone = renderComponent.getObjectByName( 'Armature_mixamorigRightUpLeg' );
 		const rightUpLeg = new YUKA.AABB( new  YUKA.Vector3( - 0.2, 0.6, - 0.15 ),  new YUKA.Vector3( 0, 1, 0.15 ) );
 		bindMatrix = new THREE.Matrix4().copy( rightUpLegBone.matrixWorld );
-		bindMatrixInverse = new THREE.Matrix4().getInverse( bindMatrix );
+		bindMatrixInverse = new THREE.Matrix4().invert( bindMatrix );
 		hitboxes.push( { aabb: rightUpLeg, mesh: rightUpLegBone, bindMatrix: bindMatrix, bindMatrixInverse: bindMatrixInverse } );
 
 		const rightLegBone = renderComponent.getObjectByName( 'Armature_mixamorigRightLeg' );
 		const rightLeg = new  YUKA.AABB( new  YUKA.Vector3( - 0.2, 0, - 0.15 ), new  YUKA.Vector3( 0, 0.6, 0.15 ) );
 		bindMatrix = new THREE.Matrix4().copy( rightLegBone.matrixWorld );
-		bindMatrixInverse = new THREE.Matrix4().getInverse( bindMatrix );
+		bindMatrixInverse = new THREE.Matrix4().invert( bindMatrix );
 		hitboxes.push( { aabb: rightLeg, mesh: rightLegBone, bindMatrix: bindMatrix, bindMatrixInverse: bindMatrixInverse } );
 
 		const leftUpLegBone = renderComponent.getObjectByName( 'Armature_mixamorigLeftUpLeg' );
-		const leftUpLeg = new  YUKA.AABB( new Vector3( 0, 0.6, - 0.15 ), new  YUKA.Vector3( 0.2, 1, 0.15 ) );
+		const leftUpLeg = new  YUKA.AABB( new YUKA.Vector3( 0, 0.6, - 0.15 ), new  YUKA.Vector3( 0.2, 1, 0.15 ) );
 		bindMatrix = new THREE.Matrix4().copy( leftUpLegBone.matrixWorld );
-		bindMatrixInverse = new THREE.Matrix4().getInverse( bindMatrix );
+		bindMatrixInverse = new THREE.Matrix4().invert( bindMatrix );
 		hitboxes.push( { aabb: leftUpLeg, mesh: leftUpLegBone, bindMatrix: bindMatrix, bindMatrixInverse: bindMatrixInverse } );
 
 		const leftLegBone = renderComponent.getObjectByName( 'Armature_mixamorigLeftLeg' );
 		const leftLeg = new  YUKA.AABB( new  YUKA.Vector3( 0, 0, - 0.15 ), new YUKA. Vector3( 0.2, 0.6, 0.15 ) );
 		bindMatrix = new THREE.Matrix4().copy( leftLegBone.matrixWorld );
-		bindMatrixInverse = new THREE.Matrix4().getInverse( bindMatrix );
+		bindMatrixInverse = new THREE.Matrix4().invert( bindMatrix );
 		hitboxes.push( { aabb: leftLeg, mesh: leftLegBone, bindMatrix: bindMatrix, bindMatrixInverse: bindMatrixInverse } );
 
         // 开启调试，绘制AABB 盒子
@@ -203,13 +203,13 @@ export default class CharacterBounds {
 
         let entry = this._cache.get(mesh);
         if(entry === undefined){
-            entry = {tick:tick,inverseMeshMatrixWorld:new THREE.Matrix4().getInverse(mesh.matrixWorld)};
+            entry = {tick:tick,inverseMeshMatrixWorld:new THREE.Matrix4().invert(mesh.matrixWorld)};
             this._cache.set(mesh,entry);
         }else{
             if(entry.tick < tick){
                 // 需要更新
                 entry.tick = tick;
-                entry.inverseMeshMatrixWorld.getInverse(mesh.matrixWorld);
+                entry.inverseMeshMatrixWorld.invert(mesh.matrixWorld);
             }else{
                 if(world.debug){
                     console.log('逆矩阵在缓冲中,暂时不用更新');

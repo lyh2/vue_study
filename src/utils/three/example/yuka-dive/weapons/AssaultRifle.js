@@ -79,8 +79,8 @@ export default class AssaultRifle extends BaseWeaponGameEntity{
 
     reload(){
         this.status = WEAPON_STATUS_RELOAD;
-
-        const audio = this.audioMaps.get('relaod');
+        console.log('来福枪:',this)
+        const audio = this.audioMaps.get('reload');
         if(audio.isPlaying === true) audio.stop();
         audio.play();
 

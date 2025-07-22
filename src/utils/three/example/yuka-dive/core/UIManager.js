@@ -166,7 +166,7 @@ export default class UIManager {
 
 			gui.open();
 
-			this.datGui = gui;
+			this.gui = gui;
 
         }
         return this;
@@ -201,7 +201,8 @@ export default class UIManager {
 
         // 更新消息
         this._updateMessageList();
-
+        // 显示血条
+        this.world.options.hudHealth.value = this.world.player.health;
         this._render();
         return this;
     }
@@ -225,7 +226,7 @@ export default class UIManager {
         }
 
         // 更新数据到界面
-        this.world.options.messages = messages;
+        this.world.options.messages.value = messages;
 
         return this;
     }
@@ -235,6 +236,15 @@ export default class UIManager {
     _hideHitIndication(){
         this.sprites.crosshairs.material.color.set(0xffffff);
         this.endTimeHitIndication = Infinity;
+        return this;
+    }
+    /**
+    * Changes the style of the crosshairs in order to show a
+	* sucessfull hit.
+     */
+    showHitIndication(){
+        this.sprites.crosshairs.material.color.set(0xff0000);
+        this.endTimeHitIndication = this.currentTime + this.hitIndicationTime;
         return this;
     }
     /**
@@ -289,10 +299,10 @@ export default class UIManager {
      * @param {*} win 开枪者，赢家
      * @param {*} loser 被击败的游戏实体，输家
      */
-    addToMessages(winner,loser){
+    addToMessage(winner,loser){
         this.messages.push({
-            winner:winner,
-            loser:loser,
+            winner:winner.name,
+            loser:loser.name,
             text:'kill',
             endTime:this.currentTime + GameConfig.UI.FRAGS.TIME
         });
@@ -302,15 +312,15 @@ export default class UIManager {
      * 更新子弹数据
      */
     updateAmmoStatus(){
-        this.world.options.currentBullet = this.world.player.weaponSystem.currentWeapon.currentAmmo;
-        this.world.options.bulletTotal = this.world.player.weaponSystem.currentWeapon.maxAmmo;
+        this.world.options.currentBullet.value = this.world.player.weaponSystem.currentWeapon.currentAmmo;
+        this.world.options.bulletTotal.value = this.world.player.weaponSystem.currentWeapon.maxAmmo;
         return this;
     }
     /**
      * 更新血条🩸
      */
     updateHealthStatus(){
-        this.world.options.hudHealth = this.world.player.health;
+        this.world.options.hudHealth.value = this.world.player.health;
         return this;
     }
     /**

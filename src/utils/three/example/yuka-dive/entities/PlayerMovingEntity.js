@@ -22,7 +22,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
 
         this.currentTime = 0;
         this.boundingRadius = GameConfig.PLAYER.BOUNDING_RADIUS;
-        this.height = GameConfig.PLAYER.HEAD_HEIGHT;
+        this.height = GameConfig.PLAYER.HEAD_HEIGHT;// 1.7 单位
         this.updateOrientation = false;// 原点不会更随速度发生改变
         this.maxSpeed = GameConfig.PLAYER.MAX_SPEED;// 最大的速度
         this.health = GameConfig.PLAYER.MAX_HEALTH;
@@ -31,7 +31,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         this.status = STATUS_ALIVE;
 
         // the camera is attached to the player's head
-        this.head = new YUKA.GameEntity();
+        this.head = new YUKA.GameEntity(); // 挂载相机
         this.head.name = 'head';
         this.head.forward.set(0,0,-1);// 看向-Z轴
         this.add(this.head);
@@ -43,7 +43,8 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         // the weapons are attached to the following container entity
         this.weaponContainer = new YUKA.GameEntity();
         this.weaponContainer.name = 'weaponContainer';
-
+        this.head.add(this.weaponContainer);
+        
         // 使用武器系统
         this.weaponSystem = new WeaponSystem(this);
         this.weaponSystem.init();
@@ -69,14 +70,13 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
     update(delta){
         super.update(delta);
         this.currentTime += delta;
-
         this.stayInLevel();// ensure the enemy never leaves the level 确定不离开关卡
 
         if(this.status === STATUS_ALIVE){
             // 更新武器系统
             this.weaponSystem.updateWeaponChange();
             // 更新Bounds
-            this.bounds.copy(this.boundsDefinition).applyMatrix(this.worldMatrix);
+            this.bounds.copy(this.boundsDefinition).applyMatrix4(this.worldMatrix);
         }
 
         if(this.status === STATUS_DYING){
@@ -99,6 +99,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         }
         return this;
     }
+    
     /**
      * 用户角色死亡之后，重新开启
      */
@@ -133,7 +134,8 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         // adjust height of the entity according to the ground
         const distance = this.currentRegion.plane.distanceToPoint(this.position);
         this.position.y -= distance * GameConfig.NAVMESH.HEIGHT_CHANGE_FACTOR;
-
+        
+        
         return this;
     }
     /**
@@ -207,6 +209,14 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         return this;
     }
 
+    /**
+	* Returns the intesection point if a projectile intersects with this entity.
+	* If no intersection is detected, null is returned.
+	*
+	* @param {Ray} ray - The ray that defines the trajectory of this bullet.
+	* @param {Vector3} intersectionPoint - The intersection point.
+	* @return {Vector3} The intersection point.
+	*/
     checkProjectileIntersection(ray,intersectionPoint){
         return ray.intersectAABB(this.bounds,intersectionPoint);
     }
@@ -266,7 +276,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
                         const competitor = competitors[i];
                         if(this !== competitor) this.sendMessage(competitor,MESSAGE_DEAD);
                     }
-                    this.world.uiManager.addTMessage(telegram.sender,this);
+                    this.world.uiManager.addToMessage(telegram.sender,this);
                 }else{
                     const angle = this.computeAngleToAttacker(telegram.data.direction);
                     this.world.uiManager.showDamageIndication(angle);

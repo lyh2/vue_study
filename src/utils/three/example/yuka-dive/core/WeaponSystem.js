@@ -433,9 +433,9 @@ export default class WeaponSystem {
      *  */ 
     _initFuzzyModules(){
         // 创建模糊模块
-        this.fuzzyModules.assaultRifle = new YUKA.FuzzyModules();
-        this.fuzzyModules.blaster = new YUKA.FuzzyModules();
-        this.fuzzyModules.shotgun = new YUKA.FuzzyModules();
+        this.fuzzyModules.assaultRifle = new YUKA.FuzzyModule();
+        this.fuzzyModules.blaster = new YUKA.FuzzyModule();
+        this.fuzzyModules.shotgun = new YUKA.FuzzyModule();
 
         const fuzzyModuleAssaultRifle = this.fuzzyModules.assaultRifle;
         const fuzzyModuleBlaster = this.fuzzyModules.blaster;
@@ -492,12 +492,12 @@ export default class WeaponSystem {
     _initShotgunFuzzyModule(fuzzySets){
         // FLV ammo status
 
-		const fuzzyModuleShotGun = this.fuzzyModules.shotGun;
-		const ammoStatusShotgun = new FuzzyVariable();
+		const fuzzyModuleShotGun = this.fuzzyModules.shotgun;
+		const ammoStatusShotgun = new YUKA.FuzzyVariable();
 
-		const lowShot = new LeftShoulderFuzzySet( 0, 2, 4 );
-		const okayShot = new TriangularFuzzySet( 2, 7, 10 );
-		const LoadsShot = new RightShoulderFuzzySet( 7, 10, 12 );
+		const lowShot = new YUKA.LeftShoulderFuzzySet( 0, 2, 4 );
+		const okayShot = new YUKA.TriangularFuzzySet( 2, 7, 10 );
+		const LoadsShot = new YUKA.RightShoulderFuzzySet( 7, 10, 12 );
 
 		ammoStatusShotgun.add( lowShot );
 		ammoStatusShotgun.add( okayShot );
@@ -507,17 +507,17 @@ export default class WeaponSystem {
 
 		// rules
 
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetClose, lowShot ), fuzzySets.desirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetClose, okayShot ), fuzzySets.veryDesirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetClose, LoadsShot ), fuzzySets.veryDesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, lowShot ), fuzzySets.desirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, okayShot ), fuzzySets.veryDesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, LoadsShot ), fuzzySets.veryDesirable ) );
 
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetMedium, lowShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetMedium, okayShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetMedium, LoadsShot ), fuzzySets.desirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, lowShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, okayShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, LoadsShot ), fuzzySets.desirable ) );
 
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetFar, lowShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetFar, okayShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new FuzzyRule( new FuzzyAND( fuzzySets.targetFar, LoadsShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, lowShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, okayShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, LoadsShot ), fuzzySets.undesirable ) );
 
 		return this;
     }
@@ -587,7 +587,7 @@ export default class WeaponSystem {
         ammoStatusAssaultRifle.add(okayAssault);
         ammoStatusAssaultRifle.add(loadsAssault);
 
-        fuzzyModuleAssaultRifle.adFLV('ammoStatus',ammoStatusAssaultRifle);
+        fuzzyModuleAssaultRifle.addFLV('ammoStatus',ammoStatusAssaultRifle);
 
         // rules
         fuzzyModuleAssaultRifle.addRule(new YUKA.FuzzyRule(new YUKA.FuzzyAND(fuzzySets.targetClose,lowAssault),fuzzySets.undesirable));
@@ -617,10 +617,10 @@ export default class WeaponSystem {
 
     _initBlasterRenderComponent(){
         const assetManager = this.owner.world.assetManager;
-
+        //console.log(7,assetManager)
         let blasterMesh = null;
         if(this.owner.isPlayer === false){
-            // 是玩家
+            // 敌人用高精度模型- 模拟里面有音频数据
             blasterMesh = assetManager.modelMaps.get('blaster_low').clone();
             blasterMesh.scale.set(100,100,100);
             blasterMesh.rotation.set(Math.PI * 0.5,Math.PI ,0);
@@ -630,7 +630,7 @@ export default class WeaponSystem {
             const rightHand = this.owner._renderComponent.getObjectByName('Armature_mixamorigRightHand');
             rightHand.add(blasterMesh);
         }else{
-            // 敌人用高精度模型
+            // 
             blasterMesh = assetManager.modelMaps.get('blaster_low');
             this.owner.world.scene.add(blasterMesh);
         }

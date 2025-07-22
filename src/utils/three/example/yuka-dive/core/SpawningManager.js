@@ -8,7 +8,7 @@ import GameConfig from './GameConfig';
 import BaseTriggerExtendTrigger from '../triggers/BaseTriggerExtendTrigger';
 import SceneUtils from '../etc/SceneUtils';
 import WeaponItemExtendBaseGameEntity from '../entities/WeaponItemExtendBaseGameEntity';
-import { WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from './constants';
+import { HEALTH_PACK, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from './constants';
 import  World  from './World';
 
 /**
@@ -64,7 +64,7 @@ export default class SpawningManager{
         const spawnPoint = this.getSpawnPoint(competitor);
 
         competitor.position.copy(spawnPoint.position);
-        competitor.rotation.fromEuler(spawnPoint.rotation.x,spawnPoint.rotation.y,spawnPoint.z);
+        competitor.rotation.fromEuler(spawnPoint.rotation.x,spawnPoint.rotation.y,spawnPoint.rotation.z);
         if(competitor.isPlayer) competitor.head.rotation.set(0,0,0,1);
         return this;
     }
@@ -281,6 +281,55 @@ export default class SpawningManager{
         return this;
     }
 
+    update(delta){
+        this.updateItemList(this.healthPacks,delta);
+        this.updateItemList(this.blasters,delta);
+        this.updateItemList(this.shotguns,delta);
+        this.updateItemList(this.assaultRilfles,delta);
+        return this;
+    }
 
+    updateItemList(itemsList,delta){
+        for(let i =0; i < itemsList.length;i++){
+            const item = itemsList[i];
+            item.currentTime += delta;
+            if(item.currentTime >= item.nextSpawnTime){
+                this._respawnItem(item);
+            }
+        }
+        return this;
+    }
+
+    _respawnItem(item){
+        const trigger = this.itemTriggerMap.get(item);
+        trigger.active = true;
+        item.finishRespawn();
+        return this;
+    }
+    /**
+     * Returns an array with items of the given type.
+     * @param {*} type 
+     */
+    getItemList(type){
+        let itemList = null;
+        switch(type){
+            case HEALTH_PACK:
+                itemList = this.healthPacks;
+                break;
+            case WEAPON_TYPES_BLASTER:
+                itemList = this.blasters;
+                break;
+            case WEAPON_TYPES_SHOTGUN:
+                itemList = this.shotguns;
+                break;
+            case WEAPON_TYPES_ASSAULT_RIFLE:
+                itemList = this.assaultRilfles;
+                break;
+            default:
+                console.error('SpawningManager:无效的类型->',type);
+                break;
+        }
+        return itemList;
+    }
 
 }

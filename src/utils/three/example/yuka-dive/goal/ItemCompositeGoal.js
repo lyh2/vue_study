@@ -37,6 +37,7 @@ export default class ItemCompositeGoal extends YUKA.CompositeGoal{
             this.status = YUKA.Goal.STATUS.FAILED;
 			// ensure the bot does not look for this type of item for a while
             // 确保机器人一段时间内不寻找此类项目
+            
             owner.ignoreItem(this.itemType);
         }
     }

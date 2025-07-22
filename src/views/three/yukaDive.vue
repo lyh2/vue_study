@@ -13,7 +13,7 @@
   </div>
   <!--右下角子弹显示=>当前弹夹中剩余子弹|总子弹-->
   <div v-if="isShowOverlay === false && isFPSControls === true " class="zidan">
-    <div class="zidan-num">{{ currentBullet }}|{{ bulletTotal }}</div>
+    <div class="zidan-num">{{ currentBullet }}|{{ bulletTotal }} |血量:{{ hudHealth }}</div>
   </div>
   
   <section v-if="isShowOverlay === false && isFPSControls === true  " class="message-list">

@@ -1,6 +1,6 @@
 import * as YUKA from 'yuka';
 import GameConfig from '../core/GameConfig';
-import { HEALTH_PACK, STATUS_ALIVE, STATUS_DEAD, STATUS_DYING, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_SHOTGUN } from '../core/constants';
+import { HEALTH_PACK, MESSAGE_DEAD, STATUS_ALIVE, STATUS_DEAD, STATUS_DYING, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_SHOTGUN } from '../core/constants';
 import CharacterBounds from '../etc/CharacterBounds';
 import AttackEvaluator from '../evaluators/AttackEvaluator';
 import ExploreEvaluator from '../evaluators/ExploreEvaluator';
@@ -8,6 +8,7 @@ import HealthEvaluator from '../evaluators/HealthEvaluator';
 import WeaponEvaluator from '../evaluators/WeaponEvaluator';
 import WeaponSystem from '../core/WeaponSystem';
 import TargetSystem from '../core/TargetSystem';
+import { MESSAGE_HIT } from '../core/constants';
 
 
 const positiveWeightings = new Array();
@@ -144,7 +145,8 @@ export default class EnemyVehicle extends YUKA.Vehicle{
 	* @return {Enemy} A reference to this game entity.
 	*/
     start(){
-        const run = this.animationMaps.get('solider_forward');
+        //console.log(5,this.animationMaps)
+        const run = this.animationMaps.get('soldier_forward');
         run.enabled = true;
 
         const level = this.world.entityManager.getEntityByName('level');
@@ -426,6 +428,180 @@ export default class EnemyVehicle extends YUKA.Vehicle{
     }
 
 
+	/**
+	* Returns true if the given item type is currently ignored by the enemy.
+	*
+	* @param {Number} type - The item type.
+	* @return {Boolean} Whether the given item type is ignored or not.
+	*/
+	isItemIgnored( type ) {
 
+		let ignoreItem = false;
 
+		switch ( type ) {
+
+			case HEALTH_PACK:
+				ignoreItem = this.ignoreHealth;
+				break;
+
+			case WEAPON_TYPES_SHOTGUN:
+				ignoreItem = this.ignoreShotgun;
+				break;
+
+			case WEAPON_TYPES_ASSAULT_RIFLE:
+				ignoreItem = this.ignoreAssaultRifle;
+				break;
+
+			default:
+				console.error( 'DIVE.Enemy: Invalid item type:', type );
+				break;
+
+		}
+
+		return ignoreItem;
+
+	}
+	/*
+	* Adds the given weapon to the internal weapon system.
+	*
+	* @param {WEAPON_TYPES} type - The weapon type.
+	* @return {Enemy} A reference to this game entity.
+	*/
+    addWeapon(type){
+        this.weaponSystem.addWeapon(type);
+        this.world.uiManager.updateAmmoStatus();
+
+        if(this.targetSystem.hasTarget() === false){
+            this.weaponSystem.setNextWeapon(type);
+        }
+        return this;
+    }
+
+    ignoreItem(type){
+        switch(type){
+            case HEALTH_PACK:
+                this.ignoreHealth = true;
+                this.endTimeIgnoreHealth = this.currentTime + this.ignoreItemsTimeout;
+                break;
+            case WEAPON_TYPES_SHOTGUN:
+                this.ignoreShotgun = true;
+                this.endTimeIgnoreShotgun = this.currentTime + this.ignoreItemsTimeout;
+                break;
+            case WEAPON_TYPES_ASSAULT_RIFLE:
+                this.ignoreAssaultRifle = true;
+                this.endTimeIgnoreAssaultRifle = this.currentTime + this.ignoreItemsTimeout;
+                break;
+            default:
+                console.error('DIVE.Enemy 无效的类型:',type);
+                break;
+        }
+        return this;
+    }
+    /**
+     * 
+     * @param {*} amount 
+     */
+    addHealth(amount){
+        this.health += amount;
+        this.health = Math.min(this.health,this.maxHealth);
+
+        if(this.world.debug){
+			console.log( 'DIVE.Enemy: Entity with ID %s receives %i health points.', this.uuid, amount );
+
+        }
+        return this;
+    }
+    /**
+     * 处理消息
+     * @param {*} telegram 
+     */
+    handleMessage(telegram){
+        
+        switch(telegram.message){
+            // 减少血量
+            case MESSAGE_HIT:
+                this.health -= telegram.data.damage;
+                //logging
+                if(this.world.debug){
+					console.log( 'DIVE.Enemy: Enemy with ID %s hit by Game Entity with ID %s receiving %i damage.', this.uuid, telegram.sender.uuid, telegram.data.damage );
+                }
+                // if the player is the sender and if the enemy still lives, change the style of the crosshairs
+                if(telegram.sender.isPlayer && this.status === STATUS_ALIVE){
+                    this.world.uiManager.showHitIndication();
+                }
+                // check if the enemy is death
+                if(this.health <= 0 && this.status === STATUS_ALIVE){
+                    this.initDeath();
+					// inform all other competitors about its death
+
+                    const competitors = this.world.competitors;// 获取所有的竞争对象(就是敌人)
+                    for(let i =0;i < competitors.length;i++){
+                        const competitor = competitors[i];
+                        if(this !== competitor) this.sendMessage(competitor,MESSAGE_DEAD);
+                    }
+                    // 更新UI
+                    this.world.uiManager.addToMessage(telegram.sender,this);
+                }else{
+					// if not, search for attacker if he is still alive
+                    if(telegram.sender.status === STATUS_ALIVE){
+                        this.searchAttacker = true;
+                        this.endTimeSearch = this.currentTime + this.searchTime;
+                        this.attackDirection.copy(telegram.data.direction).multiplyScalar(-1);
+                    }
+                }
+                break;
+            case MESSAGE_DEAD:
+                const sender = telegram.sender;
+                const memoryRecord = this.memorySystem.getRecord(sender);
+                // delete the dead enemy from the memory system when it was visible.
+				// also update the target system so the bot looks for a different target
+                if(memoryRecord && memoryRecord.visible){
+                    this.removeEntityFromMemory(sender);
+                    this.targetSystem.update();
+                }
+            break;
+        }
+        return true;
+    }
+    /**
+     * Inits the death of an entity.
+     */
+    initDeath(){
+        this.status = STATUS_DYING;
+        this.endTimeDying = this.currentTime + this.dyingTime;
+
+        this.velocity.set(0,0,0);
+        // reset all steering behaviors
+        for(let behavior of this.steering.behaviors){
+            behavior.active = false;
+        }
+
+        // 重设所有的动画
+        this.resetAnimationMaps();
+
+        // start death animation 开启死亡动画
+        const index = YUKA.MathUtils.randInt(1,2);
+        const dying = this.animationMaps.get('soldier_death'+index);
+        dying.enabled = true;
+
+        return this;
+    }
+
+    /**
+    	* Returns the intesection point if a projectile intersects with this entity.
+	* If no intersection is detected, null is returned.
+     * @param {*} ray 
+     * @param {*} intersectionPoint 
+     */
+    checkProjectileIntersection(ray,intersectionPoint){
+        return this.bounds.intersectRay(ray,intersectionPoint);
+    }
+    /**
+     * Removes the given entity from the memory system.
+     * @param {*} entity 
+     */
+    removeEntityFromMemory(entity){
+        this.memorySystem.deleteRecord(entity);
+        this.memorySystem.getValidMemoryRecords(this.currentTime,this.memoryRecords);
+    }
 }

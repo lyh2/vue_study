@@ -7,6 +7,8 @@ import * as YUKA from 'yuka';
 import { WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from './constants';
 import GameConfig from './GameConfig';
 
+const result = {distance:Infinity,item:null};
+
 export default class Feature{
 
 

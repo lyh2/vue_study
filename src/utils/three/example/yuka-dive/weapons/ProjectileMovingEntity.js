@@ -20,6 +20,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
         this.lifetime = 0;
         this.currentTime = 0;
         this.damage = 0;// 死亡
+        this.name = 'projectile:弹丸';
     }
     /**
      * Executed when this game entity is updated for the first time by its EntityManager.
@@ -45,9 +46,9 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
 			// const validDistance = ray.origin.squaredDistanceTo( this.position ); 这行代码在执行的时候，就不会出现错误
             super.update(delta);
 			////////////////////////////////////////////////////////
-
+            //console.log('this.name=',this.name);
             const entity = world.checkProjectileIntersection(this,intersectionPoint); // 得到相交的实体对象
-
+            //console.log('相交的实体对象:',entity.name);
             if(entity !== null){
                 // calculate distance from origin to intersection point 计算原点到交点的距离
                 const distanceToIntersection = ray.origin.squaredDistanceTo(intersectionPoint);
@@ -57,6 +58,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
                     this.owner.sendMessage(entity,MESSAGE_HIT,0,{damage:this.damage,direction:this.ray.direction});
                     // 移除弹丸 remove projectile from world
                     world.remove(this);
+                    //console.log('击中:',entity.name);
                 }
             }
         }   

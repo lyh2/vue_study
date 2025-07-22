@@ -121,13 +121,19 @@ export default class SceneUtils{
         context.fillStyle = '#eec080';
         context.fillRect(0,0,canvas.width,canvas.height);
 
-        context.fillStyle = '0xffffff';
-        context.font = '24px Arial';
+        context.fillStyle = '#ff0000';
+        context.font = '32px Arial';
         context.textAlign = 'center';
         context.textBaseline = 'middle';
         context.fillText(uuid,canvas.width /2,canvas.height / 2);
-
+      
         const texture = new THREE.CanvasTexture(canvas);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.anisotropy = 16; // 提高抗锯齿效果
+        texture.generateMipmaps = false; // 禁用 mipmaps，防止远处模糊
+        texture.needsUpdate = true;
+
         const material = new THREE.SpriteMaterial({map:texture});
         const sprite = new THREE.Sprite(material);
         sprite.scale.set(4,0.5,1);

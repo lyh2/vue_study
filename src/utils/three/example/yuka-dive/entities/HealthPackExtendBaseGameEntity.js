@@ -12,6 +12,8 @@ export default class HealthPackExtendBaseGameEntity extends BaseGameEntity{
         super(HEALTH_PACK,GameConfig.HEALTH_PACK.RESPAWN_TIME);// 类型，时间
 
         this.health = GameConfig.HEALTH_PACK.HEALTH;// 当前血条
+
+        this.name = 'HealthPackExtendBaseGameEntity';
     }
 
     addItemToEntity(entity){

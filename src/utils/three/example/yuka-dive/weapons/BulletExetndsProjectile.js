@@ -23,6 +23,6 @@ export default class BulletExtendsProjectile extends ProjectileMovingEntity{
         this.lifetime = GameConfig.BULLET.LIFETIME;
 
         this.damage = GameConfig.BULLET.DAMAGE;
-
+        this.name = 'bullet:子弹';
     }
 }

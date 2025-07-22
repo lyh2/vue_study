@@ -19,7 +19,8 @@ export default class FollowPathGoal extends YUKA.Goal{
                 const pathHelper = owner.pathHelper;
                 pathHelper.geometry.dispose();
                 pathHelper.geometry = new THREE.BufferGeometry().setFromPoints(path);
-                pathHelper.visible = owner.world.uiManager.debugParameter.showPaths;
+                //console.log(6,owner)
+                pathHelper.visible = owner.world.uiManager.guiParameter.showPaths;
             }
 
             // 更新路线

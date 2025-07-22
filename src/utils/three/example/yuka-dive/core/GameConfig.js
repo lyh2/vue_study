@@ -6,7 +6,8 @@ const GameConfig = {
         VOLUME_RIFLE_SHOT:1.4,// asset rifle 来福枪
         VOLUME_COMMON_AUDIO:1.1,// 正常音频
         VOLUME_HEALTH:1.8,
-        VOLUME_AMMO:2.2//
+        VOLUME_AMMO:2.2,//
+		VOLUME_2:2.0
 	},
 	PLAYER: {
 		BOUNDING_RADIUS: 0.5, // meter

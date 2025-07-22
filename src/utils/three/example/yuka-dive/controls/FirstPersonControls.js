@@ -13,19 +13,22 @@ let elapsed = 0;
 const euler = {x:0,y:0,z:0};
 
 export default class FirstPersonControls extends YUKA.EventDispatcher{
-
-    constructor(owner=null){
+	/**
+	 * 
+	 * @param {*} owner - player 玩家对象
+	 */
+    constructor(owner){
         super();
 
-        this.owner = owner;
+        this.owner = owner;// player 对象
         this.active = true;
 
         this.movementX = 0;
         this.movementY = 0;
 
-        this.lookingSpeed = GameConfig.CONTROLS.LOOKING_SPEED;
-        this.brakingPower = GameConfig.CONTROLS.BRAKING_POWER;
-        this.headMovement = GameConfig.CONTROLS.HEAD_MOVEMENT;
+        this.lookingSpeed   = GameConfig.CONTROLS.LOOKING_SPEED;
+        this.brakingPower   = GameConfig.CONTROLS.BRAKING_POWER;
+        this.headMovement   = GameConfig.CONTROLS.HEAD_MOVEMENT;
         this.weaponMovement = GameConfig.CONTROLS.WEAPON_MOVEMENT;
 
         this.input ={
@@ -36,9 +39,7 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
             mouseDown:false,
         };
 
-        this.sounds = new Map();
-
-
+		// 回调事件绑定
 		this._mouseDownHandler = onMouseDown.bind( this );
 		this._mouseUpHandler = onMouseUp.bind( this );
 		this._mouseMoveHandler = onMouseMove.bind( this );
@@ -48,7 +49,7 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 		this._keyUpHandler = onKeyUp.bind( this );
     }
 
-    	/**
+    /** 激活事件
 	* Connects the event listeners and activates the controls.
 	*
 	* @return {FirstPersonControls} A reference to this instance.
@@ -69,7 +70,7 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 
 	}
 
-    	/**
+    /** 注销事件
 	* Disconnects the event listeners and deactivates the controls.
 	*
 	* @return {FirstPersonControls} A reference to this instance.
@@ -87,11 +88,13 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 		return this;
 
 	}
-
+	/**
+	 * 
+	 * @returns 
+	 */
     sync(){
-        this.owner.rotation.toEuler(euler);
+        this.owner.rotation.toEuler(euler);// 得到player 对象的旋转角度
         this.movementX= euler.y;// yaw
-
         this.owner.head.rotation.toEuler(euler);
         this.movementY = euler.x;// pitch
 
@@ -124,6 +127,7 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 	}
 
     update(delta){
+		
         if(this.active){
             this._updateVelocity(delta);
 
@@ -137,7 +141,6 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
                 this.owner.shoot();
             }
         }
-
         return this;
     }
 
@@ -167,18 +170,22 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
         head.position.x = motion * 0.08;
 
         head.position.y += owner.height;
-
+		
         const sign = Math.sign(Math.cos(elapsed * this.headMovement));
         if(sign < currentSign){
             currentSign = sign;
 
             const audio = this.owner.audioMaps.get(STEP1);
+			if(audio.isPlaying === true) audio.stop();
             audio.play();
+			
         }
         if(sign > currentSign){
             currentSign = sign;
             const audio = this.owner.audioMaps.get(STEP2);
+			if(audio.isPlaying === true) audio.stop();
             audio.play();
+			
         }
         return this;
     }
@@ -226,7 +233,6 @@ function onMouseUp( event ) {
 function onMouseMove( event ) {
 
 	if ( this.active ) {
-
 		this.movementX -= event.movementX * 0.001 * this.lookingSpeed;
 		this.movementY -= event.movementY * 0.001 * this.lookingSpeed;
 
@@ -234,6 +240,7 @@ function onMouseMove( event ) {
 
 		this.owner.rotation.fromEuler( 0, this.movementX, 0 ); // yaw
 		this.owner.head.rotation.fromEuler( this.movementY, 0, 0 ); // pitch
+		//console.log(123,this.owner.head,this.owner.head._renderComponent.position.x,this.owner.head._renderComponent.position.y,this.owner.head._renderComponent.position.z);
 
 	}
 

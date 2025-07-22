@@ -15,9 +15,11 @@ export default class WeaponItemExtendBaseGameEntity extends BaseGameEntity{
         super(type,respawnTime);
 
         this.ammo = ammo;
+        this.name = 'WeaponItemExtendBaseGameEntity';
     }
 
     addItemToEntity(entity){
+        //console.log(8,entity)
         entity.addWeapon(this.type);
         return this;
     }

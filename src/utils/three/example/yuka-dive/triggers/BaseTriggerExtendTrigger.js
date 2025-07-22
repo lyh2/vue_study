@@ -22,7 +22,7 @@ export default class BaseTriggerExtendTrigger extends YUKA.Trigger{
         this.entity.addItemToEntity(entity);
 
         // 调用
-        entity.prepareRespawn();
+        this.entity.prepareRespawn();
 
         return this;
     }
