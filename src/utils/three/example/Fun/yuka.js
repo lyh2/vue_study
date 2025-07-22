@@ -2251,13 +2251,14 @@ class CustomEntity extends YUKA.GameEntity{
 
     toJSON(){
         const json  = super.toJSON();
+        // 自定义的属性也要保存进去
         json.currentTime = this.currentTime;
         json.endTime = this.endTime;
         return json;
     }
 
     fromJSON(json){
-        super.fronJSON(json);
+        super.fronJSON(json);//返序列化时间
         this.currentTime = json.currentTime;
         this.endTime = json.endTime;
         return this;

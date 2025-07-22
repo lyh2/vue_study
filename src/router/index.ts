@@ -9,7 +9,7 @@ import TslCom from "@/components/three/index.vue";
 import ttt from "../views/three/tictactoe.vue";// 类似排雷游戏
 import first from '@/views/three/first.vue';// yuka 第一人射击游戏，模拟子弹及碰撞
 import hideAndSeek from '@/views/three/hideAndSeek.vue';// 隐藏和搜索
-
+import yukaDive from '@/views/three/yukaDive.vue';
 
 
 const router = createRouter({
@@ -75,6 +75,10 @@ const router = createRouter({
       path:'/seek',
       name:'seek',
       component:hideAndSeek
+    },{
+      path:'/yukaDive',
+      name:'yukaDive',
+      component:yukaDive
     }
   ]
 })

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuka Fuzzy Logic Example</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/yuka@0.1.0/build/yuka.min.js"></script>
+    <script>
+        // 初始化场景
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xa0a0a0);
+        
+        // 初始化相机
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 5, 10);
+        
+        // 初始化渲染器
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        
+        // 添加轨道控制器
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        
+        // 添加光源
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(0, 10, 5);
+        scene.add(directionalLight);
+        
+        // 添加地面
+        const groundGeometry = new THREE.PlaneGeometry(20, 20);
+        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x999999 });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        scene.add(ground);
+        
+        // 创建士兵和僵尸
+        const soldierGeometry = new THREE.BoxGeometry(0.5, 1.8, 0.5);
+        const soldierMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+        const soldier = new THREE.Mesh(soldierGeometry, soldierMaterial);
+        scene.add(soldier);
+        
+        const zombieGeometry = new THREE.BoxGeometry(0.5, 1.8, 0.5);
+        const zombieMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const zombie = new THREE.Mesh(zombieGeometry, zombieMaterial);
+        zombie.position.set(5, 0, 0);
+        scene.add(zombie);
+        
+        // 创建武器模型
+        const shotgunGeometry = new THREE.BoxGeometry(0.3, 0.1, 1.5);
+        const shotgunMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+        const shotgun = new THREE.Mesh(shotgunGeometry, shotgunMaterial);
+        shotgun.position.set(-0.5, 0.5, -1);
+        soldier.add(shotgun);
+        shotgun.visible = false;
+        
+        const rifleGeometry = new THREE.BoxGeometry(0.2, 0.1, 1.2);
+        const rifleMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+        const rifle = new THREE.Mesh(rifleGeometry, rifleMaterial);
+        rifle.position.set(-0.5, 0.5, -1);
+        soldier.add(rifle);
+        rifle.visible = false;
+        
+        // 初始化Yuka的模糊逻辑模块
+        const fuzzyModule = new YUKA.FuzzyModule();
+        
+        // 1. 定义模糊变量
+        const distanceToTarget = new YUKA.FuzzyVariable();
+        
+        // 定义距离的模糊集
+        const targetClose = new YUKA.LeftShoulderFuzzySet(0, 5, 10);
+        const targetMedium = new YUKA.TriangularFuzzySet(5, 10, 15);
+        const targetFar = new YUKA.RightShoulderFuzzySet(10, 15, 20);
+        
+        distanceToTarget.add(targetClose);
+        distanceToTarget.add(targetMedium);
+        distanceToTarget.add(targetFar);
+        
+        fuzzyModule.addFLV('distanceToTarget', distanceToTarget);
+        
+        // 2. 定义弹药状态的模糊变量
+        const ammoStatus = new YUKA.FuzzyVariable();
+        
+        // 霰弹枪弹药模糊集
+        const lowShot = new YUKA.LeftShoulderFuzzySet(0, 2, 4);
+        const okayShot = new YUKA.TriangularFuzzySet(2, 7, 10);
+        const loadsShot = new YUKA.RightShoulderFuzzySet(7, 10, 12);
+        
+        ammoStatus.add(lowShot);
+        ammoStatus.add(okayShot);
+        ammoStatus.add(loadsShot);
+        
+        fuzzyModule.addFLV('ammoStatus', ammoStatus);
+        
+        // 3. 定义期望值的模糊变量
+        const desirability = new YUKA.FuzzyVariable();
+        
+        const undesirable = new YUKA.LeftShoulderFuzzySet(0, 25, 50);
+        const desirable = new YUKA.TriangularFuzzySet(25, 50, 75);
+        const veryDesirable = new YUKA.RightShoulderFuzzySet(50, 75, 100);
+        
+        desirability.add(undesirable);
+        desirability.add(desirable);
+        desirability.add(veryDesirable);
+        
+        fuzzyModule.addFLV('desirability', desirability);
+        
+        // 4. 添加模糊规则
+        // 霰弹枪规则
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetClose, lowShot), 
+            desirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetClose, okayShot), 
+            veryDesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetClose, loadsShot), 
+            veryDesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetMedium, lowShot), 
+            desirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetMedium, okayShot), 
+            veryDesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetMedium, loadsShot), 
+            veryDesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetFar, lowShot), 
+            undesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetFar, okayShot), 
+            undesirable
+        ));
+        
+        fuzzyModule.addRule(new YUKA.FuzzyRule(
+            new YUKA.FuzzyAND(targetFar, loadsShot), 
+            undesirable
+        ));
+        
+        // 模拟参数
+        let distance = 5;
+        let ammoShotgun = 12;
+        let ammoRifle = 20;
+        
+        // 动画循环
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // 更新僵尸位置
+            zombie.position.x = 5 * Math.sin(Date.now() * 0.001);
+            
+            // 计算距离
+            distance = soldier.position.distanceTo(zombie.position);
+            
+            // 使用模糊逻辑决定武器
+            fuzzyModule.fuzzify('distanceToTarget', distance);
+            fuzzyModule.fuzzify('ammoStatus', ammoShotgun);
+            
+            const shotgunDesirability = fuzzyModule.defuzzify('desirability');
+            
+            fuzzyModule.fuzzify('ammoStatus', ammoRifle);
+            const rifleDesirability = fuzzyModule.defuzzify('desirability');
+            
+            // 根据期望值选择武器
+            if (shotgunDesirability > rifleDesirability && ammoShotgun > 0) {
+                shotgun.visible = true;
+                rifle.visible = false;
+            } else {
+                shotgun.visible = false;
+                rifle.visible = true;
+            }
+            
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        animate();
+        
+        // 窗口大小调整
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
