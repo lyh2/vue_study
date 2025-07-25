@@ -12,7 +12,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
     constructor(owner,ray=new YUKA.Ray()){
         super();
 
-        this.canActivateTrigger = false;
+        this.canActivateTrigger = false;//Whether the entity can activate a trigger or not.
 
         this.owner = owner;
         this.ray = ray;
@@ -48,7 +48,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
 			////////////////////////////////////////////////////////
             //console.log('this.name=',this.name);
             const entity = world.checkProjectileIntersection(this,intersectionPoint); // 得到相交的实体对象
-            //console.log('相交的实体对象:',entity.name);
+            //console.log('相交的实体对象:',this.owner.name,entity.name);
             if(entity !== null){
                 // calculate distance from origin to intersection point 计算原点到交点的距离
                 const distanceToIntersection = ray.origin.squaredDistanceTo(intersectionPoint);

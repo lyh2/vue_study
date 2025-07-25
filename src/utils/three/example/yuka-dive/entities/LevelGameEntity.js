@@ -22,12 +22,12 @@ export default class LevelGameEntity extends YUKA.GameEntity{
      * 自定义方法
      * Returns the intesection point if a projectile intersects with this entity. 存在交点，则返回交点
 	* If no intersection is detected, null is returned. 不存在交点，则返回null
-	*
+	* 子弹与当前实体对象相交判断
      * @param {*} ray 
      * @param {*} intersectionPoint 
      */
     checkProjectileIntersection(ray,intersectionPoint){
-        ray.intersectBVH(this.bvh,intersectionPoint);
+        return ray.intersectBVH(this.bvh,intersectionPoint);
     }
 
     /**

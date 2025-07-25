@@ -305,7 +305,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
      * @param {Array} clips 动画数组 
      */
     setAnimationMaps(mixer,clips){
-        this.mixer = mixer;// 从World 中传递进来的
+        this.mixer = mixer;// 从World 中传递进来的 运用在士兵身上的动画混合器
         // actions 
         for(let clip of clips){
             const action = mixer.clipAction(clip);
@@ -525,9 +525,10 @@ export default class EnemyVehicle extends YUKA.Vehicle{
                 if(this.world.debug){
 					console.log( 'DIVE.Enemy: Enemy with ID %s hit by Game Entity with ID %s receiving %i damage.', this.uuid, telegram.sender.uuid, telegram.data.damage );
                 }
+                //console.log('判断消息:',telegram.sender.isPlayer,this.status)
                 // if the player is the sender and if the enemy still lives, change the style of the crosshairs
                 if(telegram.sender.isPlayer && this.status === STATUS_ALIVE){
-                    this.world.uiManager.showHitIndication();
+                    this.world.uiManager.showHitIndication(); // 通过电报消息确定是否显示射击图标，不合理，还是需要使用射线进行检测
                 }
                 // check if the enemy is death
                 if(this.health <= 0 && this.status === STATUS_ALIVE){

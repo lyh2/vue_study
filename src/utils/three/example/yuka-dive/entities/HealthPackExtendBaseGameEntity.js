@@ -9,13 +9,18 @@ import { HEALTH_PACK } from "../core/constants";
  */
 export default class HealthPackExtendBaseGameEntity extends BaseGameEntity{
     constructor(){
-        super(HEALTH_PACK,GameConfig.HEALTH_PACK.RESPAWN_TIME);// 类型，时间
+        // 调用父类的方法
+        super(HEALTH_PACK,GameConfig.HEALTH_PACK.RESPAWN_TIME /* 第二个参数表示再次产生的时间间隔值*/);// 类型，时间
 
-        this.health = GameConfig.HEALTH_PACK.HEALTH;// 当前血条
+        this.health = GameConfig.HEALTH_PACK.HEALTH;// 血条量
 
         this.name = 'HealthPackExtendBaseGameEntity';
     }
-
+    /**
+     * 把当前血条数据 添加到 entity 实体对象中去
+     * @param {*} entity 
+     * @returns 
+     */
     addItemToEntity(entity){
         entity.addHealth(this.health);
         return this;

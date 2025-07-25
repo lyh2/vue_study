@@ -24,9 +24,9 @@ const GameConfig = {
 		ACCELERATION: 60 // unitless
 	},
 	HEALTH_PACK: {
-		HEALTH: 50, // health
+		HEALTH: 50, // health 血条包的量，后期可以是一个随机值，这个值就是最小值
 		RESPAWN_TIME: 10, // seconds
-		RADIUS: 1 // world units
+		RADIUS: 1 // world units 触发半径
 	},
 	BOT: {
 		MOVEMENT: {
@@ -61,7 +61,7 @@ const GameConfig = {
 			NOISE_MAX_DISTANCE: 100 // meter
 		},
 		BOUNDING_RADIUS: 0.5, // meter
-		COUNT: 3, // number
+		COUNT: 10, // number
 		HEAD_HEIGHT: 1.5, // meter
 		MAX_HEALTH: 100, // health points
 		DYING_TIME: 3, // seconds dying:垂死的；临终的；临死的；垂死者；临终者

@@ -1,6 +1,8 @@
 import * as YUKA from 'yuka';
 import PathPlannerTask from './PathPlannerTask';
-
+/**
+ * 路线规划
+ */
 export default class PathPlanner{
 
     /**

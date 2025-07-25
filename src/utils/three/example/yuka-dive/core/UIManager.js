@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import GUI from 'three/examples/jsm/libs/lil-gui.module.min'; 
 
 import GameConfig from './GameConfig';
-import { cross, PI2 } from 'three/src/nodes/TSL';
 
 const PI25 = Math.PI * 0.25;
 const PI75 = Math.PI * 0.75;
@@ -18,7 +17,7 @@ export default class UIManager {
         this.currentTime = 0;
 
         this.hitIndicationTime = GameConfig.UI.CROSSHAIRS.HIT_TIME;
-        this.endTimeHitIndication = Infinity;
+        this.endTimeHitIndication = Infinity;// 隐藏射击准心图标的结束时间
 
         this.damageIndicationTime = GameConfig.UI.DAMAGE_INDICATOR.TIME;
         this.endTimeDamageIndicationFront = Infinity;
@@ -330,14 +329,20 @@ export default class UIManager {
     showDamageIndication(angle){
         if(angle >= - PI25 && angle <= PI25){
             this.sprites.frontIndicator.visible = true;
+            this.endTimeDamageIndicationFront = this.currentTime + this.damageIndicationTime;
+
         }else if(angle >= PI25 && angle <= PI75){
             this.sprites.rightIndicator.visible = true;
+            this.endTimeDamageIndicationRight = this.currentTime + this.damageIndicationTime;
         }else if(angle >= - PI75 && angle <= - PI25){
             this.sprites.leftIndicator.visible = true;
+            this.endTimeDamageIndicationLeft = this.currentTime + this.damageIndicationTime;
+
         }else{
             this.sprites.backIndicator.visible = true;
+            this.endTimeDamageIndicationBack = this.currentTime + this.damageIndicationTime;
+
         }
-        this.endTimeDamageIndicationFront = this.currentTime + this.damageIndicationTime;
         return this;
     }
     showFPSInterface(){

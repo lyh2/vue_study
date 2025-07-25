@@ -22,11 +22,10 @@ export default class NavMeshUtils{
         const positions = [];
         const colors = [];
         const color = new THREE.Color();
-
+        // 循环处理每一个区域
         for(let region of regions){
             color.setHex(Math.random() * 0xffffff,THREE.SRGBColorSpace);
-
-            // 统计边总数
+            // 把所有的边存入到一个数组中
             let edge = region.edge; // 是一个half-edge
             const edges = [];
             do{
@@ -126,7 +125,7 @@ export default class NavMeshUtils{
         // 获取数据
         const positions = [];
         for(let i =0; i < cells.length;i ++){
-            const cell = cells[i];
+            const cell = cells[i]; // 一个AABB 就是一个立方体
             const min = cell.aabb.min;
             const max = cell.aabb.max;
 

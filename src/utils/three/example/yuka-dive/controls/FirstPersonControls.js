@@ -1,6 +1,6 @@
 import * as YUKA from 'yuka';
 import GameConfig from '../core/GameConfig';
-
+import { WEAPON_TYPES_SHOTGUN,WEAPON_TYPES_BLASTER,WEAPON_TYPES_ASSAULT_RIFLE } from '../core/constants';
 const PI05 = Math.PI / 2;
 const direction =new YUKA.Vector3();
 const velocity =new YUKA.Vector3();

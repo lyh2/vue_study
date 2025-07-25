@@ -33,8 +33,8 @@ export default class World {
         this.tick = 0;
 
         this.assetManager = new AssetManager(); // 资源管理
-        this.navMesh = null;
-        this.costTable = null;
+        this.navMesh = null; // 导航网格
+        this.costTable = null; // 存储了导航点位之间的cost消耗值，也就是长度，比如选择两个所付出的代价
         this.pathPlanner = null;
         this.spawningManager = new SpawningManager(this); // spawning:产卵；引发；导致；造成；引起
         this.uiManager = new UIManager(this); // UIManager
@@ -44,26 +44,26 @@ export default class World {
         this.scene = null;
         this.fpsControls = null;
         this.orbitControls = null;
-        this.useFPSControls = false;
+        this.useFPSControls = false; // 是否进入第一人称玩游戏
 
         this.player = null;
 
         // 敌人个数
         this.enemyCount = GameConfig.BOT.COUNT;
-        this.competitors = new Array(); // competitors:竞争者
+        this.competitors = new Array(); // competitors:竞争者，存储产生的敌人
 
-        this.debug = true;
+        this.debug = true; // 是否开启调试模式
 
         this.helpers = {
-            convexRegionHelper: null,
-            spatialIndexHelper: null,
-            axesHelper: null,
-            graphHelper: null,
+            convexRegionHelper: null, // 显示凸多边形
+            spatialIndexHelper: null, // 显示空间划分
+            axesHelper: null,// 坐标原点
+            graphHelper: null, // 
             pathHelpers: new Array(),
-            spawnHelpers: new Array(),
-            uuidHelpers: new Array(),
-            skeletonHelpers: new Array(),
-            itemHelpers: new Array(),
+            spawnHelpers: new Array(), // 产生武器、血条🩸的点
+            uuidHelpers: new Array(),// 显示所有用户的名称
+            skeletonHelpers: new Array(),// 骨骼
+            itemHelpers: new Array(),// 显示半径
         };
 
         this.init();
@@ -140,41 +140,42 @@ export default class World {
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
         this.options.dom.appendChild(this.renderer.domElement);
 
+        window.addEventListener('resize',this._resize.bind(this));
         return this;
     }
     /**
      * 定义武器，血包等位置
      */
     _initLevel(){
-        // 获取关卡模型,室内地面已经被挖空
+        //1、 获取关卡模型,室内地面已经被挖空
         //console.log(this.assetManager.modelMaps)
-        const renderComponent = this.assetManager.modelMaps.get('level');
-        const mesh = renderComponent.getObjectByName('level');
+        const renderComponent = this.assetManager.modelMaps.get('level');// 加载模型
+        const mesh = renderComponent.getObjectByName('level');// 得到网格对象
 
-        const vertices = mesh.geometry.attributes.position.array;
-        const indices = mesh.geometry.index.array;
+        const vertices = mesh.geometry.attributes.position.array; // 得到点位数据
+        const indices = mesh.geometry.index.array;// 得到索引数据
         // 创建YUKA.MeshGeometry
         const yukaMeshGeometry = new YUKA.MeshGeometry(vertices,indices);
         const level = new LevelGameEntity(yukaMeshGeometry);
         level.name = 'level';
         level.setRenderComponent(renderComponent,this.sync.bind(this));
-        // 添加到yuka 及 three.js 中
+        // 添加到yuka 及 three.js 中,子弹需要和关卡进行射线检测
         this.add(level);
 
-        // 加载导航模型
+        //2、 加载导航模型
         this.navMesh = this.assetManager.navMesh;// 路网模型navMesh.glb，返回的是navMesh 对象
         this.costTable = this.assetManager.costTable;
 
-        // 获取控件索引配置信息
-        const levelConfig = this.assetManager.configMaps.get('level');
+        // 获取空间划分配置信息
+        const levelConfig = this.assetManager.configMaps.get('level'); // json 里面保存的数据
 
         const width = levelConfig.spatialIndex.width;
         const height = levelConfig.spatialIndex.height;
         const depth = levelConfig.spatialIndex.depth;
-        const cellsX = levelConfig.spatialIndex.cellsX;
+        const cellsX = levelConfig.spatialIndex.cellsX; // X 轴分成多少个
         const cellsY = levelConfig.spatialIndex.cellsY;
         const cellsZ = levelConfig.spatialIndex.cellsZ;
-
+        // 进行空间划分，可提高查询判断效率
         this.navMesh.spatialIndex = new YUKA.CellSpacePartitioning(width,height,depth,cellsX,cellsY,cellsZ);
         this.navMesh.updateSpatialIndex();
 
@@ -192,11 +193,16 @@ export default class World {
             this.helpers.convexRegionHelper = NavMeshUtils.createConvexRegionHelper(this.navMesh);
             this.scene.add(this.helpers.convexRegionHelper);
 
-            // 绘制导航路网
+            /**绘制导航路网
+             * - YUKA的`navMesh.graph`实际上存储的是导航网格域（region）中心点__，而非原始顶点
+                - 这种设计源于导航网格被划分为多个凸多边形区域（convex polygons）
+                - 每个区域只需存储中心点作为路径节点的代表
+                YUKA的设计采用了"区域抽象+中心点导航"的模式，在保证路径搜索效率的同时，显著降低了内存消耗。这种折中方案是3D导航领域的常见优化手段。
+             */
             this.helpers.graphHelper = NavMeshUtils.createGraphHelper(this.navMesh.graph,0.2);
             this.scene.add(this.helpers.graphHelper);
 
-            // 创建产生武器，血条包等的点位
+            // 创建可视化对象表示产生敌人的点位
             this.helpers.spawnHelpers = SceneUtils.createSpawnPointHelper(this.spawningManager.spawningPoints);
             this.scene.add(this.helpers.spawnHelpers);
         }   
@@ -211,14 +217,14 @@ export default class World {
  
         for(let i =0; i < enemyCount;i++){
             const name = 'Enemy:'+i;
-            const renderComponent = SceneUtils.cloneWithSkinning(this.assetManager.modelMaps.get('soldier'));// 这里为啥不用clone()
+            const renderComponent = SceneUtils.cloneWithSkinning(this.assetManager.modelMaps.get('soldier'));// 这里为啥不用clone(),简单的clone() 不能正确复制骨骼、蒙皮等数据，需要自己单独实现或者调用three.js 中的SkeletonUtils.clone() 方法
             renderComponent.name = name;
             const enemy =new  EnemyVehicle(this /* world */);
             enemy.name = name;
             enemy.setRenderComponent(renderComponent,this.sync.bind(this));
-
+            //console.log('克隆出来的士兵:',renderComponent);
             // 设置动画
-            const mixer = new THREE.AnimationMixer(renderComponent);
+            const mixer = new THREE.AnimationMixer(renderComponent); // 创建动画混合器
             const idleClip = this.assetManager.animationMaps.get('soldier_idle');
             const runForwardClip = this.assetManager.animationMaps.get('soldier_forward');
             const runBackwardClip = this.assetManager.animationMaps.get('soldier_backward');
@@ -232,7 +238,7 @@ export default class World {
 
             this.add(enemy);
             this.competitors.push(enemy);// 存储敌人的数组
-            this.spawningManager.respawnCompetitor(enemy); // 设置敌人出现(产生的位置)
+            this.spawningManager.respawnCompetitor(enemy); // 设置敌人(士兵)出现(产生的位置)
 
             // 开启调试
             if(this.debug){
@@ -398,12 +404,12 @@ export default class World {
      * @param {*} intersectionPoint 
      */
     checkProjectileIntersection(projectile,intersectionPoint){
-        // 获取实体列表
+        // 获取实体列表，以便后面进行相交测试
         const entities = this.entityManager.entities;
-        let minDistance = Infinity;
+        let minDistance = Infinity; // 最小距离
         let hittedEntity = null;// 被击中的实体对象
         //console.log('entities:',this.entityManager.entities)
-        const owner = projectile.owner;/* 代表enemy 对象*/
+        const owner = projectile.owner;/* 代表enemy or player 对象*/ // 表示当前子弹是属于哪个对象的
         const ray = projectile.ray;
 
         for(let i =0; i < entities.length;i++){
@@ -516,5 +522,13 @@ export default class World {
         this.renderer.clear();
         this.renderer.render(this.scene,this.perspectiveCamera);
         this.uiManager.update(delta);
+    }
+    /**
+     * 窗口发生改变执行的回调方法
+     */
+    _resize(){
+        this.perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
+        this.perspectiveCamera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth,window.innerHeight);
     }
 }

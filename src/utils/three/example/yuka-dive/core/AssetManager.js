@@ -58,7 +58,7 @@ export default class AssetManager {
     _loadAnimations(){
         // player 
         this.animationLoader.load('./yuka-dive/animations/player.json',clips=>{
-            //console.log('player clips:',clips);
+            //console.log('player clips:',clips); 玩家死亡动画
             for(const clip of clips){
                 this.animationMaps.set(clip.name,clip);
             }
@@ -69,6 +69,12 @@ export default class AssetManager {
                 this.animationMaps.set(clip.name,clip);
             }
         });
+        /**每种武器有四种动画
+         * "name":"blaster_shot"," 射击动画
+            "name":"blaster_reload", // 换弹夹
+            "name":"blaster_hide"," // 隐藏
+            "name":"blaster_equip", // 装备
+         *  */ 
 
         // shotgun
         this.animationLoader.load('./yuka-dive/animations/shotgun.json',clips=>{
@@ -143,10 +149,10 @@ export default class AssetManager {
 		const impact7 = new THREE.PositionalAudio( listener );
 		impact7.setVolume( GameConfig.AUDIO.VOLUME_IMPACT );
 		impact7.matrixAutoUpdate = false;
-
+        // 获取血条的声音
 		const health = new THREE.PositionalAudio( listener );
 		health.matrixAutoUpdate = false;
-
+        // 换子弹的声音
 		const ammo = new THREE.PositionalAudio( listener );
 		ammo.matrixAutoUpdate = false;
 
@@ -223,7 +229,6 @@ export default class AssetManager {
             renderComponent.animations = gltf.animations;
             renderComponent.matrixAutoUpdate = false;// 取消自动更新
             renderComponent.updateMatrix();
-
             // 遍历子对象
             renderComponent.traverse(object=>{
                 if(object.isMesh){
@@ -233,15 +238,25 @@ export default class AssetManager {
                 }
             });
 
-            renderComponent.add(shadowPlane);// 
+            renderComponent.add(shadowPlane);// 给每个士兵添加阴影投影
             this.modelMaps.set('soldier',renderComponent);
-            // 组装动画
+            //console.log('solider模型：',gltf)
+            /**士兵拥有的动画列表：
+             * soldier_backward // 向后退
+             * soldier_death1 // 死亡
+             * soldier_death2 // 死亡
+             * soldier_forward // 向前走
+             * soldier_idle // 空闲
+             * soldier_left // 向左走
+             * soldier_right // 向右走
+             * soldier_tpose // 基本动画TPOSE
+             */
             for(let animation of gltf.animations){
                 this.animationMaps.set(animation.name,animation);
             }
         });
 
-        // level -级别关卡,里面是一些生成枪的点等
+        // level -级别关卡,
         this.gltfLoader.load('./yuka-dive/models/level.glb',gltf=>{
             const renderComponent = gltf.scene;
             renderComponent.matrixAutoUpdate = false;
@@ -357,7 +372,7 @@ export default class AssetManager {
         this.modelMaps.set('bulletLine',bulletLineMesh);
         return this;
     }
-    // 加载纹理
+    // 加载纹理，指示那个方向有敌人在射击
     _loadTextures(){
         let texture = this.textureLoader.load('./yuka-dive/textures/crosshairs.png');
         this.textureMaps.set('crosshairs',texture);
@@ -388,13 +403,13 @@ export default class AssetManager {
             //console.log(11,navMesh);
             this.loadingManager.itemEnd('navmesh');
         });
-
-        this.loadingManager.itemStart('costTable');
+        // 这个json 文件中存储了每个索引点到自己及其他所有点的数据，数据量很大
+        this.loadingManager.itemStart('costTable');// 标记数据加载开始
         fetch('./yuka-dive/navmeshes/costTable.json').then(response=>{
             return response.json();
         }).then(json=>{
             this.costTable = new YUKA.CostTable().fromJSON(json);
-            this.loadingManager.itemEnd('costTable');
+            this.loadingManager.itemEnd('costTable'); // 标记数据加载完毕
         });
 
         return this;
@@ -405,8 +420,30 @@ export default class AssetManager {
      * @returns 
      */
     cloneAudio(source){
-        const audio =  new source.constructor(source.listener);
-        audio.buffer = source.buffer;
+        // 1、原始写法，在yuka项目中未报错
+        // const audio =  new source.constructor(source.listener);
+        // audio.buffer = source.buffer; // 最新写法不能直接这样赋值
+        
+        // 2、 AI 推荐写法
+        const audio = new source.constructor(source.listener);
+
+        // 如果原始 audio 已经有 buffer，设置进去（注意，不能直接 clone AudioBufferSourceNode）
+        audio.setBuffer(source.buffer);
+        // audio.setLoop(source.loop);
+        // audio.setVolume(source.getVolume());
+
+        // // 如果是 PositionalAudio，还要克隆空间音效参数
+        // if (audio instanceof THREE.PositionalAudio) {
+        //     audio.setRefDistance(source.getRefDistance());
+        //     audio.setRolloffFactor(source.getRolloffFactor());
+        //     audio.setDistanceModel(source.getDistanceModel());
+        //     audio.setMaxDistance(source.getMaxDistance());
+        //     audio.panner.positionX.value = source.panner.positionX.value;
+        //     audio.panner.positionY.value = source.panner.positionY.value;
+        //     audio.panner.positionZ.value = source.panner.positionZ.value;
+        // }
+
+
         return audio;
     }
 

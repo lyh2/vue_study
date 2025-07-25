@@ -79,7 +79,7 @@ export default class AssaultRifle extends BaseWeaponGameEntity{
 
     reload(){
         this.status = WEAPON_STATUS_RELOAD;
-        console.log('来福枪:',this)
+        //console.log('来福枪:',this)
         const audio = this.audioMaps.get('reload');
         if(audio.isPlaying === true) audio.stop();
         audio.play();
@@ -148,18 +148,18 @@ export default class AssaultRifle extends BaseWeaponGameEntity{
 		const hideClip = assetManager.animationMaps.get( 'assaultRifle_hide' );
 		const equipClip = assetManager.animationMaps.get( 'assaultRifle_equip' );
 
-		const shotAction = mixer.clipAction( shotClip );
-		shotAction.loop = LoopOnce;
+		const shotAction = this.mixer.clipAction( shotClip );
+		shotAction.loop = THREE.LoopOnce;
 
-		const reloadAction = mixer.clipAction( reloadClip );
-		reloadAction.loop = LoopOnce;
+		const reloadAction = this.mixer.clipAction( reloadClip );
+		reloadAction.loop = THREE.LoopOnce;
 
-		const hideAction = mixer.clipAction( hideClip );
-		hideAction.loop = LoopOnce;
+		const hideAction = this.mixer.clipAction( hideClip );
+		hideAction.loop = THREE.LoopOnce;
 		hideAction.clampWhenFinished = true;
 
-		const equipAction = mixer.clipAction( equipClip );
-		equipAction.loop = LoopOnce;
+		const equipAction = this.mixer.clipAction( equipClip );
+		equipAction.loop = THREE.LoopOnce;
 
 		this.animationMaps.set( 'shot', shotAction );
 		this.animationMaps.set( 'reload', reloadAction );

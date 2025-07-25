@@ -8,29 +8,42 @@ export default class SceneUtils{
     /**
      * 自己实现的复制THREE.SkinnedMesh 对象的方法
      * @param {THREE.SkinnedMesh} source - 要复制的skinned mesh 对象
+     * ### 方法核心目标
+        解决Three.js中`SkinnedMesh.clone()`方法的局限性：
+        1. 标准`clone()`方法无法正确复制骨骼层级关系
+        2. 蒙皮权重数据无法直接迁移
+        3. 骨骼绑定矩阵需要重新计算
+
      */
     static cloneWithSkinning(source){
         const cloneLookup = new Map();// 
-        const clone = source.clone();
-
+        const clone = source.clone(); // 克隆一份SkinnedMesh 对象
+        /**
+         * - __`cloneLookup`映射表__：存储原始场景节点到克隆节点的对应关系
+            - __递归遍历函数`traverseFn`__：深度优先遍历整个场景图，确保所有节点都被映射
+         */
         traverseFn(source,clone,(sourceNode,clonedNode)=>{
             cloneLookup.set(sourceNode,clonedNode);
         });
-
+        /** 骨骼系统重建 核心
+         * 
+         */
         source.traverse(sourceMesh=>{
             if(!sourceMesh.isSkinnedMesh) return;
+            // 得到原始对象中的骨骼数据
+            const sourceBones = sourceMesh.skeleton.bones;// 但`bones`数组仍指向原始骨骼对象
 
-            const sourceBones = sourceMesh.skeleton.bones;// 获取骨骼
             const clonedMesh = cloneLookup.get(sourceMesh);
-
+            // 1、骨架克隆
             clonedMesh.skeleton = sourceMesh.skeleton.clone();// 复制骨架
-
+            // 2、骨骼映射替换，循环原始的骨骼数组
             clonedMesh.skeleton.bones = sourceBones.map(sourceBone=>{
                 if(! cloneLookup.has(sourceBone)){
 					throw new Error( 'SceneUtils: Required bones are not descendants of the given object.' );
                 }
                 return cloneLookup.get(sourceBone);
             });
+            // 3、重新绑定
             clonedMesh.bind(clonedMesh.skeleton,sourceMesh.bindMatrix);
         });
         return clone;
@@ -66,7 +79,7 @@ export default class SceneUtils{
         return lines;
     }
     /**
-     * 绘制产生武器、血条、敌人的点位，进行可视化显示
+     * 绘制产生敌人的点位，进行可视化显示
      * @param {*} spawnPoints 
      */
     static createSpawnPointHelper(spawnPoints=[]){
@@ -145,13 +158,13 @@ export default class SceneUtils{
 
 /**
  * 递归调用
- * @param {*} a 
- * @param {*} b 
+ * @param {*} a - 原始对象
+ * @param {*} b - 克隆出来的对象
  * @param {*} callback 
  */
 function traverseFn(a,b,callback){
     callback(a,b);// 设置map
-
+    // 按照原始对象的层级关系把子对象赋值到新的对象中去
     for(let i = 0; i < a.children.length;i++){
         traverseFn(a.children[i],b.children[i],callback);
     }

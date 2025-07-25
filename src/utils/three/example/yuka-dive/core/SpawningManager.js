@@ -21,11 +21,11 @@ export default class SpawningManager{
      * @param {*} world 
      */
     constructor(world){
-        this.world = world;
+        this.world = world; // world 对象
 
         this.spawningPoints = new Array();// 竞争对象的产生点
 
-        this.itemTriggerMap = new Map(); // trigger
+        this.itemTriggerMap = new Map(); // trigger 存储血条包，武器 等资源的触发器对象
 
         // 血条
         this.healthPacks = new Array();
@@ -60,9 +60,9 @@ export default class SpawningManager{
      * @param {GameEntity} competitor 
      */
     respawnCompetitor(competitor){
-        
+        // 得到远离敌人的一个产生坐标点
         const spawnPoint = this.getSpawnPoint(competitor);
-
+        // 把获取到的位置数据给传递进来的敌人(或者是竞争者)
         competitor.position.copy(spawnPoint.position);
         competitor.rotation.fromEuler(spawnPoint.rotation.x,spawnPoint.rotation.y,spawnPoint.rotation.z);
         if(competitor.isPlayer) competitor.head.rotation.set(0,0,0,1);
@@ -79,7 +79,7 @@ export default class SpawningManager{
         let maxDistance = - Infinity;
         let bestSpawningPoint = null;
         //console.log(this.world.competitors);
-        // searching for the spawning point furthest away from an enemy
+        // searching for the spawning point furthest away from an enemy 寻找一个远离敌人的点
         for(let i =0 ; i < spawningPoints.length;i++){
             // 循环每一个预制的出生点
             const spawningPoint = spawningPoints[i];
@@ -139,33 +139,33 @@ export default class SpawningManager{
         return this;
     }
 
-    // Inits the collectable health packs.
+    // Inits the collectable health packs. 创建血条包
     initHealthPacks(){
         const world = this.world;
         const assetManager = world.assetManager;
-
+        // 循环处理可以产生血条包的点位
         for(let spawningPoint of this.healthPackSpawningPoints){
             // 创建血条实体对象
             const healthPack = new HealthPackExtendBaseGameEntity();
-            healthPack.position.copy(spawningPoint);
+            healthPack.position.copy(spawningPoint); // 设置血条包的位置
 
-            // 获取对应的模型
+            // 获取血条包对应的模型
             const renderComponent = assetManager.modelMaps.get('healthPack').clone();
             renderComponent.position.copy(healthPack.position);
             healthPack.setRenderComponent(renderComponent,world.sync.bind(world));// 查看这里是否有问题
 
-            this.healthPacks.push(healthPack);
+            this.healthPacks.push(healthPack); // 放入数组中
             world.add(healthPack);
 
-            // navigation
+            // navigation 得到当前血条包所在导航区域
             healthPack.currentRegion = world.navMesh.getRegionForPoint(healthPack.position,1.0);
 
-            // audio
+            // audio 克隆音频资源
             const audio = assetManager.cloneAudio(assetManager.audioMaps.get('health'));
-            healthPack.audio = audio;
+            healthPack.audio = audio;// 音频资源添加到实体中
             renderComponent.add(audio);
 
-            // trigger 
+            // trigger 创建触发器
             this.createTrigger(healthPack,GameConfig.HEALTH_PACK.RADIUS);
         }
 
@@ -173,7 +173,7 @@ export default class SpawningManager{
     }
 
     /**
-     * 创建武器
+     * 创建武器资源实体对象
      */
     initWeapons(){
         const world = this.world;
@@ -181,20 +181,21 @@ export default class SpawningManager{
         
         // 创建能量枪
         for(let spawningPoint of this.blasterSpawningPoints){
-            const blasterEntity = new WeaponItemExtendBaseGameEntity(WEAPON_TYPES_BLASTER,GameConfig.BLASTER.RESPAWN_TIME,GameConfig.BLASTER.AMMO);
+            const blasterEntity = new WeaponItemExtendBaseGameEntity(WEAPON_TYPES_BLASTER,
+                GameConfig.BLASTER.RESPAWN_TIME,GameConfig.BLASTER.AMMO);
             blasterEntity.position.copy(spawningPoint);
-
+            // 获取武器对应的3D模型
             const renderComponent = assetManager.modelMaps.get('blaster_low').clone();
-            renderComponent.position.copy(blasterEntity.position);
-            blasterEntity.setRenderComponent(renderComponent,world.sync.bind(world));
+            renderComponent.position.copy(blasterEntity.position); // 设置模型位置
+            blasterEntity.setRenderComponent(renderComponent,world.sync.bind(world));// 同步旋转缩放等数据
 
             this.blasters.push(blasterEntity);
             world.add(blasterEntity);
 
-            // navigation
+            // navigation 获取武器在那个区域
             blasterEntity.currentRegion = world.navMesh.getRegionForPoint(blasterEntity.position,1);
 
-            // audio
+            // audio 克隆音频资源
             const audio = assetManager.cloneAudio(assetManager.audioMaps.get('ammo'));
             blasterEntity.audio = audio;
             audio.setVolume(GameConfig.AUDIO.VOLUME_BLASTER - 1);
@@ -227,7 +228,7 @@ export default class SpawningManager{
             // trigger 添加触发器
             this.createTrigger(shotgunEntity,GameConfig.SHOTGUN.RADIUS);
         }
-        //console.log(assetManager,World._getInstance())
+        //console.log(assetManager,World._getInstance()) // 来福枪
         for(let spawningPoint of this.assaultRilflesSpawningPoints){
             // 创建枪的实体
             const assaultRilfleEntity = new WeaponItemExtendBaseGameEntity(WEAPON_TYPES_ASSAULT_RIFLE,GameConfig.ASSAULT_RIFLE.RESPAWN_TIME);
@@ -257,13 +258,14 @@ export default class SpawningManager{
 
     /**
      * 为实体对象创建对应的触发器
-     * @param {*} item 
-     * @param {*} radius 
+     * @param {*} entity - 实体对象 血条包，武器包等
+     * @param {*} radius - 半径
      */
     createTrigger(entity,radius){
+        // 创建一个球形触发区域
         const sphericalTriggerRegion = new YUKA.SphericalTriggerRegion(radius); // 创建球体触发区域
-        // 把区域添加触发器中
-        const trigger = new BaseTriggerExtendTrigger(sphericalTriggerRegion,entity);
+        // 自定义一个触发器类，并且把球形区域添加触发器中
+        const trigger = new BaseTriggerExtendTrigger(sphericalTriggerRegion,entity /* 血条包，武器等资源实体 */);
         entity.add(trigger); // trigger 也是 GameEntity 类型
 
         this.itemTriggerMap.set(entity,trigger);
@@ -280,30 +282,45 @@ export default class SpawningManager{
 
         return this;
     }
-
+    /**
+     * 循环更新 血条包，三种武器
+     * @param {*} delta 
+     * @returns 
+     */
     update(delta){
-        this.updateItemList(this.healthPacks,delta);
-        this.updateItemList(this.blasters,delta);
-        this.updateItemList(this.shotguns,delta);
-        this.updateItemList(this.assaultRilfles,delta);
+        this.updateItemList(this.healthPacks /* HealthPackExtendBaseGameEntity */,delta);
+        this.updateItemList(this.blasters /* WeaponItemExtendBaseGameEntity */,delta);
+        this.updateItemList(this.shotguns /* WeaponItemExtendBaseGameEntity */,delta);
+        this.updateItemList(this.assaultRilfles /* WeaponItemExtendBaseGameEntity */,delta);
         return this;
     }
-
-    updateItemList(itemsList,delta){
+    /**
+     * 更新血条包，三种武器资源的时间是否到再次显示的时间了
+     * @param {*} itemsList 
+     * @param {*} delta 
+     * @returns 
+     */
+    updateItemList(itemsList,delta){ 
+        // 读取数组中的每个元素，判断时间是否已经达到再次显示的时间了
         for(let i =0; i < itemsList.length;i++){
             const item = itemsList[i];
             item.currentTime += delta;
             if(item.currentTime >= item.nextSpawnTime){
-                this._respawnItem(item);
+                this._respawnItem(item);// 更新触发器
             }
         }
         return this;
     }
-
+    /**
+     * 开启触发器及对应的实体对象(血条包，三种武器资源等)
+     * @param {*} item 
+     * @returns 
+     */
     _respawnItem(item){
-        const trigger = this.itemTriggerMap.get(item);
-        trigger.active = true;
-        item.finishRespawn();
+        const trigger = this.itemTriggerMap.get(item);// 获取(血条包，三种武器资源实体)分别对应的触发器
+        trigger.active = true; // 设置可用，在触发器内部的execute 方法中，执行一次就设置了active=false
+        // 一个触发器一次只能被触发一次
+        item.finishRespawn();//设置(血条包，三种武器资源)实体对象再次可以使用
         return this;
     }
     /**
