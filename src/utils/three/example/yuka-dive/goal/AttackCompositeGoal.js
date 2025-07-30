@@ -3,16 +3,15 @@
  */
 
 import * as YUKA from 'yuka';
-import DodgeGoal from './DodgeCompositeGoal';
 import ChargeCompositeGoal from './ChargeCompositeGoal';
-import HuntCompositeGoal from './HuntCompositeGoal';
-import DodgeCompositeGoal from './DodgeCompositeGoal';
+import HuntCompositeGoal from './HuntCompositeGoal'; // 猎杀
+import DodgeCompositeGoal from './DodgeCompositeGoal'; // 躲闪
 
 const left = new YUKA.Vector3(-1,0,0);
 const right = new YUKA.Vector3(1,0,0);
 const targetPosition = new YUKA.Vector3();
 
-export default class AttackGoal extends YUKA.CompositeGoal{
+export default class AttackCompositeGoal extends YUKA.CompositeGoal{
     /**
      * 目标是属于那个主体的
      * @param {*} owner 
@@ -33,11 +32,11 @@ export default class AttackGoal extends YUKA.CompositeGoal{
         if(owner.targetSystem.isTargetShootable() === true){
             // 我需要进行移动
             if(owner.canMoveInDirection(left,targetPosition)){
-                this.addSubgoal(new DodgeGoal(owner,false));
+                this.addSubgoal(new DodgeCompositeGoal(owner,false));  // 进行左右躲闪
             }else if(owner.canMoveInDirection(right,targetPosition)){
-                this.addSubgoal(new DodgeGoal(owner,true));
+                this.addSubgoal(new DodgeCompositeGoal(owner,true));
             }else{
-                // 左右都不能移动，改变目标的位置
+                // 左右都不能移动，改变自己的位置
                 this.addSubgoal(new ChargeCompositeGoal(owner));
             }
         }else{
@@ -49,11 +48,11 @@ export default class AttackGoal extends YUKA.CompositeGoal{
     execute(){
         const owner = this.owner;
         if(owner.targetSystem.hasTarget() === false){
-            this.status = YUKA.Goal.STATUS.COMPLETED;
+            this.status = YUKA.Goal.STATUS.COMPLETED; // 没有找到目标，则当前目标设置完成状态
         }else{
             const currentSubgoal = this.currentSubgoal;
             const status = this.executeSubgoals();
-
+            // 存在目标对象。就要开启“躲闪”
             if(currentSubgoal instanceof DodgeCompositeGoal && currentSubgoal.inactive()){
 				// inactive dogde goals should be reactivated but without reactivating the enire attack goal
                 this.status = YUKA.Goal.STATUS.ACTIVE;

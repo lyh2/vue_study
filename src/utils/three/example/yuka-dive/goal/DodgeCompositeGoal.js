@@ -28,11 +28,10 @@ export default class DodgeCompositeGoal extends YUKA.CompositeGoal{
         this.clearSubgoals();// 清除所有的子目标
 
         const owner = this.owner;
-
         if(this.right){
             // 可以向右移动足够的空间
-            if(owner.canMoveInDirection(right,this.targetPosition)){
-                this.addSubgoal(new SeekToPositionGoal(owner,this.targetPosition));
+            if(owner.canMoveInDirection(right,this.targetPosition /* 向👉🏻右移动到的目标点 */)){
+                this.addSubgoal(new SeekToPositionGoal(owner,this.targetPosition)); // 搜索到指定
             }else{
                 // 没有任何空间可以移动的空间，向左移动
                 this.right = false;
@@ -55,10 +54,10 @@ export default class DodgeCompositeGoal extends YUKA.CompositeGoal{
             const owner = this.owner;
 
             if(owner.targetSystem.isTargetShootable() === false){
-                // 没有遇到敌人
+                // 没有遇到敌人，躲避完成
                 this.statuc = YUKA.Goal.STATUS.COMPLETED;
             }else{
-                // 遇到敌人
+                // 遇到敌人，继续执行其他目标
                 this.status = this.executeSubgoals();// 执行当前目标中的所有子目标
                 this.replanIfFailed();// 执行失败重新执行
                 if(this.completed()) this.status = YUKA.Goal.STATUS.INACTIVE;

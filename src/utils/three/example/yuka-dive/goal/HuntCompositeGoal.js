@@ -21,7 +21,7 @@ export default class HuntCompositeGoal extends YUKA.CompositeGoal{
         const to = new YUKA.Vector3().copy(targetPosition);
 
         // 添加子目标
-        this.addSubgoal(new FindPathGoal(owner,from,to));
+        this.addSubgoal(new FindPathGoal(owner,from,to) /* type= The subgoal is YUKA.Goal to add.*/);
         this.addSubgoal(new FollowPathGoal(owner));
     }
 
@@ -29,10 +29,11 @@ export default class HuntCompositeGoal extends YUKA.CompositeGoal{
         const owner = this.owner;
 
         if(owner.targetSystem.isTargetShootable()){
-            this.status = YUKA.Goal.STATUS.COMPLETED;
+            this.status = YUKA.Goal.STATUS.COMPLETED; // 找到可射击新目标就完成此目标
         }else{
             this.status = this.executeSubgoals();
             if(this.completed()){
+                // 猎杀完成，把当前敌人从目标系统中移除
                 const target = owner.targetSystem.getTarget();
                 owner.removeEntityFromMemory(target); // 移除目标对象
                 owner.targetSystem.update();

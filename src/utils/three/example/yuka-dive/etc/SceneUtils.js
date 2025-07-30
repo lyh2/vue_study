@@ -76,6 +76,7 @@ export default class SceneUtils{
         hitbox.getSize(lines.scale);// 得到AABB盒子的width,height,depth 值
         lines.scale.multiplyScalar(0.5);// 在缩小一半
         lines.updateMatrix();
+        lines.name = 'hitboxLines';
         return lines;
     }
     /**

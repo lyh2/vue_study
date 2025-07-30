@@ -1,25 +1,28 @@
 
-const visibleRecords = new Array();
-const invisibleRecords = new Array();
+const visibleRecords = new Array(); // 可见记录
+const invisibleRecords = new Array(); // 不可见记录
 
 /**
- * 主要是实现对 MemoryRecord 的简单封装
+ * 主要实现对 MemoryRecord 的简单封装
  */
 export default class TargetSystem{
 
     constructor(owner){
-        this.owner = owner;// enemy
+        this.owner = owner;// enemy 属于那个对象
 
-        this._currentRecord = null;// represents the memory record of the current target
+        this._currentRecord = null;// represents the memory record of the current target 当前的目标对象
 
     }
-
+    /**
+     * 找到最近的敌人
+     * @returns 
+     */
     update(){
-        const records = this.owner.memoryRecords;
+        const records = this.owner.memoryRecords; // 存储 enemy 对象 数组
 
         // 重新设置
         this._currentRecord = null;
-
+        // 清除数组
         visibleRecords.length = 0;
         invisibleRecords.length = 0;
 
@@ -33,21 +36,21 @@ export default class TargetSystem{
                 invisibleRecords.push(record);
             }
         }
-
+        //寻找最近的一个敌人，从可见数组，不可见数组中找到一个对象
         if(visibleRecords.length > 0){
             // 寻找最近的一个
             let minDistance = Infinity;
 
             for(let i =0; i < visibleRecords.length;i++){
                 const record = visibleRecords[i];
-                const distance = this.owner.position.squaredDistanceTo(record.lastSensedPosition);
+                const distance = this.owner.position.squaredDistanceTo(record.lastSensedPosition); // 计算当前对象与每个对象最后出现的位置 的距离
                 if(distance < minDistance){
                     minDistance = distance;
                     this._currentRecord = record;
                 }
             }
         }else if( invisibleRecords.length > 0){
-            // 找到最近感知的一个对象
+            // 找到最近感知的一个对象，通过最后出现的时间进行比较，时间越大越是最新的对象
             let maxTimeLastSensed = - Infinity;
             for(let i = 0; i < invisibleRecords.length;i++){
                 const record = invisibleRecords[i];

@@ -9,7 +9,7 @@ const ray = new YUKA.Ray();
  */
 export default class ProjectileMovingEntity extends YUKA.MovingEntity{
     
-    constructor(owner,ray=new YUKA.Ray()){
+    constructor(owner /* enemy or player */,ray=new YUKA.Ray()){
         super();
 
         this.canActivateTrigger = false;//Whether the entity can activate a trigger or not.
@@ -26,7 +26,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
      * Executed when this game entity is updated for the first time by its EntityManager.
      */
     start(){
-        this._renderComponent.visible = true;
+        this._renderComponent.visible = true; // 设置3D模型可视化显示
         return this;
     }
 

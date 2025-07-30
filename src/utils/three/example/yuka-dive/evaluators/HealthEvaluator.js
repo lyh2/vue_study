@@ -15,9 +15,10 @@ export default class HealthEvaluator extends YUKA.GoalEvaluator{
 
     calculateDesirability(owner){
         let desirability = 0;
+        // 当前血条包资源没有被忽略，并且enemy的剩余血量小于最大值
         if(owner.isItemIgnored(this.itemType) === false && owner.health < owner.maxHealth){
             const distanceScore = Feature.distanceToItem(owner,this.itemType);
-            const healthScore = Feature.health(owner);
+            const healthScore = Feature.health(owner); 
 
             desirability = this.tweaker * ( 1 - healthScore) / distanceScore;
             desirability = YUKA.MathUtils.clamp(desirability,0,1);

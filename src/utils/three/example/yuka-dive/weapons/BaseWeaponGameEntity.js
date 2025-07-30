@@ -1,5 +1,7 @@
 import * as YUKA from 'yuka';
-import { WEAPON_STATUS_EQUIP, WEAPON_STATUS_HIDE, WEAPON_STATUS_READY, WEAPON_STATUS_UNREADY } from '../core/constants';
+import { WEAPON_STATUS_EQUIP, WEAPON_STATUS_HIDE, WEAPON_STATUS_READY, WEAPON_STATUS_UNREADY, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from '../core/constants';
+import GameConfig from '../core/GameConfig';
+import { round } from 'face-api.js/build/commonjs/utils';
 
 export default class BaseWeaponGameEntity extends YUKA.GameEntity{
     constructor(owner){
@@ -12,11 +14,10 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
         this.type = null;// 定义枪的类型
         this.status= WEAPON_STATUS_UNREADY;
 
-        this.previousState = WEAPON_STATUS_READY;
+        this.previousState = WEAPON_STATUS_READY; // 上一个状态
 
         this.currentAmmo = 0;// roundsLeft =0；表示当前弹夹的子弹数量
         this.perClipAmmo = 0;// 每个弹夹的子弹数量
-        this.addRoundAmmo = 0; // 这个字段没有作用
         this.maxAmmo = 0;
 
         this.currentTime = 0;
@@ -36,25 +37,37 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
         this.fuzzyModule = null;
 
         this.muzzle = null; // 子类继承，在创建对象时进行赋值
-        this.audioMaps = null;
-        this.mixer = null;
+        this.audioMaps = null; // 武器对应的音效
+        this.mixer = null; // 动画播放混合器
         this.animationMaps = null;
     }
 
     /**
      * 添加指定数量的子弹-无作用
-     * @param {*} rounds 
+     * @param {*} rounds - 剩余子弹数
      */
-    addRounds(rounds){
-        this.addRoundAmmo = YUKA.MathUtils.clamp(this.addRoundAmmo + rounds,0,this.maxAmmo);
+    addRounds(rounds ){
+        switch(this.type){
+            case WEAPON_TYPES_SHOTGUN:
+                this.maxAmmo = GameConfig.SHOTGUN.MAX_AMMO + rounds;// 子弹总数(捡到同类型武器，背包中不新增武器而是获取新武器的子弹总数量) + 自己当前同类型武器剩余子弹数
+            break;
+            case WEAPON_TYPES_ASSAULT_RIFLE:
+                this.maxAmmo = GameConfig.ASSAULT_RIFLE.MAX_AMMO + rounds;
+                break;
+            case WEAPON_TYPES_BLASTER:
+                this.maxAmmo = GameConfig.BLASTER.MAX_AMMO + rounds;
+                break;
+            default:
+                break;
+        }
         return this;
     }
     /**
      * 
-     * @returns 获取剩余子弹数 - 无作用
+     * @returns 获取剩余子弹数 
      */
     getRemainingRounds(){
-        return this.addRoundAmmo;
+        return  this.maxAmmo;//表示剩余子弹数 
     }
     /**
      * 返回武器的可信度的值
@@ -67,13 +80,13 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
      * @returns 
      */
     equip(){
-        this.status = WEAPON_STATUS_EQUIP;
-        this.endTimeEquip = this.currentTime + this.equipTime;
+        this.status = WEAPON_STATUS_EQUIP; // 设置武器为：装备 状态
+        this.endTimeEquip = this.currentTime + this.equipTime; // 更换装备的时间
 
         if(this.mixer){
-            let animation = this.animationMaps.get('hide');
+            let animation = this.animationMaps.get('hide'); // 先执行隐藏动画
             animation.stop();
-
+            // 再执行装备动画
             animation = this.animationMaps.get('equip');
             animation.stop();
             animation.play();
@@ -82,7 +95,6 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
         if(this.owner.isPlayer){
             this.owner.world.uiManager.updateAmmoStatus();
         }
-
         return this;
     }
 
@@ -113,12 +125,12 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
 
     update(delta){
         this.currentTime += delta;
-
+        // 更换装备时间结束
         if(this.currentTime >= this.endTimeEquip){
             this.status= this.previousState;
             this.endTimeEquip = Infinity;
         }
-
+        // 隐藏武器时间结束 ，状态设置为未准备好状态
         if(this.currentTime >= this.endTimeHide){
             this.status = WEAPON_STATUS_UNREADY;
             this.endTimeHide = Infinity;

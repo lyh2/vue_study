@@ -20,7 +20,7 @@ export default class WeaponEvaluator extends YUKA.GoalEvaluator{
         if(owner.isItemIgnored(this.itemType) === false){
 
             const distanceScore = Feature.distanceToItem(owner,this.itemType);
-            const weaponScore = Feature.individualWeaponStrength(owner,this.itemType);
+            const weaponScore = Feature.individualWeaponStrength(owner,this.itemType); // 剩余子弹数 / 子弹总数
             const healthScore = Feature.health(owner);
 
             desirability = this.tweaker * ( 1 - weaponScore) * healthScore / distanceScore;

@@ -54,7 +54,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.searchAttacker = false;
         this.attackDirection = new YUKA.Vector3();// 攻击方向
         this.endTimeSearch = Infinity;
-        this.searchTime = GameConfig.BOT.SEARCH_FOR_ATTACKER_TIME;
+        this.searchTime = GameConfig.BOT.SEARCH_FOR_ATTACKER_TIME; // 搜索多长时间
 
         // ignore:忽略
         this.ignoreHealth = false; // 忽略血条包
@@ -90,15 +90,14 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.path = null;
 
         // goal -driven agent design
-        this.brain = new YUKA.Think(this);
+        this.brain = new YUKA.Think(this); // 目标驱动
         this.brain.addEvaluator(new AttackEvaluator());// 添加攻击状态评估器
-        this.brain.addEvaluator(new ExploreEvaluator()); // 在map上随机生成一个位置，规划路线
+        this.brain.addEvaluator(new ExploreEvaluator()); // 在navMesh上随机生成一个位置，规划路线
         this.brain.addEvaluator(new HealthEvaluator(1,HEALTH_PACK));// 血🩸包
         this.brain.addEvaluator(new WeaponEvaluator(1,WEAPON_TYPES_ASSAULT_RIFLE));// 来福枪
         this.brain.addEvaluator(new WeaponEvaluator(1,WEAPON_TYPES_SHOTGUN));// 普通枪
-
         // Arbitration
-        this.goalArbitrationRegulator = new YUKA.Regulator(GameConfig.BOT.GOAL.UPDATE_FREQUENCY);
+        this.goalArbitrationRegulator = new YUKA.Regulator(GameConfig.BOT.GOAL.UPDATE_FREQUENCY); // 参数表示每秒执行多少次，就是频率
 
         this.memorySystem = new YUKA.MemorySystem(this);
         this.memorySystem.memorySpan = GameConfig.BOT.MEMORY.SPAN;// 表示游戏实体短期记忆的持续时间（秒）。当机器人请求所有最近感测到的游戏实体的列表时，此值用于确定机器人是否能够记住游戏实体
@@ -127,13 +126,13 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.visionRegulator = new YUKA.Regulator(GameConfig.BOT.VISION.UPDATE_FREQUENCY);
 
 
-        // target system
+        // target system 、// 从对象数组中获取最近或者最新出现的对象
         this.targetSystem = new TargetSystem(this);
-        this.targetSystemRegulator = new YUKA.Regulator(GameConfig.BOT.TARGET_SYSTEM.UPDATE_FREQUENCY);
+        this.targetSystemRegulator = new YUKA.Regulator(GameConfig.BOT.TARGET_SYSTEM.UPDATE_FREQUENCY); // 设置更新执行的频率
         
         // weapon system
         this.weaponSystem = new WeaponSystem(this /* 代表Enemy 对象，内有world 属性 */);//
-        this.weaponSelectionRegulator = new YUKA.Regulator(GameConfig.BOT.WEAPON.UPDATE_FREQUENCY);
+        this.weaponSelectionRegulator = new YUKA.Regulator(GameConfig.BOT.WEAPON.UPDATE_FREQUENCY); // 每秒执行4次的频率更新执行
 
         // debug
         this.pathHelper = null; // 从World 中赋值的
@@ -141,40 +140,40 @@ export default class EnemyVehicle extends YUKA.Vehicle{
     }
     /**
 	* Executed when this game entity is updated for the first time by its entity manager.
-	*
+	* 更新的时候，首次执行
 	* @return {Enemy} A reference to this game entity.
 	*/
     start(){
         //console.log(5,this.animationMaps)
         const run = this.animationMaps.get('soldier_forward');
-        run.enabled = true;
-
+        run.enabled = true; // 设置向前走动画,只是准备好了，此时并未执行----------------
+        // 把场景当作障碍物添加到vision中
         const level = this.world.entityManager.getEntityByName('level');
         this.vision.addObstacle(level);
 
-        this.bounds.init();
-        this.weaponSystem.init();
+        this.bounds.init(); // 初始化人体AABB---此时 模型的.matrixWorld表示模型经过变换字后的矩阵
+        this.weaponSystem.init(); // 初始化武器
         return this;
     }
 
     update(delta){
-        super.update(delta);
+        super.update(delta); //     调用基类方法
         this.currentTime += delta;
         //ensure the enemy never leaves the level
-        this.stayInLevel();
-
+        this.stayInLevel(); // 确保校色始终在关卡里面
+        // 活着状态
         if(this.status === STATUS_ALIVE){
             // update hitbox
             this.bounds.update();
-            // update perception
+            // update perception 自定义更新频率
             if(this.visionRegulator.ready()){
-                this.updateVision();
+                this.updateVision(); // 更新哪些对象是当前角色可见的
             }
             // update memory system
-            this.memorySystem.getValidMemoryRecords(this.currentTime,this.memoryRecords);
+            this.memorySystem.getValidMemoryRecords(this.currentTime,this.memoryRecords); // Determines all valid memory record and stores the result in the given array.
             // update target system
             if(this.targetSystemRegulator.ready()){
-                this.targetSystem.update();
+                this.targetSystem.update(); // 更新目标系统
             }
 
             // update goals 
@@ -183,7 +182,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
                 this.brain.arbitrate();
             }
 
-            // update weapon selection 
+            // update weapon selection  更新武器
             if(this.weaponSelectionRegulator.ready()){
                 this.weaponSystem.selectBestWeapon();
             }
@@ -205,10 +204,10 @@ export default class EnemyVehicle extends YUKA.Vehicle{
 			// updating the weapon system means updating the aiming and shooting.
 			// so this call will change the actual heading/orientation of the enemy
 
-            this.weaponSystem.update(delta);
+            this.weaponSystem.update(delta); // 更新武器管理系统
         }
 
-        // handle dying 处理死亡
+        // handle dying 处理死亡过程
         if(this.status === STATUS_DYING){
             if(this.currentTime >= this.endTimeDying){
                 this.status = STATUS_DEAD;
@@ -216,17 +215,17 @@ export default class EnemyVehicle extends YUKA.Vehicle{
             }
         }
 
-        // handle health
+        // handle health死亡结束
         if(this.status === STATUS_DEAD){
             if(this.world.debug){
-                console.log('Enemy->Id: %s died.',this.uuid);
+                console.log('角色: ',this.name+'已经死亡');
             }
 
-            this.reset();
-            this.world.spawningManager.respawnCompetitor(this);
+            this.reset(); // 重新设置当前角色所有状态
+            this.world.spawningManager.respawnCompetitor(this); // 设置角色新生的位置
         }
 
-        // always update animations
+        // always update animations--这里才执行
         this.updateAnimationMaps(delta);
         return this;
     }
@@ -235,7 +234,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
      * @param {Nember} delta 
      */
     updateAnimationMaps(delta){
-        // 判断当前游戏实体的状态，只更新或者的对象
+        // 判断当前游戏实体的状态，只更新活着的对象
         if(this.status == STATUS_ALIVE){
             // 活着才更新动画
             this.getDirection(lookDirection);// Computes the current direction (forward) vector of this game entity and stores the result in the given vector.
@@ -336,7 +335,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.endTimeSearch = Infinity;
         return this;
     }
-    /**
+    /** 更新角色的可见组件
      * Updates the vision component of this game entity and stores
 	* the result in the respective memory system.
      */
@@ -344,24 +343,23 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         const memorySystem = this.memorySystem;
         const vision = this.vision;
 
-        const competitors = this.world.competitors;// 数组存储的竞争对手
+        const competitors = this.world.competitors;// 数组存储的竞争对手，当前对象数组
 
         for(let i =0; i < competitors.length;i++){
             const competitor = competitors[i];
             // ignore own entity and consider only living enemies
-            if(competitor === this || competitor.status !== STATUS_ALIVE) continue;
+            if(competitor === this || competitor.status !== STATUS_ALIVE) continue; // 是自己或者对象已经不是活着的状态，就不用操作
             if(memorySystem.hasRecord(competitor) === false){
                 // 写入记录里面
                 memorySystem.createRecord(competitor);
-
             }
-            const record = memorySystem.getRecord(competitor);
-            competitor.head.getWorldPosition(worldPosition);
+            const record = memorySystem.getRecord(competitor); // 得到当前用户记录
+            competitor.head.getWorldPosition(worldPosition);// 得到角色头部的世界坐标
             if(vision.visible(worldPosition) === true && competitor.active){
                 record.timeLastSensed = this.currentTime;// 最后感知的时间
                 record.lastSensedPosition.copy(competitor.position);// 最后可感知的位置 it's intended to use the body's position here
-                if(record.visible === false) record.timeBecameVisible = this.currentTime;
-                record.visible = true;
+                if(record.visible === false) record.timeBecameVisible = this.currentTime; // 如果角色原来不可见，现在变为可见状态并且记录当前可见的时间
+                record.visible = true; // 设置可见状态
             }else{
                 // 不可见
                 record.visible = false;
@@ -376,8 +374,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         // "currentPosition" represents the final position after the movement for a single
 		// simualation step. it's now necessary to check if this point is still on
 		// the navMesh
-
-        this.currentPosition.copy(this.position);
+        this.currentPosition.copy(this.position); // 复制角色当前的位置
 
         this.currentRegion = this.world.navMesh.clampMovement(
             this.currentRegion,this.previousPosition,this.currentPosition,this.position// this is the result vector that gets clamped
@@ -393,7 +390,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
      * @param {*} direction 
      * @param {*} position - 记录位置返回值
      */
-    canMoveInDirection(direction,position){
+    canMoveInDirection(direction,position /*返回记录位置*/){
         position.copy(direction).applyRotation(this.rotation).normalize();
         position.multiplyScalar(GameConfig.BOT.MOVEMENT.DODGE_SIZE).add(this.position);
 
@@ -430,7 +427,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
 
 	/**
 	* Returns true if the given item type is currently ignored by the enemy.
-	*
+	* 判断是否忽略指定类型资源
 	* @param {Number} type - The item type.
 	* @return {Boolean} Whether the given item type is ignored or not.
 	*/
@@ -440,15 +437,15 @@ export default class EnemyVehicle extends YUKA.Vehicle{
 
 		switch ( type ) {
 
-			case HEALTH_PACK:
+			case HEALTH_PACK: // 血条包
 				ignoreItem = this.ignoreHealth;
 				break;
 
-			case WEAPON_TYPES_SHOTGUN:
+			case WEAPON_TYPES_SHOTGUN: // 弹枪
 				ignoreItem = this.ignoreShotgun;
 				break;
 
-			case WEAPON_TYPES_ASSAULT_RIFLE:
+			case WEAPON_TYPES_ASSAULT_RIFLE: // 来福枪
 				ignoreItem = this.ignoreAssaultRifle;
 				break;
 
@@ -476,19 +473,23 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         }
         return this;
     }
-
+    /**
+     * 忽略某种类型
+     * @param {*} type 
+     * @returns 
+     */
     ignoreItem(type){
         switch(type){
             case HEALTH_PACK:
-                this.ignoreHealth = true;
+                this.ignoreHealth = true; // 忽略血包资源
                 this.endTimeIgnoreHealth = this.currentTime + this.ignoreItemsTimeout;
                 break;
             case WEAPON_TYPES_SHOTGUN:
-                this.ignoreShotgun = true;
+                this.ignoreShotgun = true; // 忽略武器
                 this.endTimeIgnoreShotgun = this.currentTime + this.ignoreItemsTimeout;
                 break;
             case WEAPON_TYPES_ASSAULT_RIFLE:
-                this.ignoreAssaultRifle = true;
+                this.ignoreAssaultRifle = true; // 忽略来福枪
                 this.endTimeIgnoreAssaultRifle = this.currentTime + this.ignoreItemsTimeout;
                 break;
             default:

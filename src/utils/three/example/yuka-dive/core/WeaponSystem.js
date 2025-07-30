@@ -21,7 +21,7 @@ export default class WeaponSystem {
 
         this.reactionTime = GameConfig.BOT.WEAPON.REACTION_TIME;// 敌人反应的最短的时间
 
-        this.aimAccuracy = GameConfig.BOT.WEAPON.AIM_ACCURACY;// 
+        this.aimAccuracy = GameConfig.BOT.WEAPON.AIM_ACCURACY;// 瞄准的准确性
 
         this.weapons = new Array();
 
@@ -37,9 +37,9 @@ export default class WeaponSystem {
 
         this.renderComponents = {
             blaster:{
-                mash:null,
-                audioMaps:new Map(),
-                muzzle:null,
+                mash:null, // 武器模型
+                audioMaps:new Map(), // 武器音效
+                muzzle:null, // 武器开枪时火焰🔥效果
             },
             shotgun:{
                 mash:null,
@@ -52,7 +52,7 @@ export default class WeaponSystem {
                 muzzle:null,
             }
         };
-
+        // 模糊模块
         this.fuzzyModules = {
             blaster:null,
             shotgun:null,
@@ -97,7 +97,7 @@ export default class WeaponSystem {
      */
     selectBestWeapon(){
         const owner = this.owner;
-        const target = owner.targetSystem.getTarget();
+        const target = owner.targetSystem.getTarget(); // 得到目标敌人
         if(target){
             let highestDesirability = 0;
             let bestWeaponType = WEAPON_TYPES_BLASTER;
@@ -124,42 +124,7 @@ export default class WeaponSystem {
         }
         return this;
     }
-    /**
-     * 根据类型改变当前武器
-     * @param {*} type 
-     */
-    changeWeapon(type){
-        const weapon = this.weaponMaps.get(type);
-        if(weapon){
-            this.currentWeapon = weapon;
 
-            // 只有一个武器可见
-            switch(weapon.type){
-                case WEAPON_TYPES_BLASTER:
-                    this.renderComponents.blaster.mesh.visible = true;
-                    this.renderComponents.shotgun.mesh.visible = false;
-                    this.renderComponents.assaultRifle.mesh.visible = false;
-                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.blaster.mesh,this.owner.world.sync.bind(this.owner.world));
-                    break;
-                case WEAPON_TYPES_SHOTGUN:
-                    this.renderComponents.blaster.mesh.visible = false;
-                    this.renderComponents.shotgun.mesh.visible = true;
-                    this.renderComponents.assaultRifle.mesh.visible = false;
-                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.shotgun.mesh,this.owner.world.sync.bind(this.owner.world));
-                    break;
-                case WEAPON_TYPES_ASSAULT_RIFLE:
-                    this.renderComponents.blaster.mesh.visible = false;
-                    this.renderComponents.shotgun.mesh.visible = false;
-                    this.renderComponents.assaultRifle.mesh.visible = true;
-                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.assaultRifle.mesh,this.owner.world.sync.bind(this.owner.world));
-                    break;
-                default:
-                    console.log('无效的武器类型：',type);
-                    break;
-            }
-        }
-        return this;
-    }
     /**
      *  Adds a weapon of the specified type to the bot's inventory.
 	* If the bot already has a weapon of this type only the ammo is added.
@@ -223,12 +188,12 @@ export default class WeaponSystem {
     removeWeapon(type){
         const weapon = this.weaponMaps.get(type);
         if(weapon ){
-            this.weaponMaps.set(type,null);
+            this.weaponMaps.set(type,null); // 找到武器设置为null
 
             const index = this.weapons.indexOf(weapon);
-            this.weapons.splice(index,1);
+            this.weapons.splice(index,1); // 数组里面删除
 
-            this.owner.weaponContainer.remove(weapon);
+            this.owner.weaponContainer.remove(weapon); // 实体中清除
         }
     }
 
@@ -291,12 +256,12 @@ export default class WeaponSystem {
     }
 
     update(delta){
-        this.updateWeaponChange();
-        this.updateAimAndShot(delta);
+        this.updateWeaponChange(); // 是否需要更换武器
+        this.updateAimAndShot(delta); // 更新敌人及射击
         return this;
     }
     /**
-     * 
+     *  是否需要更换武器，首先要判断当前使用的武器的状态，在射击状态下就不能切换
      * @returns this
      */
     updateWeaponChange(){
@@ -305,14 +270,50 @@ export default class WeaponSystem {
             if(this.currentWeapon.status === WEAPON_STATUS_READY || 
                 this.currentWeapon.status === WEAPON_STATUS_EMPTY ||
                 this.currentWeapon.status === WEAPON_STATUS_OUT_OF_AMMO
-            ){
-                this.currentWeapon.hide();
+            ){ // 首先需要隐藏武器
+                this.currentWeapon.hide(); // 武器的状态被设置为HIDE，过了时间，此状态将会被设置为未准备好的状态极 UNREADY
             }
-
+            // 当前武器处于未准备好的状态
             if(this.currentWeapon.status === WEAPON_STATUS_UNREADY){
-                this.changeWeapon(this.nextWeaponType);
-                this.currentWeapon.equip();
-                this.nextWeaponType = null;
+                this.changeWeapon(this.nextWeaponType); // 切换武器
+                this.currentWeapon.equip(); // 装备当前武器，就播放了隐藏东湖，重新加载动画，设置状态而已
+                this.nextWeaponType = null; // 设置下次切换的武器类型为null
+            }
+        }
+        return this;
+    }
+        /**
+     * 根据类型改变当前武器
+     * @param {*} type 
+     */
+    changeWeapon(type){
+        const weapon = this.weaponMaps.get(type); // 得到指定类型的武器
+        if(weapon){
+            this.currentWeapon = weapon;
+
+            // 只有一个武器可见，设置其他武器不可见
+            switch(weapon.type){
+                case WEAPON_TYPES_BLASTER:
+                    this.renderComponents.blaster.mesh.visible = true;
+                    this.renderComponents.shotgun.mesh.visible = false;
+                    this.renderComponents.assaultRifle.mesh.visible = false;
+                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.blaster.mesh,this.owner.world.sync.bind(this.owner.world));
+                    break;
+                case WEAPON_TYPES_SHOTGUN:
+                    this.renderComponents.blaster.mesh.visible = false;
+                    this.renderComponents.shotgun.mesh.visible = true;
+                    this.renderComponents.assaultRifle.mesh.visible = false;
+                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.shotgun.mesh,this.owner.world.sync.bind(this.owner.world));
+                    break;
+                case WEAPON_TYPES_ASSAULT_RIFLE:
+                    this.renderComponents.blaster.mesh.visible = false;
+                    this.renderComponents.shotgun.mesh.visible = false;
+                    this.renderComponents.assaultRifle.mesh.visible = true;
+                    if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.assaultRifle.mesh,this.owner.world.sync.bind(this.owner.world));
+                    break;
+                default:
+                    console.log('无效的武器类型：',type);
+                    break;
             }
         }
         return this;
@@ -333,16 +334,16 @@ export default class WeaponSystem {
             if(targetSystem.isTargetShootable()){
                 owner.resetSearch();// 搜索并攻击
                 // the bot can fire a round if it is headed towards its target
-				// and after a certain reaction time
-                const targeted = owner.rotateTo(target.position,delta,0.05);
+				// and after a certain reaction time 让实体旋转面向目标对象
+                const targeted = owner.rotateTo(target.position,delta,0.05); // Given a target position, this method rotates the entity by an amount not greater than GameEntity#maxTurnRate until it directly faces the target.
 
-                const timeBecameVisible = targetSystem.getTimeBecameVisible();
+                const timeBecameVisible = targetSystem.getTimeBecameVisible(); // 获取最后一次出现的时间
                 const elapsedTime = owner.world.yukaTime.getElapsed();
 
                 if(targeted === true && (elapsedTime - timeBecameVisible) >= this.reactionTime){
-                    target.bounds.getCenter(targetPosition);
-                    this.addNoiseToAim(targetPosition);
-                    this.shoot(targetPosition);
+                    target.bounds.getCenter(targetPosition); // 得到敌人的中心点数据
+                    this.addNoiseToAim(targetPosition); // 根据到目标点的距离值，动态改变targetPosition 的值，就是增加 了不准确性 
+                    this.shoot(targetPosition); // 开枪，内部调用具体武器的开枪方法
                 }
             }else{
                 if(owner.searchAttacker){
@@ -367,21 +368,26 @@ export default class WeaponSystem {
         }
         return this;
     }
-
+    /**
+     * 让参数的值发生改变，距离越远改变越大
+     * @param {*} targetPosition 
+     * @returns 
+     */
     addNoiseToAim(targetPosition){
-        const distance = this.owner.position.distanceTo(targetPosition);
-
-        offset.x = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy);
+        const distance = this.owner.position.distanceTo(targetPosition); // 用户 到 目标对象的距离
+        //                                  -3  ,  3
+        offset.x = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy); 
         offset.y = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy);
         offset.z = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy);
 
-        const maxDistance = GameConfig.BOT.WEAPON.NOISE_MAX_DISTANCE;
+        const maxDistance = GameConfig.BOT.WEAPON.NOISE_MAX_DISTANCE; // 最远距离 100 
+        // distance = 200 ,f = 100 /100 ,distance = 30 ,f = 30 / 100 = 0.3,
         const f = Math.min(distance,maxDistance) / maxDistance;
         targetPosition.add(offset.multiplyScalar(f));
         return targetPosition;
     }
     /**
-     * 开枪
+     * 开枪，内部调用当前使用的武器的具体开枪方法
      * @param {*} targetPosition 
      */
     shoot(targetPosition){
@@ -390,9 +396,9 @@ export default class WeaponSystem {
 
         switch(status){
             case WEAPON_STATUS_EMPTY:
-                currentWeapon.reload();
+                currentWeapon.reload(); // 需要换弹夹
                 break;
-            case WEAPON_STATUS_READY:
+            case WEAPON_STATUS_READY: // 准备完毕，可以直接开枪
                 currentWeapon.shoot(targetPosition);
                 break;
             default:
@@ -400,7 +406,10 @@ export default class WeaponSystem {
         }
         return this;
     }
-
+    /**
+     * 换弹夹，调用当前武器具体的方法
+     * @returns 
+     */
     reload(){
         const currentWeapon = this.currentWeapon;
         if(currentWeapon.status === WEAPON_STATUS_READY ||
@@ -411,7 +420,8 @@ export default class WeaponSystem {
         return this;
     }
     /**
-     * 在yuka.js中，fuzzyModules模块实现了模糊逻辑系统。模糊逻辑是一种处理近似推理的方法，与传统的布尔逻辑（true/false）不同，它允许变量具有0到1之间的部分真值。这在处理不确定性和主观性时非常有用，例如在游戏AI中模拟人类决策。
+     * 在yuka.js中，fuzzyModules模块实现了模糊逻辑系统。模糊逻辑是一种处理近似推理的方法，与传统的布尔逻辑（true/false）不同，它允许变量具有0到1之间的部分真值。
+     * 这在处理不确定性和主观性时非常有用，例如在游戏AI中模拟人类决策。
      * 隶属度函数（Membership Function）
      * 
      * ### `_initFuzzyModules` 方法的目标
@@ -433,20 +443,20 @@ export default class WeaponSystem {
      *  */ 
     _initFuzzyModules(){
         // 创建模糊模块
-        this.fuzzyModules.assaultRifle = new YUKA.FuzzyModule();
-        this.fuzzyModules.blaster = new YUKA.FuzzyModule();
-        this.fuzzyModules.shotgun = new YUKA.FuzzyModule();
+        this.fuzzyModules.assaultRifle  = new YUKA.FuzzyModule();
+        this.fuzzyModules.blaster       = new YUKA.FuzzyModule();
+        this.fuzzyModules.shotgun       = new YUKA.FuzzyModule();
 
         const fuzzyModuleAssaultRifle = this.fuzzyModules.assaultRifle;
-        const fuzzyModuleBlaster = this.fuzzyModules.blaster;
-        const fuzzyModuleShotgun = this.fuzzyModules.shotgun;
+        const fuzzyModuleBlaster      = this.fuzzyModules.blaster;
+        const fuzzyModuleShotgun      = this.fuzzyModules.shotgun;
 
         // flv distance to target, 创建距离变量
         const distanceToTarget = new YUKA.FuzzyVariable();
         
-        const targetClose = new YUKA.LeftShoulderFuzzySet(0,10,20);// 左边由低到高
-        const targetMedium = new YUKA.TriangularFuzzySet(10,20,40);
-        const targetFar = new YUKA.RightShoulderFuzzySet(20,40,1000);
+        const targetClose = new YUKA.LeftShoulderFuzzySet(0,10,20); // 0-10 => 1,10-20 => 梯度值，>20 => 0
+        const targetMedium = new YUKA.TriangularFuzzySet(10,20,40); // 10-20 => 梯度值  ，20-40 => 梯度值 < 10 || > 20 0
+        const targetFar = new YUKA.RightShoulderFuzzySet(20,40,1000); // 20-40 => 梯度值，40-1000 => 1 ，其他 =0
 
         distanceToTarget.add(targetClose);
         distanceToTarget.add(targetMedium);
@@ -492,30 +502,29 @@ export default class WeaponSystem {
     _initShotgunFuzzyModule(fuzzySets){
         // FLV ammo status
 
-		const fuzzyModuleShotGun = this.fuzzyModules.shotgun;
-		const ammoStatusShotgun = new YUKA.FuzzyVariable();
+		const fuzzyModuleShotGun = this.fuzzyModules.shotgun; // 获取shotgun的模糊模块
+		const ammoStatusShotgun = new YUKA.FuzzyVariable(); // 创建子弹模糊变量
 
 		const lowShot = new YUKA.LeftShoulderFuzzySet( 0, 2, 4 );
 		const okayShot = new YUKA.TriangularFuzzySet( 2, 7, 10 );
 		const LoadsShot = new YUKA.RightShoulderFuzzySet( 7, 10, 12 );
 
-		ammoStatusShotgun.add( lowShot );
-		ammoStatusShotgun.add( okayShot );
-		ammoStatusShotgun.add( LoadsShot );
+		ammoStatusShotgun.add( lowShot ); // 低子弹
+		ammoStatusShotgun.add( okayShot ); // 可以将就
+		ammoStatusShotgun.add( LoadsShot ); // 子弹够用，可以不用加载新的子弹
 
-		fuzzyModuleShotGun.addFLV( 'ammoStatus', ammoStatusShotgun );
+		fuzzyModuleShotGun.addFLV( 'ammoStatus', ammoStatusShotgun ); // 子弹的模糊值，用于判断是否有足够的子弹射击敌人
 
 		// rules
-
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, lowShot ), fuzzySets.desirable ) );
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, okayShot ), fuzzySets.veryDesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, lowShot ), fuzzySets.desirable ) ); // 距离很近+剩余子弹数量很少 = 理想的，可接受的
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, okayShot ), fuzzySets.veryDesirable ) ); // 
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, LoadsShot ), fuzzySets.veryDesirable ) );
 
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, lowShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, lowShot ), fuzzySets.undesirable ) ); // 距离远+剩余子弹数量少 = 不理想的，不可接受的
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, okayShot ), fuzzySets.undesirable ) );
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, LoadsShot ), fuzzySets.desirable ) );
 
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, lowShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, lowShot ), fuzzySets.undesirable ) );// 距离远 + 剩余子弹少 = 不理想的，不可接受的
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, okayShot ), fuzzySets.undesirable ) );
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, LoadsShot ), fuzzySets.undesirable ) );
 
@@ -604,7 +613,10 @@ export default class WeaponSystem {
 
         return this;
     }   
-    
+    /**
+     * 初始化三种武器
+     * @returns 
+     */
     _initRenderComponents(){
         this._initBlasterRenderComponent();
 

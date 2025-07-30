@@ -8,10 +8,11 @@ export default class SeekToPositionGoal extends YUKA.Goal{
     constructor(owner,target = new YUKA.Vector3()){
         super(owner);
 
-        this.target = target;
+        this.target = target; // 目的地位置
     }
 
     activate(){
+        // 激活搜索行为
         const owner = this.owner;
         const seekBehavior = owner.steering.behaviors[2];// 获取seekBehavior 追击行为
         seekBehavior.target.copy(this.target);

@@ -4,6 +4,7 @@
 
 import * as YUKA from 'yuka';
 import Feature from '../core/Feature';
+import AttackCompositeGoal from '../goal/AttackCompositeGoal';
 
 export default class AttackEvaluator extends YUKA.GoalEvaluator{
 
@@ -18,8 +19,8 @@ export default class AttackEvaluator extends YUKA.GoalEvaluator{
      */
     calculateDesirability(owner){
         let desirability = 0;
-        if(owner.targetSystem.hasTarget()){
-            desirability = this.tweaker * Feature.totalWeaponStrength(owner) * Feature.health(owner);
+        if(owner.targetSystem.hasTarget()){ // 找到目标对象enemy
+            desirability = this.tweaker * Feature.totalWeaponStrength(owner /* 我自己*/) * Feature.health(owner/* 我自己*/);
         }
         return desirability;// 可取值，可取性
     }
@@ -28,12 +29,12 @@ export default class AttackEvaluator extends YUKA.GoalEvaluator{
      * 
      * @param {*} owner 
      */
-    setGoal(owner){
+    setGoal(owner /* enemy or player */){
         const currentSubgoal = owner.brain.currentSubgoal();
-        if((currentSubgoal instanceof AttackGoal) === false){
+        if((currentSubgoal instanceof AttackCompositeGoal) === false){
             // 不是攻击目标
             owner.brain.clearSubgoals();
-            owner.brain.addSubgoal(new AttackGoal(owner));
+            owner.brain.addSubgoal(new AttackCompositeGoal(owner));
         }
     }
 }

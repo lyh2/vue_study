@@ -2,7 +2,7 @@ import * as YUKA from 'yuka';
 
 export default class FindPathGoal extends YUKA.Goal{
     /**
-     * 
+     * 查找路线
      * @param {*} owner 
      * @param {*} from 
      * @param {*} to 
@@ -15,8 +15,8 @@ export default class FindPathGoal extends YUKA.Goal{
     }
 
     activate(){
-        const owner = this.owner;
-        const pathPlanner = owner.world.pathPlanner;
+        const owner = this.owner; // enemy or player 对象
+        const pathPlanner = owner.world.pathPlanner; // 路线规划
         owner.path = null;
         pathPlanner.findPath(owner,this.from,this.to,onPathFound);
 

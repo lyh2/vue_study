@@ -11,9 +11,9 @@ export default class FollowPathGoal extends YUKA.Goal{
     activate(){
         const owner = this.owner;
         const path = owner.path;
-
+        // 存在路线
         if(path !== null){
-            // 存在路线
+            // 开启调试
             if(owner.world.debug){
                 // 开启调试
                 const pathHelper = owner.pathHelper;
@@ -25,12 +25,12 @@ export default class FollowPathGoal extends YUKA.Goal{
 
             // 更新路线
             const followPathBehavior = owner.steering.behaviors[0];
-            followPathBehavior.active = true;
+            followPathBehavior.active = true; // 激活steering
             followPathBehavior.path.clear();
 
             const onPathBehavior = owner.steering.behaviors[1];
             onPathBehavior.active = true;
-
+            // 添加点位到跟随路线行为的path 中
             for(let i = 0 ;i < path.length;i++){
                 const waypoint = path[i];
                 followPathBehavior.path.add(waypoint);
@@ -46,7 +46,7 @@ export default class FollowPathGoal extends YUKA.Goal{
     execute(){
         if(this.active()){
             const owner = this.owner;
-            if(owner.atPosition(this.to)){
+            if(owner.atPosition(this.to)){ // 是否到目标点
                 this.status = YUKA.Goal.STATUS.COMPLETED;
             }
         }

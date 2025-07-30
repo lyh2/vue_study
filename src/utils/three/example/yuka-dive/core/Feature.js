@@ -13,12 +13,12 @@ export default class Feature{
 
 
     /**
-     * 
+     *  计算自己武器背包中的所有的武器，子弹数得到一个平均值
      * @param {*} enemy 
      */
-    static totalWeaponStrength(enemy){
+    static totalWeaponStrength(enemy /* 我自己*/){
         const weaponSystem = enemy.weaponSystem;
-
+        // 从自己的武器系统中得到剩余子弹的平均数
         const ammoBlaster = weaponSystem.getRemainingAmmoForWeapon(WEAPON_TYPES_BLASTER);
         const ammoShotgun = weaponSystem.getRemainingAmmoForWeapon(WEAPON_TYPES_SHOTGUN);
         const ammoAssaultRifle = weaponSystem.getRemainingAmmoForWeapon(WEAPON_TYPES_ASSAULT_RIFLE);
@@ -62,6 +62,7 @@ export default class Feature{
         enemy.world.getClosestItem(enemy,itemType,result);
         if(result.item){
             let distance = result.distance;
+            // 小于最小距离也当作最小距离值进行计算
             distance = YUKA.MathUtils.clamp(distance,GameConfig.BOT.MIN_ITEM_RANGE,GameConfig.BOT.MAX_ITEM_RANGE);
             score = distance / GameConfig.BOT.MAX_ITEM_RANGE ;
         }

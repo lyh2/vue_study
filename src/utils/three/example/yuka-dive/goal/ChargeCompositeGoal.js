@@ -8,7 +8,7 @@ import FollowPathGoal from './FollowPathGoal';
 
 /**
  * Sub-goal for seeking the enemy's target during a battle.
- * 在战斗中寻找敌人目标的子目标。
+ * 在战斗中改变位置
  */
 export default class ChargeCompositeGoal extends YUKA.CompositeGoal{
     constructor(owner){
@@ -22,8 +22,7 @@ export default class ChargeCompositeGoal extends YUKA.CompositeGoal{
         this.clearSubgoals();
 
         const owner = this.owner;
-
-        const target = owner.targetSystem.getTarget();
+        const target = owner.targetSystem.getTarget(); // 得到目标对象
 
         const from = new YUKA.Vector3().copy(owner.position);
         const to = new YUKA.Vector3().copy(target.position);
