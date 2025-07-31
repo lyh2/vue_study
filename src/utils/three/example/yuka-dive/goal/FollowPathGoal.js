@@ -33,7 +33,7 @@ export default class FollowPathGoal extends YUKA.Goal{
             // 添加点位到跟随路线行为的path 中
             for(let i = 0 ;i < path.length;i++){
                 const waypoint = path[i];
-                followPathBehavior.path.add(waypoint);
+                followPathBehavior.path.add(waypoint); // 添加点位到路径中
             }
 
             this.to = path[path.length - 1];

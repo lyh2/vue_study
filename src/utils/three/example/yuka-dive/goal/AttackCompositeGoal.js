@@ -25,12 +25,12 @@ export default class AttackCompositeGoal extends YUKA.CompositeGoal{
      */
     activate(){
         // 首先移除子目标
-        this.clearSubgoals();
+        this.clearSubgoals();// Removes all subgoals and ensures Goal#terminate is called for each subgoal.
 
         const owner = this.owner;
         // 敌人有空间进行扫射
         if(owner.targetSystem.isTargetShootable() === true){
-            // 我需要进行移动
+            // owner NPC角色需要进行移动，以便躲避敌人射击
             if(owner.canMoveInDirection(left,targetPosition)){
                 this.addSubgoal(new DodgeCompositeGoal(owner,false));  // 进行左右躲闪
             }else if(owner.canMoveInDirection(right,targetPosition)){
@@ -40,11 +40,12 @@ export default class AttackCompositeGoal extends YUKA.CompositeGoal{
                 this.addSubgoal(new ChargeCompositeGoal(owner));
             }
         }else{
-            // if the target is not visible, go hunt it,目标不可见就去狩猎目标
+            // if the target is not visible, go hunt it,
+            // 目标不可见就去狩猎目标一个新目标
             this.addSubgoal(new HuntCompositeGoal(owner));
         }
     }
-
+    // Executed in each simulation step. 
     execute(){
         const owner = this.owner;
         if(owner.targetSystem.hasTarget() === false){
@@ -58,12 +59,14 @@ export default class AttackCompositeGoal extends YUKA.CompositeGoal{
                 this.status = YUKA.Goal.STATUS.ACTIVE;
             }else{
                 this.status = status;
-                this.replacIfFailed();
+                this.replanIfFailed();
             }
         }
     }
-
+    // Executed when this goal is satisfied. terminate:终止
     terminate(){
+        // 终止时清除所有子目标
+        // Clears all subgoals and ensures Goal#terminate is called for each subgoal.
         this.clearSubgoals();
     }
 }

@@ -281,7 +281,7 @@ export default class World {
         body.name = "player";
         player.setRenderComponent(body,this.sync.bind(this));
         
-        // audio 
+        // audio 行走声音
         const step1 = assetManager.cloneAudio(assetManager.audioMaps.get('step1'));
         const step2 = assetManager.cloneAudio(assetManager.audioMaps.get('step2'));
 
@@ -311,7 +311,7 @@ export default class World {
 
         const mixer = new THREE.AnimationMixer(player.head);
         const deathClip = this.assetManager.animationMaps.get('player_death');
-        const clips = [deathClip];
+        const clips = [deathClip]; // 死亡动画
         player.setAnimationMaps(mixer,clips);
 
         this.add(player);
@@ -387,7 +387,7 @@ export default class World {
      * @param {*} owner - enemy 对象
      * @param {*} ray 
      */
-    addBullet(owner,ray){
+    addBullet(owner /*enemy or  player */,ray /* 子弹要行进的弹道*/){
         const bulletLine = this.assetManager.modelMaps.get('bulletLine').clone();// 获取模型
         bulletLine.visible = false;//
         // 创建子弹实体对象

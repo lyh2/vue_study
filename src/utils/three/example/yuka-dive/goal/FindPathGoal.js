@@ -1,5 +1,7 @@
 import * as YUKA from 'yuka';
-
+/**
+ * FindPathGoal: 查找到目标点的路径
+ */
 export default class FindPathGoal extends YUKA.Goal{
     /**
      * 查找路线
@@ -17,7 +19,7 @@ export default class FindPathGoal extends YUKA.Goal{
     activate(){
         const owner = this.owner; // enemy or player 对象
         const pathPlanner = owner.world.pathPlanner; // 路线规划
-        owner.path = null;
+        owner.path = null; // 清除之前的路径
         pathPlanner.findPath(owner,this.from,this.to,onPathFound);
 
     }
@@ -30,7 +32,9 @@ export default class FindPathGoal extends YUKA.Goal{
         }
     }
 }
-
+/**
+ * 给当前owner.path 属性赋值 路线数据 
+ */
 function onPathFound(owner,path){
     owner.path = path;
 }

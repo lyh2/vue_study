@@ -51,8 +51,8 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.previousPosition = new YUKA.Vector3();
 
         //搜索攻击
-        this.searchAttacker = false;
-        this.attackDirection = new YUKA.Vector3();// 攻击方向
+        this.haveAttacker = false; // 是否搜索攻击者
+        this.attackDirection = new YUKA.Vector3();// 角色被攻击，还击的方向(就是敌人射击的方向的反方向)
         this.endTimeSearch = Infinity;
         this.searchTime = GameConfig.BOT.SEARCH_FOR_ATTACKER_TIME; // 搜索多长时间
 
@@ -167,7 +167,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
             this.bounds.update();
             // update perception 自定义更新频率
             if(this.visionRegulator.ready()){
-                this.updateVision(); // 更新哪些对象是当前角色可见的
+                this.updateVision(); // 更新哪些NPC对象是当前角色可见的
             }
             // update memory system
             this.memorySystem.getValidMemoryRecords(this.currentTime,this.memoryRecords); // Determines all valid memory record and stores the result in the given array.
@@ -177,25 +177,29 @@ export default class EnemyVehicle extends YUKA.Vehicle{
             }
 
             // update goals 
-            this.brain.execute();
+            this.brain.execute(); // Executed in each simulation step. 每一帧都要执行
             if(this.goalArbitrationRegulator.ready()){
-                this.brain.arbitrate();
+                // 顶层决策，迭代计算给每一个目标计算得到一个高的分值
+                this.brain.arbitrate(); // This method represents the top level decision process of an agent. 
+                // It iterates through each goal evaluator and selects the one that has the highest score as the current goal.
             }
 
             // update weapon selection  更新武器
             if(this.weaponSelectionRegulator.ready()){
-                this.weaponSystem.selectBestWeapon();
+                this.weaponSystem.selectBestWeapon(); // 给NPC选择最优的武器
             }
             //  stop search for attacker if necessary
             if(this.currentTime >= this.endTimeSearch){
-                this.resetSearch();
+                this.resetHaveAttacker();
+                // 当NPC开枪子弹射中当前角色。在handleMessage(telegram) 方法中，设置 this.haveAttacker = true 及结束当前状态的最后时间
+                // 假如。有NPC击中角色，得记录下有NPC攻击的状态，但这个状态不能长时间记录，因为，角色会移动，NPC也会移动，可能被击中之后就会逃离
             }
             // reset ignore flags if necessary
             if(this.currentTime >= this.endTimeIgnoreHealth){
-                this.ignoreHealth = false;
+                this.ignoreHealth = false; // 是否忽略此血条
             }
             if(this.currentTime >= this.endTimeIgnoreShotgun){
-                this.ignoreShotgun = false;
+                this.ignoreShotgun = false; // 是否忽略此武器
             }
             if(this.currentTime >= this.endTimeIgnoreAssaultRifle){
                 this.ignoreAssaultRifle = false;
@@ -225,49 +229,67 @@ export default class EnemyVehicle extends YUKA.Vehicle{
             this.world.spawningManager.respawnCompetitor(this); // 设置角色新生的位置
         }
 
-        // always update animations--这里才执行
+        // always update animations
         this.updateAnimationMaps(delta);
         return this;
     }
     /**
-     * 更新当前实体对象的所有动画
+     * 它根据角色当前的移动方向（velocity）和朝向（forward）动态计算四个基础方向动画（前/后/左/右）的权重，实现平滑的方向过渡动画效果
      * @param {Nember} delta 
+
      */
     updateAnimationMaps(delta){
         // 判断当前游戏实体的状态，只更新活着的对象
         if(this.status == STATUS_ALIVE){
-            // 活着才更新动画
+            // 活着才更新动画，获取当前对象的朝向(本地坐标下)
             this.getDirection(lookDirection);// Computes the current direction (forward) vector of this game entity and stores the result in the given vector.
-            moveDirection.copy(this.velocity).normalize();
+            moveDirection.copy(this.velocity).normalize(); // 速度归一化就是移动的方向
+            // this.forward 始终是 (0, 0, 1)，即模型本地坐标系的“正前方”方向（Z+）
 
-            // rotation 
+            // Creates a quaternion that orients an object to face towards a specified target direction.
+            /**
+             * quaternion.lookAt 的作用是计算出一个四元数旋转，这个旋转能把“本地前方”(this.forward)对齐到“实际移动方向”(moveDirection)。
+                这样，后续所有的基础方向（前、后、左、右）都可以通过这个四元数变换，映射到世界坐标系下的实际方向。
+             */
             quaternion.lookAt(this.forward,moveDirection,this.up);
             // calculate weightings for movement animations
 
             positiveWeightings.length = 0;
             let sum = 0;
             // 前后左右四个方向
+            /**
+             * - 预定义四个基础方向向量（正前Z+、正后Z-、左X-、右X+）
+                - 通过四元数旋转将预定义方向转换到角色当前朝向坐标系中
+                - 使用点积计算转换后方向与角色实际移动方向的相似度：
+             */
             for(let i =0; i < directions.length;i ++){
+                // 把预定的方向向量(即定义在世界坐标系的值)转到角色当前朝向的坐标系中
                 transformedDirection.copy(directions[i].direction).applyRotation(quaternion);
-                const dot = transformedDirection.dot(lookDirection);
-                weightings[i] = (dot < 0 ) ? 0 : dot;
-                const animation = this.animationMaps.get(directions[i].name);
-                if(weightings[i] > 0.001){
+                const dot = transformedDirection.dot(lookDirection); 
+                weightings[i] = (dot < 0 ) ? 0 : dot; // 移动的方向 * 朝向 
+                /**
+                 * 点积值范围[-1,1]：
+                    - 值=1：完全同向
+                    - 值=0：垂直方向
+                    - 值=-1：完全反向
+                 */
+                const animation = this.animationMaps.get(directions[i].name); // 获取动画
+                if(weightings[i] > 0.001){ // 计算的权重值 > 0.001 表示 在同一个方向
+                    // 仅当点积>0.001时才启用该方向动画（避免微小值导致的抖动）
                     animation.enabled = true;
-                    positiveWeightings.push(i);
+                    positiveWeightings.push(i);// 记录当前的索引值
                     sum += weightings[i];
-                }else{
+                }else{// 方向相反，就不开启当前动画
                     animation.enabled = false;
                     animation.weight = 0;
                 }
             }
-
+            // 得到所有的权重信息
             for(let i =0; i < positiveWeightings.length;i++){
                 const index = positiveWeightings[i];
-                const animation = this.animationMaps.get(directions[index].name);
-                animation.weight = weightings[index]/sum;
-
-                animation.timeScale = this.getSpeed() / this.maxSpeed;
+                const animation = this.animationMaps.get(directions[index].name); // 得到指定索引的动画
+                animation.weight = weightings[index]/sum; // 设置对应的权重。权重归一化处理
+                animation.timeScale = this.getSpeed() / this.maxSpeed;// 根据权重设置动画播放的速度，动画播放速度与实际移动速度同步
             }
         }
         this.mixer.update(delta);
@@ -277,16 +299,17 @@ export default class EnemyVehicle extends YUKA.Vehicle{
      * 重新设置敌人，当敌人被击毙
      */
     reset(){
-        this.health = this.maxHealth;
-        this.status = STATUS_ALIVE;
+        this.health = this.maxHealth; // 更新血量
+        this.status = STATUS_ALIVE; // 设置状态为活着
 
-        this.resetSearch();
+        this.resetHaveAttacker(); // 重置是否有攻击者
 
-        this.ignoreHealth = false;
-        this.ignoreWeapons = false;
+        this.ignoreHealth = false; // 是否忽略血条包
+        this.ignoreWeapons = false; // 是否忽略武器
 
-        this.brain.clearSubgoals();
-        this.memoryRecords.length = 0;
+        this.brain.clearSubgoals();// 清除所有的子目标
+
+        this.memoryRecords.length = 0; // 清除内存记录
         this.memorySystem.clear();
         // 重新设置目标系统及武器系统
         this.targetSystem.reset();
@@ -328,34 +351,37 @@ export default class EnemyVehicle extends YUKA.Vehicle{
     }
     /**
      * Resets the search for an attacker.
+     * 重新设置是否有攻击者
      */
-    resetSearch(){
-        this.searchAttacker = false;
+    resetHaveAttacker(){
+        this.haveAttacker = false; // 在handleMessage 中处理，有被击中的消息时，此次表示受到了攻击，设置haveAttacker = true,并记录攻击的时间
         this.attackDirection.set(0,0,0);
         this.endTimeSearch = Infinity;
         return this;
     }
-    /** 更新角色的可见组件
+    /** 更新角色的可见组件,就是不断的更新当前角色对象可以看见的NPC 对象数组
+     * 并把这些NPC对象放入MemoruSystem 中进行管理计算
      * Updates the vision component of this game entity and stores
 	* the result in the respective memory system.
      */
     updateVision(){
         const memorySystem = this.memorySystem;
         const vision = this.vision;
-
+        // 所有的NPC 对象
         const competitors = this.world.competitors;// 数组存储的竞争对手，当前对象数组
 
         for(let i =0; i < competitors.length;i++){
             const competitor = competitors[i];
-            // ignore own entity and consider only living enemies
+            // ignore own entity and consider only living enemies 
             if(competitor === this || competitor.status !== STATUS_ALIVE) continue; // 是自己或者对象已经不是活着的状态，就不用操作
             if(memorySystem.hasRecord(competitor) === false){
-                // 写入记录里面
+                // 还未写入，则写入到记录里面，方便后面的计算
                 memorySystem.createRecord(competitor);
             }
-            const record = memorySystem.getRecord(competitor); // 得到当前用户记录
-            competitor.head.getWorldPosition(worldPosition);// 得到角色头部的世界坐标
+            const record = memorySystem.getRecord(competitor); // 得到NPC记录
+            competitor.head.getWorldPosition(worldPosition);// 得到NPC角色的头部的世界坐标
             if(vision.visible(worldPosition) === true && competitor.active){
+                // 通过vision 计算是否可见当前的位置worldPosition，并未当前NPC还是或者的状态
                 record.timeLastSensed = this.currentTime;// 最后感知的时间
                 record.lastSensedPosition.copy(competitor.position);// 最后可感知的位置 it's intended to use the body's position here
                 if(record.visible === false) record.timeBecameVisible = this.currentTime; // 如果角色原来不可见，现在变为可见状态并且记录当前可见的时间
@@ -408,14 +434,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         const distance = this.position.squaredDistanceTo(position);
         return distance <= tolerance;
     }
-
-    resetSearch(){
-        this.searchAttacker = false;
-        this.attackDirection.set(0,0,0);
-        this.endTimeSearch = Infinity;
-
-        return this;
-    }
+   
 
     rotateTo(target,delta,tolerance){
         customTarget.copy(target);
@@ -474,7 +493,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         return this;
     }
     /**
-     * 忽略某种类型
+     * 忽略某种类型的资源
      * @param {*} type 
      * @returns 
      */
@@ -482,7 +501,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         switch(type){
             case HEALTH_PACK:
                 this.ignoreHealth = true; // 忽略血包资源
-                this.endTimeIgnoreHealth = this.currentTime + this.ignoreItemsTimeout;
+                this.endTimeIgnoreHealth = this.currentTime + this.ignoreItemsTimeout; // 忽略结束的时间
                 break;
             case WEAPON_TYPES_SHOTGUN:
                 this.ignoreShotgun = true; // 忽略武器
@@ -507,8 +526,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         this.health = Math.min(this.health,this.maxHealth);
 
         if(this.world.debug){
-			console.log( 'DIVE.Enemy: Entity with ID %s receives %i health points.', this.uuid, amount );
-
+			console.log(  this.name,':获得血量🩸:', amount );
         }
         return this;
     }
@@ -546,7 +564,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
                 }else{
 					// if not, search for attacker if he is still alive
                     if(telegram.sender.status === STATUS_ALIVE){
-                        this.searchAttacker = true;
+                        this.haveAttacker = true;
                         this.endTimeSearch = this.currentTime + this.searchTime;
                         this.attackDirection.copy(telegram.data.direction).multiplyScalar(-1);
                     }

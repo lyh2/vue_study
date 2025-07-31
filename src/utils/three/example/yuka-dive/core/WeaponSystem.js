@@ -19,21 +19,18 @@ export default class WeaponSystem {
     constructor(owner /* enemy  or player */){
         this.owner = owner;
 
-        this.reactionTime = GameConfig.BOT.WEAPON.REACTION_TIME;// 敌人反应的最短的时间
+        this.reactionTime = GameConfig.BOT.WEAPON.REACTION_TIME;//  被激活需要执行的时间
 
-        this.aimAccuracy = GameConfig.BOT.WEAPON.AIM_ACCURACY;// 瞄准的准确性
-
+        this.aimAccuracy = GameConfig.BOT.WEAPON.AIM_ACCURACY;// 瞄准的准确性：3
+        // 存储三种武器
         this.weapons = new Array();
-
         this.weaponMaps = new Map();
-
         this.weaponMaps.set(WEAPON_TYPES_BLASTER,null);
         this.weaponMaps.set(WEAPON_TYPES_SHOTGUN,null);
         this.weaponMaps.set(WEAPON_TYPES_ASSAULT_RIFLE,null);
 
-        this.currentWeapon = null;
-
-        this.nextWeaponType = null;
+        this.currentWeapon = null; // 当前使用的武器
+        this.nextWeaponType = null; // 切换的武器类型
 
         this.renderComponents = {
             blaster:{
@@ -61,15 +58,14 @@ export default class WeaponSystem {
     }
 
     init(){
-        this._initRenderComponents();
-
+        this._initRenderComponents(); // 分别创建每种武器
         // 给机器人初始化模糊模块
         if(this.owner.isPlayer === false){
-            // 表示是机器人
+            // 表示是机器人或者是NPC才需要模糊模块，玩家不需要
             this._initFuzzyModules();
         }
         // reset the system to its initial state
-        this.reset();
+        this.reset();// 初始化时重置所有的状态数据
         return this;
     }
     /**
@@ -83,12 +79,12 @@ export default class WeaponSystem {
             this.removeWeapon(weapon.type);
         }
         // 添加武器到库存中去 add weapons to inventory
-        this.addWeapon(WEAPON_TYPES_BLASTER);
-        // 改变初始化武器
+        this.addWeapon(WEAPON_TYPES_BLASTER); // 实例化指定类型的武器并且添加到NPC
+        // addWeapon 只是创建并没有进行渲染绑定
         this.changeWeapon(WEAPON_TYPES_BLASTER);
         // reset next weapon
-        this.nextWeaponType = null;
-        this.currentWeapon.status  = WEAPON_STATUS_READY;
+        this.nextWeaponType = null; // 要切换的武器类型
+        this.currentWeapon.status  = WEAPON_STATUS_READY; // 当前武器的状态
         return this;
     }
 
@@ -99,9 +95,9 @@ export default class WeaponSystem {
         const owner = this.owner;
         const target = owner.targetSystem.getTarget(); // 得到目标敌人
         if(target){
-            let highestDesirability = 0;
+            let highestDesirability = 0;// 最高的可信值
             let bestWeaponType = WEAPON_TYPES_BLASTER;
-
+            // 角色 到 NPC 之间的距离，根据距离值得到使用当前武器的可信值desirability
             const distanceToTarget = this.owner.position.distanceTo(target.position);
             // for each weapon in the inventory calculate its desirability given the
 			// current situation. The most desirable weapon is selected
@@ -111,9 +107,9 @@ export default class WeaponSystem {
                 // 当前枪里还有子弹就得到一个概率值，否则就是0
                 let desirability = (weapon.currentAmmo === 0 ) ? 0 : weapon.getDesirability(distanceToTarget);
                 // if weapon is different than currentWeapon, decrease the desirability in order to respect the
-				// cost of changing a weapon
+				// cost of changing a weapon  当前使用的武器不是此武器。计算得到最终的可信值 = desirability - 切换武器时需要消耗值
                 if(this.currentWeapon !== weapon) desirability -= GameConfig.BOT.WEAPON.CHANGE_COST;
-
+                // 得到最优的可信值
                 if(desirability > highestDesirability){
                     highestDesirability = desirability;
                     bestWeaponType = weapon.type;
@@ -125,7 +121,7 @@ export default class WeaponSystem {
         return this;
     }
 
-    /**
+    /** 实例话指定类型的武器对象。都是派生于YUKA.GameEntity
      *  Adds a weapon of the specified type to the bot's inventory.
 	* If the bot already has a weapon of this type only the ammo is added.
 	* 已经存在指定类型枪，则添加子弹即可
@@ -134,7 +130,7 @@ export default class WeaponSystem {
     addWeapon(type){
         const owner = this.owner;
         let weapon ;
-
+        // 创建对应的武器实体对象
         switch(type){
             case WEAPON_TYPES_BLASTER: // 散弹枪
                 weapon = new Blaster(owner);//
@@ -162,7 +158,7 @@ export default class WeaponSystem {
         // check inventory:存活
         const weaponInventory = this.weaponMaps.get(type);
         if(weaponInventory !== null){
-            // 机器人对象已经有type类型的武器，就不用再增加，而是增加子弹即可
+            // NPC机器人对象已经有type类型的武器，就不用再增加同一类型的武器，而是增加子弹即可
             weaponInventory.addRounds(weapon.getRemainingRounds());
         }else{
             //
@@ -186,13 +182,13 @@ export default class WeaponSystem {
      * @param {*} type 
      */
     removeWeapon(type){
-        const weapon = this.weaponMaps.get(type);
+        const weapon = this.weaponMaps.get(type); // 从Map 中查找
         if(weapon ){
             this.weaponMaps.set(type,null); // 找到武器设置为null
 
-            const index = this.weapons.indexOf(weapon);
+            const index = this.weapons.indexOf(weapon); // 从数组中删除
             this.weapons.splice(index,1); // 数组里面删除
-
+            // 从NPC中移除该实体
             this.owner.weaponContainer.remove(weapon); // 实体中清除
         }
     }
@@ -265,7 +261,7 @@ export default class WeaponSystem {
      * @returns this
      */
     updateWeaponChange(){
-        if(this.nextWeaponType !== null){
+        if(this.nextWeaponType !== null){ // 已经设置可更换的武器类型，才能进行更换
             // if the current weapon is in certain states, hide it in order to start the weapon change
             if(this.currentWeapon.status === WEAPON_STATUS_READY || 
                 this.currentWeapon.status === WEAPON_STATUS_EMPTY ||
@@ -282,15 +278,14 @@ export default class WeaponSystem {
         }
         return this;
     }
-        /**
-     * 根据类型改变当前武器
+    /** 武器管理系统。管理所有的武器
+     * 根据类型改变当前选择的武器，进行GameEntity 与 Mesh 进行绑定
      * @param {*} type 
      */
     changeWeapon(type){
-        const weapon = this.weaponMaps.get(type); // 得到指定类型的武器
+        const weapon = this.weaponMaps.get(type); // 从Map中得到指定类型的武器
         if(weapon){
-            this.currentWeapon = weapon;
-
+            this.currentWeapon = weapon; // 设置为当前使用的武器，同时设置其他武器不显示
             // 只有一个武器可见，设置其他武器不可见
             switch(weapon.type){
                 case WEAPON_TYPES_BLASTER:
@@ -332,34 +327,37 @@ export default class WeaponSystem {
             // if the target is visible, directly rotate towards it and then
 			// fire a round
             if(targetSystem.isTargetShootable()){
-                owner.resetSearch();// 搜索并攻击
+                owner.resetHaveAttacker();// 重置攻击者信息
                 // the bot can fire a round if it is headed towards its target
 				// and after a certain reaction time 让实体旋转面向目标对象
-                const targeted = owner.rotateTo(target.position,delta,0.05); // Given a target position, this method rotates the entity by an amount not greater than GameEntity#maxTurnRate until it directly faces the target.
+                const targeted = owner.rotateTo(target.position,delta,0.05); 
+                // Given a target position, this method rotates the entity by an amount not greater than GameEntity#maxTurnRate until it directly faces the target.
 
                 const timeBecameVisible = targetSystem.getTimeBecameVisible(); // 获取最后一次出现的时间
                 const elapsedTime = owner.world.yukaTime.getElapsed();
-
+                // 当前时间 - 变成可见的时间 > 反应的时间 => 开枪射击
                 if(targeted === true && (elapsedTime - timeBecameVisible) >= this.reactionTime){
                     target.bounds.getCenter(targetPosition); // 得到敌人的中心点数据
-                    this.addNoiseToAim(targetPosition); // 根据到目标点的距离值，动态改变targetPosition 的值，就是增加 了不准确性 
+                    this.addNoiseToAim(targetPosition); // 根据到目标点的距离值，动态改变targetPosition 的值，使其增加了不准确性 
                     this.shoot(targetPosition); // 开枪，内部调用具体武器的开枪方法
                 }
             }else{
-                if(owner.searchAttacker){
+                // 找到目标但被遮挡不能开枪，是否有攻击者？
+                if(owner.haveAttacker){ // 表示已经有子弹击中了owner，这个时候我应该旋转面向敌人，进行还击
                     targetPosition.copy(owner.position).add(owner.attackDirection);
                     owner.rotateTo(targetPosition,delta);
                 }else{
-                    owner.rotateTo(targetSystem.getLastSensedPosition(),delta);
+                    owner.rotateTo(targetSystem.getLastSensedPosition(),delta);// 没有攻击者，就旋转到目标对象最后感知的位置
                 }
             }
         }else{
-            if(owner.searchAttacker){
+            // 已经有攻击者了
+            if(owner.haveAttacker){
                 targetPosition.copy(owner.position).add(owner.attackDirection);
                 owner.rotateTo(targetPosition,delta);
             }else{
                 // if the enemy has no target and is not being attacked, just look along
-				// the movement direction
+				// the movement direction 随机向任意方向移动
                 displacement.copy(owner.velocity).normalize();
                 targetPosition.copy(owner.position).add(displacement);
                 
@@ -374,7 +372,7 @@ export default class WeaponSystem {
      * @returns 
      */
     addNoiseToAim(targetPosition){
-        const distance = this.owner.position.distanceTo(targetPosition); // 用户 到 目标对象的距离
+        const distance = this.owner.position.distanceTo(targetPosition); // 角色 到 目标对象的距离
         //                                  -3  ,  3
         offset.x = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy); 
         offset.y = YUKA.MathUtils.randFloat(- this.aimAccuracy,this.aimAccuracy);
@@ -391,8 +389,8 @@ export default class WeaponSystem {
      * @param {*} targetPosition 
      */
     shoot(targetPosition){
-        const currentWeapon = this.currentWeapon;
-        const status = currentWeapon.status;
+        const currentWeapon = this.currentWeapon; // 当前使用的武器
+        const status = currentWeapon.status;// 武器的状态
 
         switch(status){
             case WEAPON_STATUS_EMPTY:
@@ -483,10 +481,10 @@ export default class WeaponSystem {
         fuzzyModuleShotgun.addFLV('distanceToTarget',distanceToTarget);
 
         const fuzzySets = {
-            targetClose:targetClose,
+            targetClose:targetClose, // 距离值
             targetMedium:targetMedium,
             targetFar:targetFar,
-            undesirable:undesirable,
+            undesirable:undesirable,// 可信值
             desirable:desirable,
             veryDesirable:veryDesirable
         };
@@ -507,26 +505,30 @@ export default class WeaponSystem {
 
 		const lowShot = new YUKA.LeftShoulderFuzzySet( 0, 2, 4 );
 		const okayShot = new YUKA.TriangularFuzzySet( 2, 7, 10 );
-		const LoadsShot = new YUKA.RightShoulderFuzzySet( 7, 10, 12 );
+		const loadsShot = new YUKA.RightShoulderFuzzySet( 7, 10, 12 );
 
 		ammoStatusShotgun.add( lowShot ); // 低子弹
 		ammoStatusShotgun.add( okayShot ); // 可以将就
-		ammoStatusShotgun.add( LoadsShot ); // 子弹够用，可以不用加载新的子弹
+		ammoStatusShotgun.add( loadsShot ); // 子弹够用，可以不用加载新的子弹
 
 		fuzzyModuleShotGun.addFLV( 'ammoStatus', ammoStatusShotgun ); // 子弹的模糊值，用于判断是否有足够的子弹射击敌人
-
+        /**
+         * FuzzyRule(antecedent 条件, consequence 执行结果)
+            Class for representing a fuzzy rule. Fuzzy rules are comprised of an antecedent and a consequent in the form: IF antecedent THEN consequent.
+            Compared to ordinary if/else statements with discrete values, the consequent term of a fuzzy rule can fire to a matter of degree.
+         */
 		// rules
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, lowShot ), fuzzySets.desirable ) ); // 距离很近+剩余子弹数量很少 = 理想的，可接受的
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, okayShot ), fuzzySets.veryDesirable ) ); // 
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, LoadsShot ), fuzzySets.veryDesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetClose, loadsShot ), fuzzySets.veryDesirable ) );
 
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, lowShot ), fuzzySets.undesirable ) ); // 距离远+剩余子弹数量少 = 不理想的，不可接受的
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, okayShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, LoadsShot ), fuzzySets.desirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetMedium, loadsShot ), fuzzySets.desirable ) );
 
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, lowShot ), fuzzySets.undesirable ) );// 距离远 + 剩余子弹少 = 不理想的，不可接受的
 		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, okayShot ), fuzzySets.undesirable ) );
-		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, LoadsShot ), fuzzySets.undesirable ) );
+		fuzzyModuleShotGun.addRule( new YUKA.FuzzyRule( new YUKA.FuzzyAND( fuzzySets.targetFar, loadsShot ), fuzzySets.undesirable ) );
 
 		return this;
     }

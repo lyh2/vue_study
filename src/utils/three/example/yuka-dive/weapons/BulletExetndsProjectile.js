@@ -9,7 +9,7 @@ export default class BulletExtendsProjectile extends ProjectileMovingEntity{
      * @param {*} owner 
      * @param {*} ray 
      */
-    constructor(owner /*enemy or player  */,ray = new YUKA.Ray()){
+    constructor(owner /*enemy or player  */,ray /*子弹行进的弹道*/){
         super(owner,ray);
 
         this.maxSpeed = GameConfig.BULLET.MAX_SPEED; // 设置速度

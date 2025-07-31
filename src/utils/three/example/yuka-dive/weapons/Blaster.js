@@ -11,7 +11,7 @@ export default class Blaster extends BaseWeaponGameEntity{
     constructor(owner){
         super(owner);
 
-        this.type = WEAPON_TYPES_BLASTER;
+        this.type = WEAPON_TYPES_BLASTER; //当前武器的类型
 
         // common weapon properties 通用属性
         this.currentAmmo = GameConfig.BLASTER.ROUNDS_LEFT;
@@ -34,8 +34,7 @@ export default class Blaster extends BaseWeaponGameEntity{
      * @param {*} delta 
      */
     update(delta){
-        super.update(delta);
-
+        super.update(delta); // 基类中实现更换武器装备，隐藏武器操作
         // 检测换弹夹
         if(this.currentTime >= this.endTimeReload){
             const toReload = this.perClipAmmo - this.currentAmmo;// 预定义子弹数 -减当前弹夹剩余子弹数= 还可以添加的子弹数
@@ -80,6 +79,7 @@ export default class Blaster extends BaseWeaponGameEntity{
             }
             this.endTimeShot = Infinity;
         }
+        // 检测更换武器的功能在基类中实现
         return this;
     }
 
@@ -107,10 +107,9 @@ export default class Blaster extends BaseWeaponGameEntity{
     }
     /**
      * 开枪
-     * @param {*} targetPosition 
+     * @param {*} targetPosition -设计的目标点
      * @returns 
      */
-
     shoot(targetPosition){
         // 设置当前状态为开枪的状态
         this.status = WEAPON_STATUS_SHOT;
@@ -131,11 +130,11 @@ export default class Blaster extends BaseWeaponGameEntity{
         this.muzzle.material.rotation = Math.random() * Math.PI;
         this.endTimeMuzzleFire = this.currentTime + this.muzzleFireTime;
 
-        // 创建子弹
-        const ray = new YUKA.Ray();
+        // 创建射线
+        const ray = new YUKA.Ray(); // 创建射线
         this.getWorldPosition(ray.origin);// 得到当前枪的世界坐标系位置
         ray.direction.subVectors(targetPosition,ray.origin).normalize();
-        // add spread
+        // add spread 增加点扰动效果
         spread.x = (1 - Math.random() * 2) * 0.01; // (-1,1) * 0.01; 将值控制在正负0.01 间
         spread.y = (1 - Math.random() * 2) * 0.01;
         spread.z = (1 - Math.random() * 2) * 0.01;
@@ -143,7 +142,7 @@ export default class Blaster extends BaseWeaponGameEntity{
         ray.direction.add(spread).normalize();// 让方向进行稍微的改变么？
 
         // 添加子弹到世界中
-        this.owner.world.addBullet(this.owner /*  */,ray);
+        this.owner.world.addBullet(this.owner /*  */,ray/* 创建的射线 */);
 
         // adjust ammo 修改子弹
         this.currentAmmo --;// 子弹数减1
@@ -160,17 +159,26 @@ export default class Blaster extends BaseWeaponGameEntity{
     getDesirability(distance){
         this.fuzzyModule.fuzzify('distanceToTarget',distance); // 距离值
         this.fuzzyModule.fuzzify('ammoStatus',this.currentAmmo); // 子弹数量
-
+        // desirability 的值会根据上面的两个值得到
         return this.fuzzyModule.defuzzify('desirability') / 100;
     }
     /**
 	* Inits animations for this weapon. Only used for the player.
-	* 初始化武器的动画，只有用户使用
+	* 初始化武器的动画，只有用户玩家才使用
 	* @return {Blaster} A reference to this weapon.
 	*/
     initAnimationMaps(){
         const assetManager = this.owner.world.assetManager;
+        /**
+         * - __YUKA 与 THREE.js 的集成机制__：
+            - YUKA 实体（如 `Blaster`）通过 `renderComponent` 属性与 THREE.js 对象关联
+            - 在渲染循环中，YUKA 实体的位置/旋转会同步到对应的 THREE.js 对象
+            - __对象兼容性设计__：
+            - `Blaster` 类继承自 `YUKA.GameEntity`
+            - YUKA 实现了 `matrix` 和 `matrixWorld` 属性接口，与 THREE.js `Object3D` 兼容
+            - THREE.AnimationMixer 只要求对象实现动画系统所需的矩阵接口
 
+         */
         const mixer = new THREE.AnimationMixer(this);
         const tempAnimationMaps = new Map();
 

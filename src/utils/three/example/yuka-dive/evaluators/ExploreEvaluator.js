@@ -1,6 +1,9 @@
 import * as YUKA from 'yuka';
 import ExploreCompositeGoal from '../goal/ExploreCompositeGoal';
 
+/**
+ * ExploreEvaluator: 探索评估器
+ */
 export default class ExploreEvaluator extends YUKA.GoalEvaluator{
     constructor(characterBias = 1){
         super(characterBias);

@@ -99,7 +99,7 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
     }
 
     hide(){
-        this.previousState = this.status;
+        this.previousState = this.status; // 保存当前武器的状态
         this.status = WEAPON_STATUS_HIDE;
         this.endTimeHide = this.currentTime + this.hideTime;
 
@@ -108,7 +108,6 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
             animation.stop();
             animation.play();
         }
-
         return this;
     }
 
@@ -127,12 +126,19 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
         this.currentTime += delta;
         // 更换装备时间结束
         if(this.currentTime >= this.endTimeEquip){
-            this.status= this.previousState;
+            /**
+             * - `WEAPON_STATUS_EQUIP` (装备中)
+                - `WEAPON_STATUS_HIDE` (隐藏中)
+                - `WEAPON_STATUS_READY` (就绪)
+                - `WEAPON_STATUS_UNREADY` (未就绪)
+
+             */
+            this.status= this.previousState; // 这里可以直接设置为READY 状态，而不用管装备之前是什么状态
             this.endTimeEquip = Infinity;
         }
         // 隐藏武器时间结束 ，状态设置为未准备好状态
         if(this.currentTime >= this.endTimeHide){
-            this.status = WEAPON_STATUS_UNREADY;
+            this.status = WEAPON_STATUS_UNREADY; // 隐藏结束之后设置为未准备好的状态
             this.endTimeHide = Infinity;
         }
 

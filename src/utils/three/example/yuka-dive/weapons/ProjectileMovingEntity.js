@@ -9,15 +9,15 @@ const ray = new YUKA.Ray();
  */
 export default class ProjectileMovingEntity extends YUKA.MovingEntity{
     
-    constructor(owner /* enemy or player */,ray=new YUKA.Ray()){
+    constructor(owner /* enemy or player */,ray/*子弹行进的弹道*/){
         super();
 
         this.canActivateTrigger = false;//Whether the entity can activate a trigger or not.
 
         this.owner = owner;
-        this.ray = ray;
+        this.ray = ray; // 从武器到目标敌人之间的射线
 
-        this.lifetime = 0;
+        this.lifetime = 0; // 子弹的生命周期时长
         this.currentTime = 0;
         this.damage = 0;// 死亡
         this.name = 'projectile:弹丸';
@@ -26,6 +26,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
      * Executed when this game entity is updated for the first time by its EntityManager.
      */
     start(){
+        // 在创建的时候，设置子弹模型不可显示
         this._renderComponent.visible = true; // 设置3D模型可视化显示
         return this;
     }
@@ -55,7 +56,7 @@ export default class ProjectileMovingEntity extends YUKA.MovingEntity{
                 const validDistance = ray.origin.squaredDistanceTo(this.position);
                 if(distanceToIntersection <= validDistance){
                     // 子弹与实体相交了
-                    this.owner.sendMessage(entity,MESSAGE_HIT,0,{damage:this.damage,direction:this.ray.direction});
+                    this.owner.sendMessage(entity,MESSAGE_HIT,0,{damage:this.damage,direction:this.ray.direction /* 武器发射的子弹的射线*/});
                     // 移除弹丸 remove projectile from world
                     world.remove(this);
                     //console.log('击中:',entity.name);

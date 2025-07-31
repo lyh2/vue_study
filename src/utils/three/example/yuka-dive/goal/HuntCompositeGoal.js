@@ -4,6 +4,7 @@
 
 import * as YUKA from 'yuka';
 import FindPathGoal from './FindPathGoal';
+import FollowPathGoal from './FollowPathGoal';
 
 export default class HuntCompositeGoal extends YUKA.CompositeGoal{
     constructor(owner){
@@ -14,6 +15,8 @@ export default class HuntCompositeGoal extends YUKA.CompositeGoal{
     activate(){
         // 首先清除已有的全部子目标
         this.clearSubgoals();
+        const owner = this.owner;
+
         //seek to the last sensed position,寻找最后一个感知的位置
         const targetPosition = owner.targetSystem.getLastSensedPosition();
 
@@ -33,7 +36,7 @@ export default class HuntCompositeGoal extends YUKA.CompositeGoal{
         }else{
             this.status = this.executeSubgoals();
             if(this.completed()){
-                // 猎杀完成，把当前敌人从目标系统中移除
+                // 把当前敌人从目标系统中移除
                 const target = owner.targetSystem.getTarget();
                 owner.removeEntityFromMemory(target); // 移除目标对象
                 owner.targetSystem.update();

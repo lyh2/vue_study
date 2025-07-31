@@ -11,15 +11,17 @@ export default class AttackEvaluator extends YUKA.GoalEvaluator{
     constructor(charactorBias=1){
         super(charactorBias);
 
-        this.tweaker = 1;//
+        this.tweaker = 1;// 调整值
     }
     /**
      * desirability:可取性
-     * @param {*} owner 
+     * @param {*} owner - enemy NPC对象
      */
     calculateDesirability(owner){
         let desirability = 0;
-        if(owner.targetSystem.hasTarget()){ // 找到目标对象enemy
+        // 从属主的目标系统中获取目标对象
+        if(owner.targetSystem.hasTarget()){
+            // 找到目标对象enemy                owner 当前拥有的武器子弹总数的平均数             owner 当前拥有的血量百分比 => 得到一个可信值     
             desirability = this.tweaker * Feature.totalWeaponStrength(owner /* 我自己*/) * Feature.health(owner/* 我自己*/);
         }
         return desirability;// 可取值，可取性

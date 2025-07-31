@@ -20,6 +20,7 @@ export default class SeekToPositionGoal extends YUKA.Goal{
     }
 
     execute(){
+        // 到目标点容差范围内
         if(this.owner.atPosition(this.target)){
             this.status = YUKA.Goal.STATUS.COMPLETED;
         }
@@ -29,6 +30,6 @@ export default class SeekToPositionGoal extends YUKA.Goal{
      */
     terminate(){
         const seekBehavior = this.owner.steering.behaviors[2];
-        seekBehavior.active = false; // 准备完毕还不能被激活，需要在激活状态中被激活
+        seekBehavior.active = false; // 终止是，需设置SeelBehavior 行为不可使用
     }
 }
