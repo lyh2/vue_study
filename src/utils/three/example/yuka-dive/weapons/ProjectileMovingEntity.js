@@ -9,7 +9,7 @@ const ray = new YUKA.Ray();
  */
 export default class ProjectileMovingEntity extends YUKA.MovingEntity{
     
-    constructor(owner /* enemy or player */,ray/*子弹行进的弹道*/){
+    constructor(owner /* enemy or player */,ray = new YUKA.Ray()/*子弹行进的弹道*/){
         super();
 
         this.canActivateTrigger = false;//Whether the entity can activate a trigger or not.

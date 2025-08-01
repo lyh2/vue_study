@@ -29,8 +29,8 @@ export default class UIManager {
 
         this.sprites ={
             crosshairs:null,// 枪瞄准点
-            frontIndicator:null,
-            rightIndicator:null,
+            frontIndicator:null, // 前方受到攻击的指示器
+            rightIndicator:null, // 右方受到攻击的指示器
             leftIndicator:null,
             backIndicator:null,
         };
@@ -55,6 +55,7 @@ export default class UIManager {
             showWireframe:false,
             showSpatialIndex:false,
             enableFPSControls:()=>{
+                // 开启第一人称控制
                 this.world.fpsControls.connect();
             }
         }
@@ -247,7 +248,7 @@ export default class UIManager {
         return this;
     }
     /**
-     * 
+     * 创建瞄准准心及被攻击方向指示器
      */
     _buildFPSInterface(){
         // 创建十字瞄准镜 crosshairs

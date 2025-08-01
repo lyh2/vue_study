@@ -192,7 +192,9 @@ export default class WeaponSystem {
             this.owner.weaponContainer.remove(weapon); // 实体中清除
         }
     }
-
+    /**
+     * 切换武器 
+     */
     setNextWeapon(type){
         if(this.currentWeapon.type !== type){
             this.nextWeaponType = type;
@@ -272,7 +274,7 @@ export default class WeaponSystem {
             // 当前武器处于未准备好的状态
             if(this.currentWeapon.status === WEAPON_STATUS_UNREADY){
                 this.changeWeapon(this.nextWeaponType); // 切换武器
-                this.currentWeapon.equip(); // 装备当前武器，就播放了隐藏东湖，重新加载动画，设置状态而已
+                this.currentWeapon.equip(); // 装备当前武器，就播放了隐藏动画，重新加载动画，设置状态而已
                 this.nextWeaponType = null; // 设置下次切换的武器类型为null
             }
         }
@@ -412,7 +414,7 @@ export default class WeaponSystem {
         const currentWeapon = this.currentWeapon;
         if(currentWeapon.status === WEAPON_STATUS_READY ||
             currentWeapon.status === WEAPON_STATUS_EMPTY
-        ){
+        ){ // 当前武器状态是准备好或者是为空的状态时。进行换弹夹
             currentWeapon.reload();
         }
         return this;

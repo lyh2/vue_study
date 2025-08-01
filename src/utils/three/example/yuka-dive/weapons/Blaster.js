@@ -87,7 +87,7 @@ export default class Blaster extends BaseWeaponGameEntity{
      * 继承父类的换弹夹方法
      */
     reload(){
-        this.status = WEAPON_STATUS_RELOAD;
+        this.status = WEAPON_STATUS_RELOAD; // 设置当前状态为 换弹夹状态
 
         // audio
         const audio = this.audioMaps.get('reload');

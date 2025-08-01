@@ -327,7 +327,7 @@ export default class World {
     }
     _initControls(){
         this.fpsControls = new FirstPersonControls(this.player);
-        this.fpsControls.sync();
+        this.fpsControls.sync(); // 同步玩家实体与控制系统
 
         this.fpsControls.addEventListener( 'lock', ( ) => {
 

@@ -28,8 +28,8 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 
         this.lookingSpeed   = GameConfig.CONTROLS.LOOKING_SPEED;
         this.brakingPower   = GameConfig.CONTROLS.BRAKING_POWER;
-        this.headMovement   = GameConfig.CONTROLS.HEAD_MOVEMENT;
-        this.weaponMovement = GameConfig.CONTROLS.WEAPON_MOVEMENT;
+        this.headMovement   = GameConfig.CONTROLS.HEAD_MOVEMENT;// 1.2
+        this.weaponMovement = GameConfig.CONTROLS.WEAPON_MOVEMENT;// 1.2
 
         this.input ={
             forward:false,
@@ -88,9 +88,15 @@ export default class FirstPersonControls extends YUKA.EventDispatcher{
 		return this;
 
 	}
-	/**
-	 * 
-	 * @returns 
+	/** 玩家死亡倒下，把这种变换同步影响到界面画面的变化，使得效果更加真实
+	 * - 同步玩家实体（Player）的旋转状态与控制系统
+		- 从玩家身体旋转提取偏航角（yaw）
+		- 从玩家头部旋转提取俯仰角（pitch）
+	 * @retu
+		- 使用共享的 `euler` 对象避免GC开销
+		- 偏航角存储到 `movementX`（水平视角控制）
+		- 俯仰角存储到 `movementY`（垂直视角控制）
+		- 符合FPS控制惯例（偏航+俯仰分离设计）
 	 */
     sync(){
         this.owner.rotation.toEuler(euler);// 得到player 对象的旋转角度
