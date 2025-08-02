@@ -11,7 +11,7 @@ export default class Example0{
     }
 
     _init(params={}){
-        //console.log(params);
+        console.log(params);
         // 创建场景
         this._scene = new THREE.Scene();
         this._scene.background = new THREE.Color(0xffffff);
@@ -50,7 +50,7 @@ export default class Example0{
 
     }
 
-    _animate(time = 0.001){
+    _animate(){
         requestAnimationFrame(this._animate.bind(this));
 
         animateBones(this._clock.getElapsedTime());
@@ -58,11 +58,11 @@ export default class Example0{
 
     }
 
-    _initExample(params={}){
+    _initExample(){
         //console.log('到来了')
     }
 
-    _onWindowResizeEvent(params={}){
+    _onWindowResizeEvent(){
         //console.log(params);
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();

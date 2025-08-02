@@ -71,7 +71,7 @@ export default class Heart {
         const directionFireworksArray = new Float32Array(this.fireworkCount * 3); // 方向
 
         /// 把一个圆根据角度分成若干份扇形
-        const unit = (360. / this.fireworkCount);
+        const unit = (360.0 / this.fireworkCount);
         // 循环创建多个粒子
         for (let i = 0; i < this.fireworkCount; i++) {
             const ang = Math.PI / 180 * (i * unit);
@@ -85,7 +85,7 @@ export default class Heart {
             scaleFireworksArray[i] = Math.random() * 2;// 0-1 的区间值
             // 设置向四周发射的角度--这里多想想
 
-            const radius = Math.random();// 心形的半径
+            //const radius = Math.random();// 心形的半径
 
             const x = Math.cos(ang) ;
             let y = Math.sin(ang) ;

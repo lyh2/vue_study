@@ -270,7 +270,7 @@ function onPointerlockChange() {
 
 function onPointerlockError() {
 
-	Logger.warn( 'Dive.FirstPersonControls: Unable to use Pointer Lock API.' );
+	console.warn( 'Dive.FirstPersonControls: Unable to use Pointer Lock API.' );
 
 }
 

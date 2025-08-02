@@ -120,7 +120,7 @@ export default class ThreePlus{
         dracoLoader.preload();
         gltfLoader.setDRACOLoader(dracoLoader);
 
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve)=>{
             gltfLoader.load(url,gltf=>{
                 resolve({type:'model',value:gltf});
             });
@@ -132,7 +132,7 @@ export default class ThreePlus{
      */
     fbxLoader(url=""){
         const fbxLoader = new FBXLoader();
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve)=>{
             fbxLoader.load(url,(fbx)=>{
                 resolve(fbx);
             })
@@ -141,7 +141,7 @@ export default class ThreePlus{
 
     hdrLoader(url=""){
         const hdrLoader = new RGBELoader();
-        return new Promise((resolve,reject)=>{
+        return new Promise((resolve)=>{
             hdrLoader.load(url,hdr=>{
                 resolve(hdr);
             });

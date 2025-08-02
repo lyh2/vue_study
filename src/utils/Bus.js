@@ -1,4 +1,3 @@
-import { ref } from "vue";
 
 /**
  * 用来控制数据和注册事件的

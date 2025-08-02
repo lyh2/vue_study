@@ -1,10 +1,11 @@
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import GUI from "three/examples/jsm/libs/lil-gui.module.min";
-import { initUseAnnotation, initUseEyes, initUseScene, initUseShaderSpriteFireyAuraeffect, initUseLighting, updateAnnotation, initUseFireflies, initUseFireworks, initUseDealShader, initUseBaseMaterial, initStudyShader, initUseEffectComposer, initUseCSS2DRenderer, initUseMorphTarget, initUseVRRoom, initUseSmartCity, initBoneAnimation } from "./Fun/Fun4";
+//import GUI from "three/examples/jsm/libs/lil-gui.module.min";
+import { updateAnnotation,initUseSmartCity, initBoneAnimation } from "./Fun/Fun4";
+//import { initUseAnnotation, initUseEyes, initUseScene, initUseShaderSpriteFireyAuraeffect, initUseLighting, updateAnnotation, initUseFireflies, initUseFireworks, initUseDealShader, initUseBaseMaterial, initStudyShader, initUseEffectComposer, initUseCSS2DRenderer, initUseMorphTarget, initUseVRRoom, initUseSmartCity, initBoneAnimation } from "./Fun/Fun4";
 import TWEEN from "three/examples/jsm/libs/tween.module";
 import ThreePlus from "./Hall/ThreePlus";
-
+import * as THREE from 'three';
 
 export default class Example4 {
     constructor(options = {}) {
@@ -113,7 +114,7 @@ export default class Example4 {
                     child.intensity = 1;
                 }
 
-                if (child.isMesh && child.material.name.indexOf("Glass") !== -1 && false) {
+                if (child.isMesh && child.material.name.indexOf("Glass") !== -1 ) {
                     child.geometry.computeVertexNormals();
                     const cubeMaterial3 = new THREE.MeshPhongMaterial({
                         color: 0xffcdcd,
@@ -138,7 +139,7 @@ export default class Example4 {
                     child.add(torusKnot);
                 }
 
-                if (child.isMesh && child.material.name.indexOf("floor") !== -1 && false) {
+                if (child.isMesh && child.material.name.indexOf("floor") !== -1 ) {
                     child.material = new THREE.MeshBasicMaterial({
                         map: child.material.map,
                     });
@@ -230,7 +231,7 @@ export default class Example4 {
 
     }
 
-    _onWindowResizeEvent(params = {}) {
+    _onWindowResizeEvent() {
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();
 

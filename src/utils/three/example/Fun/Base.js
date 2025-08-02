@@ -1,5 +1,5 @@
-import * as THREEGPU from 'three/webgpu';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import * as THREE from 'three';
 class BasePerspectiveCamera{
     constructor(_options={}){
         this._options=_options;
@@ -46,7 +46,7 @@ class BasePerspectiveCamera{
         this._orbitControls.update();
         this._childAnimate();
     }
-    _windowResizeFun(params={}){
+    _windowResizeFun(){
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();
 

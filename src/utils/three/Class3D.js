@@ -81,7 +81,7 @@ export default class Class3D
      */
     _changeExample(params={})
     {
-        //console.log(params)
+        console.log('_changeExample:',params)
         
     }
 
@@ -93,7 +93,7 @@ export default class Class3D
     _destoryCanvas(params={})
     {
         //从DOM 节点中移除 canvas 
-       
+       console.log('_destoryCanvas',params);
     }
 
     _initExample(params={}){

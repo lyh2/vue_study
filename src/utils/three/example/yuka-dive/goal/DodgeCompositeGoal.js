@@ -59,7 +59,7 @@ export default class DodgeCompositeGoal extends YUKA.CompositeGoal{
 
             if(owner.targetSystem.isTargetShootable() === false){
                 // 没有遇到敌人，躲避完成
-                this.statuc = YUKA.Goal.STATUS.COMPLETED;
+                this.status = YUKA.Goal.STATUS.COMPLETED;
             }else{
                 // 遇到敌人，继续执行其他目标
                 this.status = this.executeSubgoals();// 执行当前目标中的所有子目标

@@ -151,7 +151,7 @@ export default class WeaponSystem {
                 weapon.audioMaps = this.renderComponents.assaultRifle.audioMaps;
                 break;
             default:
-                console.log('DIVE.WeaponSystem :无效的类型');
+                //console.log('DIVE.WeaponSystem :无效的类型');
                 break;
         }
 
@@ -220,7 +220,7 @@ export default class WeaponSystem {
                 this.renderComponents.assaultRifle.mesh.visible = true;
                 break;
             default:
-                console.log('无效武器类型:',type);
+                //console.log('无效武器类型:',type);
                 break;
         }
         return this;
@@ -239,7 +239,7 @@ export default class WeaponSystem {
                 this.renderComponents.assaultRifle.mesh.visible = false;
                 break;
             default:
-                console.log('无效的武器类型:',type);
+                //console.log('无效的武器类型:',type);
                 break;
         }
         return this;
@@ -309,7 +309,7 @@ export default class WeaponSystem {
                     if(this.owner.isPlayer) weapon.setRenderComponent(this.renderComponents.assaultRifle.mesh,this.owner.world.sync.bind(this.owner.world));
                     break;
                 default:
-                    console.log('无效的武器类型：',type);
+                    //console.log('无效的武器类型：',type);
                     break;
             }
         }

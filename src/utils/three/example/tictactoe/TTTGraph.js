@@ -26,7 +26,7 @@ export class TTTGraph extends YUKA.Graph{
         this.currentNode = node.index;
 
         const weight = this.generate(node.index,this.currentPlayer);
-        //console.log('weight:',weight);
+        console.log('TTTGraph.weight:',weight);
     }
 
     adNode(node){

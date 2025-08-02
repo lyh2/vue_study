@@ -1,4 +1,3 @@
-import * as YUKA from 'yuka';
 import ProjectileMovingEntity from './ProjectileMovingEntity';
 import GameConfig from '../core/GameConfig';
 

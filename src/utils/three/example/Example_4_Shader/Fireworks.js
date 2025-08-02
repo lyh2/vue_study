@@ -129,7 +129,7 @@ export default class Fireworks{
 
     }
 
-    addScene(scene,camera){
+    addScene(scene){
         scene.add(this.startPoint);
         scene.add(this.fireworks);// 爆炸的烟花
         this.scene = scene;

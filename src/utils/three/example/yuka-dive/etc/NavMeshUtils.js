@@ -24,7 +24,7 @@ export default class NavMeshUtils{
         const color = new THREE.Color();
         // 循环处理每一个区域
         for(let region of regions){
-            color.setHex(Math.random() * 0xffffff,THREE.SRGBColorSpace);
+            color.setHex(Math.random() * 0xffffff);
             // 把所有的边存入到一个数组中
             let edge = region.edge; // 是一个half-edge
             const edges = [];
@@ -37,8 +37,8 @@ export default class NavMeshUtils{
             const triangleCount = (edges.length - 2);
             for(let i =1; i <= triangleCount ;i++){
                 const v1 = edges[0].vertex;
-                const v2 = edges[1].vertex;
-                const v3 = edges[2].vertex;
+                const v2 = edges[i + 0].vertex;
+                const v3 = edges[i + 1].vertex;
 
                 positions.push(v1.x,v1.y,v1.z);
                 positions.push(v2.x,v2.y,v2.z);

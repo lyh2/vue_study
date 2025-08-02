@@ -8,16 +8,19 @@
  * 
  */
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import topLevelAwait from 'vite-plugin-top-level-await';
 import vuePlugin from '@vitejs/plugin-vue';
 import mkcert from 'vite-plugin-mkcert'
+import eslint from 'vite-plugin-eslint' // 添加 ESLint 插件
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
+    eslint({
+      overrideConfigFile: '.eslintrc.js' // 显式指定配置文件
+    }),
     topLevelAwait(),
     //vuePlugin(),
     //mkcert()

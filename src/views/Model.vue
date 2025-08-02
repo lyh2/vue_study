@@ -7,7 +7,7 @@
 
 
 <script setup lang="ts">
-import {ref} from "vue";
+//import {ref} from "vue";
 
 // 接收父组件附送过来的数据
 const props = defineProps(['modelValue']);// 接收父组件使用v-model 传递进来的值，必须用modelValue 这个名字来接收

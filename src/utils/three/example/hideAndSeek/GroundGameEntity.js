@@ -1,5 +1,5 @@
 import * as YUKA from 'yuka';
-import World from './World';
+
 export default class GroundGameEntity extends YUKA.GameEntity{
     constructor(geometry=null){
         super();
@@ -11,6 +11,7 @@ export default class GroundGameEntity extends YUKA.GameEntity{
 
 
     handleMessage(telegram){
+        console.log('GroundGameEntity:',telegram)
         return true;
     }
 }

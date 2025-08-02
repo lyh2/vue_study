@@ -55,6 +55,7 @@ export default class EnemyVehicle extends YUKA.Vehicle{
         return this;
     }
     handleMessage(telegram){
+        console.log('enemyVehicle.telegram:',telegram);
         this.dead = true;
         this._renderComponent.castShadow = false;
         return true;

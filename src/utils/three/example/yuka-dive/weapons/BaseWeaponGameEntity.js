@@ -1,7 +1,6 @@
 import * as YUKA from 'yuka';
 import { WEAPON_STATUS_EQUIP, WEAPON_STATUS_HIDE, WEAPON_STATUS_READY, WEAPON_STATUS_UNREADY, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from '../core/constants';
 import GameConfig from '../core/GameConfig';
-import { round } from 'face-api.js/build/commonjs/utils';
 
 export default class BaseWeaponGameEntity extends YUKA.GameEntity{
     constructor(owner){
@@ -119,7 +118,7 @@ export default class BaseWeaponGameEntity extends YUKA.GameEntity{
      * @param {*} targetPosition 
      */
     shoot(targetPosition){
-
+        console.log('目标点:',targetPosition);
     }
 
     update(delta){

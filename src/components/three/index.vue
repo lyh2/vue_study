@@ -14,6 +14,7 @@ onMounted(() => {
             return;
         }
         obj = new TslUseNoise({ dom: container.value });
+        console.log('index.obj:',obj);
     });
 })
 </script>

@@ -4,10 +4,10 @@
  * 
  */
 
-
+import * as THREE from 'three';
 import * as THREEGPU from 'three/webgpu';
 import * as THREEWEBGL from 'three';
-import { uniform, uv, attribute, Fn, positionGeometry, positionLocal, mix, normalGeometry, select, normalLocal, time, mul, varying, float, vec3, Loop, pow, abs, varyingProperty, modelWorldMatrix, cameraProjectionMatrix, cameraViewMatrix, instanceIndex, attributeArray, color, mx_noise_float } from 'three/tsl';
+import { uniform,attribute,vec2, mx_noise_vec3,Fn, positionGeometry, positionLocal, mix, normalGeometry, select, normalLocal, time,  varying, float, vec3, Loop, pow, abs, varyingProperty, modelWorldMatrix, cameraProjectionMatrix, cameraViewMatrix, attributeArray, color, mx_noise_float ,texture} from 'three/tsl';
 
 import { BasePerspectiveCamera } from './Base';
 import { mergeVertices } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -162,7 +162,7 @@ export class TslStudyFireBall {
         this._uniforms.uTime.value += this._clock.getDelta();
         this._renderer.render(this._scene, this._perspectiveCamera);
     }
-    _windowResizeFun(params = {}) {
+    _windowResizeFun() {
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();
 
@@ -388,7 +388,7 @@ export class TslUseNoise {
         let material = new THREE.MeshStandardNodeMaterial({
             color: 0xff0000,
         });
-        const texture = new THREE.TextureLoader().load('./texture/explosion.png');
+        //const texture = new THREE.TextureLoader().load('./texture/explosion.png');
 
 
         this._guiOptions = {
@@ -402,7 +402,7 @@ export class TslUseNoise {
         const noiseSpeed = uniform(this._guiOptions.speed);
 
         const vNoise = varying(float());
-        const vPosition = varying(vec3());
+        //const vPosition = varying(vec3());
 
         /**
          * glsl 
@@ -473,20 +473,20 @@ export class TslUseNoise {
 
             return positionLocal;//mix(positionLocal, pos, noiseStrength);
         })();
+        
+        //material.positionNode = posFunc();
+        // const fragFunc = Fn(() => {
+        //     const r = mx_noise_float(
+        //         vPosition.mul(2).add(time.mul(2)).mul(2),
+        //         uvAmplitude,
+        //         uvPivot
+        //     ).toVar();
+        //     const uv0 = vec2(0, vNoise.mul(uvRange).add(uvOffset.add(r))).toVar();
+        //     return texture(tex, uv0);
+        // });
 
         //material.positionNode = posFunc();
-        const fragFunc = Fn(() => {
-            const r = mx_noise_float(
-                vPosition.mul(2).add(time.mul(2)).mul(2),
-                uvAmplitude,
-                uvPivot
-            ).toVar();
-            const uv0 = vec2(0, vNoise.mul(uvRange).add(uvOffset.add(r))).toVar();
-            return texture(tex, uv0);
-        });
-
-        material.positionNode = posFunc();
-        material.fragmentNode = fragFunc();
+        //material.fragmentNode = fragFunc();
         const mesh = new THREE.Mesh(geometry, material);
         this._scene.add(mesh);
         this._gui = new GUI();
@@ -589,7 +589,7 @@ export class TslUseVarying {
             const p = vec3(p_immutable).toVar();
             const t = float(-0.5).toVar();
 
-            Loop({ start: 1., end: 10., name: 'f', type: 'float', condition: '<=' }, ({ f }) => {
+            Loop({ start: 1.0, end: 10.0, name: 'f', type: 'float', condition: '<=' }, ({ f }) => {
                 const power = float(pow(2., f)).toVar();
                 t.addAssign(abs(mx_noise_float(vec3(power.mul(p)), vec3(1.)).div(power)));
             });

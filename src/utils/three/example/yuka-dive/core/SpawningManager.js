@@ -9,7 +9,7 @@ import BaseTriggerExtendTrigger from '../triggers/BaseTriggerExtendTrigger';
 import SceneUtils from '../etc/SceneUtils';
 import WeaponItemExtendBaseGameEntity from '../entities/WeaponItemExtendBaseGameEntity';
 import { HEALTH_PACK, WEAPON_TYPES_ASSAULT_RIFLE, WEAPON_TYPES_BLASTER, WEAPON_TYPES_SHOTGUN } from './constants';
-import  World  from './World';
+
 
 /**
  * spawning:产生，产卵,这个类用来实现对敌人，武器，血条的产生管理

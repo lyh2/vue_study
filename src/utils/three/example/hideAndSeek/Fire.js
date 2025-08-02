@@ -396,7 +396,7 @@ void main() {
 
             _diff.copy(_tip);
             _diff.sub(_group.position);
-            let length = _diff.length();
+            //let length = _diff.length();
             //_group.scale.y = (length / tipOffset - 1) * 0.4 + 1;
 
             _group.quaternion.setFromUnitVectors(_y, _diff.normalize());
@@ -594,7 +594,7 @@ void main() {
 
         _self.loop3 = function () {
 
-            let e = 100;
+         
             _mesh.visible = false;
             //_renderer.render(_scene, _camera, _rtt);
             _mesh.visible = true;

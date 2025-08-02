@@ -80,8 +80,8 @@ export function initArVr(options = {}) {
   sprite.position.set(0, 0, 0);
   options.scene.add(sprite);
 
-  const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
-  const cube = new THREE.Mesh(cubeGeometry, planeShaderMaterial);
+  //const cubeGeometry = new THREE.BoxGeometry(2, 2, 2);
+  //const cube = new THREE.Mesh(cubeGeometry, planeShaderMaterial);
   //options.scene.add(cube);
 
   const sprite2 = new THREE.Sprite(
@@ -96,7 +96,7 @@ export function initArVr(options = {}) {
   );
 
   sprite2.position.y = 1;
-  sprite2.material.onBeforeCompile = (shader) => {};
+  //sprite2.material.onBeforeCompile = (shader) => {};
 
   //options.scene.add(sprite2);
 
@@ -215,7 +215,7 @@ export class InitOctree {
 
     this._options.dom.addEventListener(
       "mousedown",
-      (event) => {
+      () => {
         document.body.requestPointerLock();
       },
       false
@@ -661,7 +661,7 @@ export class InitOctreeClass {
 
     document.addEventListener(
       "mousedown",
-      (e) => {
+      () => {
         // 锁定鼠标指针
         document.body.requestPointerLock();
       },
@@ -780,7 +780,7 @@ export class InitOctreeClass {
     requestAnimationFrame(this.__animate.bind(this));
   }
 
-  _windowResizeFun(_options = {}) {
+  _windowResizeFun() {
     this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
     this._perspectiveCamera.updateProjectionMatrix();
 
@@ -1058,6 +1058,7 @@ export class OctreeClass{
     },false);
 
     document.addEventListener("mousedown",e=>{
+      console.log('e',e);
       document.body.requestPointerLock();
     },false);
 
@@ -1221,7 +1222,7 @@ export class LightClass{
   }
 
   _animate(){
-    let delta = this._clock.getDelta();
+    //let delta = this._clock.getDelta();
     this._orbitControls.update();
 
     this._cubeCamera.update(this._renderer,this._scene);
@@ -1579,7 +1580,7 @@ export class CannonCollideEvent{
      */
     boxBody.addEventListener("collide",e=>{
       console.log("碰撞了:",e);
-      let impactStrength = e.contact.getImpactVelocityAlongNormal();
+      //let impactStrength = e.contact.getImpactVelocityAlongNormal();
     });
     // 设置立方体的初始速度
     boxBody.velocity.set(2,0,0);
@@ -1700,6 +1701,7 @@ export class CannonShape{
       this._world.addConstraint(hingeConstraint);
 
       window.addEventListener('click',e=>{
+        console.log('_initHingeConstraint.e:',e)
         const force = new CANNON.Vec3(0,0,-100);
         moveBody.applyForce(force,moveBody.position);
         hingeConstraint.enableMotor();
@@ -1959,7 +1961,7 @@ export class CannonShape{
         const pointToPointConstraint = new CANNON.PointToPointConstraint(boxBody,new CANNON.Vec3(-0.5,0.55,0),previousBody,new CANNON.Vec3(-0.5,-0.55,0));
         this._world.addConstraint(pointToPointConstraint);
 
-        const constraint_2 = new CANNON.PointToPointConstraint(boxBody,new CANNON.Vec3(0.5,0.55,0),previousBody,new CANNON.Vec3(0.5,-0.55,0));
+        //const constraint_2 = new CANNON.PointToPointConstraint(boxBody,new CANNON.Vec3(0.5,0.55,0),previousBody,new CANNON.Vec3(0.5,-0.55,0));
         //this._world.addConstraint(constraint_2);
       }
 
@@ -1967,6 +1969,8 @@ export class CannonShape{
     }
 
     window.addEventListener('click',e=>{
+      console.log('e',e);
+
       // 创建一个球
       const y = 16;
       const sphereShape = new CANNON.Sphere(0.5);
@@ -2110,6 +2114,7 @@ export class CannonShape{
     this._world.addConstraint(hingeConstraint);
 
     window.addEventListener('click',e=>{
+      console.log('e',e);
       const force = new CANNON.Vec3(0,0,-1);
       moveBody.applyForce(force,moveBody.position);
       if(this._isClick){
@@ -2474,7 +2479,7 @@ export class CannonCar{
 
     // 创建地面
     const groundShape = new CANNON.Box(new CANNON.Vec3(50,0.5,50));
-    const groundPhysicalMaterial = new CANNON.Material("groundMaterial");
+    //const groundPhysicalMaterial = new CANNON.Material("groundMaterial");
     let groundBody = new CANNON.Body({
       mass:0,
       shape:groundShape,
@@ -2528,17 +2533,17 @@ export class CannonCar{
     };
 
     // 设置车轮的配置信息
-    const wheelInfoOptions ={
-      radius:1,
-      suspensionStiffness:30,
-      suspensionRestLength:0.3,// 悬架的休息长度
-      dampingRelaxation:2.3,// 振动
-      dampingCompression:4.4,// 压缩
-      maxSuspensionForce:100000,// 最大悬架力
-      axleLocal:new CANNON.Vec3(0,0,1),// 车轴本地坐标
-      chassisConnectionPointLocal:new CANNON.Vec3(-1,0,1),// 本地坐标系中的车身连接点
-      maxSuspensionTravel:0.2,// 最大悬架行程
-    }
+    // const wheelInfoOptions ={
+    //   radius:1,
+    //   suspensionStiffness:30,
+    //   suspensionRestLength:0.3,// 悬架的休息长度
+    //   dampingRelaxation:2.3,// 振动
+    //   dampingCompression:4.4,// 压缩
+    //   maxSuspensionForce:100000,// 最大悬架力
+    //   axleLocal:new CANNON.Vec3(0,0,1),// 车轴本地坐标
+    //   chassisConnectionPointLocal:new CANNON.Vec3(-1,0,1),// 本地坐标系中的车身连接点
+    //   maxSuspensionTravel:0.2,// 最大悬架行程
+    // }
 
     // 添加车轮
     vehicle.addWheel({
@@ -2574,7 +2579,7 @@ export class CannonCar{
     });
 
     for(let i =0; i < vehicle.wheelInfos.length;i++){
-      const wheel = vehicle.wheelInfos[i];
+      //const wheel = vehicle.wheelInfos[i];
       const cylinderBody = new CANNON.Body({
         mass:0,
         shape:wheelShape,
@@ -3031,7 +3036,7 @@ export class YukaClass{
     const arriveBehavior = new YUKA.ArriveBehavior(this._target.position);
     this._vehicle_2.steering.add(arriveBehavior);
     // 添加一个搜索目标行为
-    const seekBehavior = new YUKA.SeekBehavior(this._target.position);
+    //const seekBehavior = new YUKA.SeekBehavior(this._target.position);
     //this._vehicle_2.steering.add(seekBehavior);
     
 
@@ -3069,7 +3074,7 @@ export class YukaClass{
     this._vehicle_2.smoother = new YUKA.Smoother(30);
 
     // 逃离行为
-    const fleeBehavior = new YUKA.FleeBehavior(this._target.position,3);
+    //const fleeBehavior = new YUKA.FleeBehavior(this._target.position,3);
     //this._vehicle_2.steering.add(fleeBehavior);
 
     // 添加追击行为-注意参数类型
@@ -3077,7 +3082,7 @@ export class YukaClass{
     //this._target.steering.add(pursuitBehavior);
 
     // 创建群体随机行走行为
-  const wanderBehavior = new YUKA.WanderBehavior(3);
+  //const wanderBehavior = new YUKA.WanderBehavior(3);
 
   // 设置整齐群体转向
   const alignmentBehavior = new YUKA.AlignmentBehavior();
@@ -3234,7 +3239,7 @@ export class BaseClass{
     requestAnimationFrame(this._animate.bind(this));
   }
 
-  _windowResizeFun(_options={}){
+  _windowResizeFun(){
     this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
     this._perspectiveCamera.updateProjectionMatrix();
 

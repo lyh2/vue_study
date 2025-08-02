@@ -1,5 +1,5 @@
  
-import * as THREEGPU from 'three/webgpu'
+//import * as THREEGPU from 'three/webgpu'
 import {
   color,
   cos,
@@ -34,7 +34,7 @@ import {
   floor,
   clamp,
   wgslFn,
-  tslFn,
+  //tslFn,
   texture,
   sign,
   varying,
@@ -57,7 +57,7 @@ import {
   pcurve,
   atan,
   pass,
-  radians
+  //radians
 } from 'three/tsl'
 import { GUI } from 'three/examples/jsm/libs/lil-gui.module.min.js'
 import { OrbitControls } from 'three/examples/jsm/Addons.js'
@@ -66,6 +66,7 @@ import WebGPU from 'three/addons/capabilities/WebGPU.js' // 检查是否支持We
 import { RGBELoader } from 'three/examples/jsm/Addons.js'
 import { hash, mx_fractal_noise_float } from 'three/src/nodes/TSL.js'
 import {bloom} from "three/addons/tsl/display/BloomNode.js"
+import * as THREE from 'three';
 
 export class ClassGalaxy {
   constructor(_options = {}) {

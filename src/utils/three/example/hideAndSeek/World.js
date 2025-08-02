@@ -248,7 +248,7 @@ export default class World{
         if(this.debug){
             const spawningPointGeometry = new THREE.BoxGeometry(0.2);
             const spawningPointMaterial = new THREE.MeshBasicMaterial({color:0x00ffff,depthWrite:false,depthTest:false,transparent:true});
-            this.spawningPoints.map((item,index)=>{
+            this.spawningPoints.map((item)=>{
                 const mesh = new THREE.Mesh(spawningPointGeometry,spawningPointMaterial);
                 mesh.position.copy(item);
                 this.scene.add(mesh);

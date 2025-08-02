@@ -368,7 +368,7 @@ export class ParticleEngine {
         particle.angleVelocity = this.randomValue(this.angleVelocityBase, this.angleVelocitySpread);
         particle.angleAcceleration = this.randomValue(this.angleAccelerationBase, this.angleAccelerationSpread);
         
-        if (!this.sizeTween !== undefined)
+        if (!(this.sizeTween !== undefined))
         particle.size = this.randomValue(this.sizeBase, this.sizeSpread);
         //console.log('color:',color)
         // 先取第一个颜色为主色
@@ -467,7 +467,7 @@ export class ParticleEngine {
         this._mesh.geometry.dispose();
         this._mesh.material.dispose();
 
-        scene.remove(this._mesh);
+        //scene.remove(this._mesh);
         this.isShow = false;
     }
     // 显示

@@ -19,7 +19,7 @@ export default class HuntCompositeGoal extends YUKA.CompositeGoal{
 
         //seek to the last sensed position,寻找最后一个感知的位置
         const targetPosition = owner.targetSystem.getLastSensedPosition();
-
+        
         const from = new YUKA.Vector3().copy(owner.position);
         const to = new YUKA.Vector3().copy(targetPosition);
 

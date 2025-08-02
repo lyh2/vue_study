@@ -7,8 +7,9 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import {GUI} from 'three/examples/jsm/libs/lil-gui.module.min';
 
 import * as TWEEN from 'three/examples/jsm/libs/tween.module';
-import { initBufferGeometry,initUseCombinationBoundingBox,initUseEdges,initUseGeometryCenter,initUseMikkTSpaceTangents,initUseMoreMaterial,
-     initUseTexture, initUseUV ,initUseIridescence, initUseLambertAndPhong,initUseStanderMaterial} from './Fun/UtilsFun';
+//import { initBufferGeometry,initUseCombinationBoundingBox,initUseEdges,initUseGeometryCenter,initUseMikkTSpaceTangents,initUseMoreMaterial,
+//     initUseTexture, initUseUV ,initUseIridescence, initUseLambertAndPhong,initUseStanderMaterial} from './Fun/UtilsFun';
+import{    initUseStanderMaterial} from './Fun/UtilsFun';
 
 export default class Example2 {
     constructor(_options={}){
@@ -16,7 +17,7 @@ export default class Example2 {
 
     }
 
-    _init(params={}){
+    _init(){
         // 创建场景
         this._scene = new THREE.Scene();
         // 创建相机
@@ -119,7 +120,7 @@ export default class Example2 {
         this._animate(0.01);
     }
 
-    _animate(time = 0.001){
+    _animate(){
         requestAnimationFrame(this._animate.bind(this));
 
         this._renderer.render(this._scene,this._perspectiveCamera);
@@ -129,7 +130,7 @@ export default class Example2 {
     }
 
 
-    _onWindowResizeEvent(params={}){
+    _onWindowResizeEvent(){
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();
 

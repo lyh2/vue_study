@@ -15,7 +15,7 @@ import { showDialog } from 'vant';
 import Deck from '../blackjack/Deck';
 import Player from '../blackjack/Player';
 import AI from '../blackjack/AI.js';
-import World from '../firstShooterGame/World.js';
+//import World from '../firstShooterGame/World.js';
 /**
  * 有暂停状态切换行走状态
  */
@@ -762,7 +762,7 @@ export class GoalDrivenAgentDesign{
  * 士兵游戏实体对象
  */
 class SoldierGameEntity extends YUKA.GameEntity{
-    constructor(options={}){
+    constructor(){
         super();
 
         this.assaultRifle = null;
@@ -1879,7 +1879,7 @@ export class NavSpatial{
         });
 
         gui.add(this.params,'showSpatialIndex').onChange(value=>{
-            this.spatialIndexHelper.visible = true;
+            this.spatialIndexHelper.visible = value;
         });
         gui.open();
     }
@@ -2372,6 +2372,7 @@ export class SaveAndReload{
                 const vehicle = this.entityManager.getEntityByName('vehicle');
                 vehicle.setRenderComponent(this.vehicleMesh,this.sync.bind(this));
             }catch(e){
+                console.log('异常:',e);
                 this.onClear();
                 window.location.reload();
             }
@@ -2439,7 +2440,7 @@ class CustomTrigger extends YUKA.Trigger{
     }
     check(entity){
         // 每一帧都被调用
-        //console.log(entity)
+        console.log(entity)
     }
     execute(entity){
         super.execute();

@@ -1,10 +1,10 @@
 // Three.js Transpiler r172
 
-import { uint, bool, vec3, ivec3, uvec2, uvec3, mul, Fn, float, floor, fract, mod, dot, uv, min, Loop, sub, int, exp2 } from 'three/tsl';
+import { uint,  vec3, ivec3,  uvec3, mul, Fn, float, floor, fract, mod, dot,  min, Loop, sub, int, exp2 } from 'three/tsl';
 
 const UI0 = uint(1597334673);
 const  UI1 = uint(3812015801);
-const  UI2 = uvec2(UI0, UI1);
+//const  UI2 = uvec2(UI0, UI1);
 const  UI3 = uvec3(UI0, UI1, 2798796415);
 const  UIF = float(1.0).div(float(0xffffffff));
 
@@ -54,7 +54,7 @@ const _gradientNoise_ = /*#__PURE__*/ Fn( ( [ x_immutable, freq_immutable ] ) =>
 	const x = vec3( x_immutable ).toVar();
 	const p = vec3( floor( x ) ).toVar();
 	const w = vec3( fract( x ) ).toVar();
-	const u = vec3( w.mul( w ).mul( w ).mul( w.mul( w.mul( 6. ).sub( 15. ) ).add( 10. ) ) ).toVar();
+	const u = vec3( w.mul( w ).mul( w ).mul( w.mul( w.mul( 6. ).sub( 15. ) ).add( 10.0 ) ) ).toVar();
 	const ga = vec3( hash33( mod( p.add( vec3( 0., 0., 0. ) ), freq ) ) ).toVar();
 	const gb = vec3( hash33( mod( p.add( vec3( 1., 0., 0. ) ), freq ) ) ).toVar();
 	const gc = vec3( hash33( mod( p.add( vec3( 0., 1., 0. ) ), freq ) ) ).toVar();
@@ -89,13 +89,13 @@ const _worleyNoise_ = /*#__PURE__*/ Fn( ( [ uv_immutable, freq_immutable ] ) => 
 	const uv = vec3( uv_immutable ).toVar();
 	const id = vec3( floor( uv ) ).toVar();
 	const p = vec3( fract( uv ) ).toVar();
-	const minDist = float( 10000. ).toVar();
+	const minDist = float( 10000.0 ).toVar();
 
-	Loop( { start: float( - 1. ), end: 1., name: 'x', type: 'float', condition: '<=' }, ( { x } ) => {
+	Loop( { start: float( - 1.0 ), end: 1.0, name: 'x', type: 'float', condition: '<=' }, ( { x } ) => {
 
-		Loop( { start: float( - 1. ), end: 1., name: 'y', type: 'float', condition: '<=' }, ( { y } ) => {
+		Loop( { start: float( - 1.0 ), end: 1.0, name: 'y', type: 'float', condition: '<=' }, ( { y } ) => {
 
-			Loop( { start: float( - 1. ), end: 1., name: 'z', type: 'float', condition: '<=' }, ( { z } ) => {
+			Loop( { start: float( - 1.0 ), end: 1.0, name: 'z', type: 'float', condition: '<=' }, ( { z } ) => {
 
 				const offset = vec3( x, y, z ).toVar();
 				const h = vec3( hash33( mod( id.add( offset ), vec3( freq ) ) ).mul( .5 ).add( .5 ) ).toVar();
@@ -130,7 +130,7 @@ const _perlinFbm_ = /*#__PURE__*/ Fn( ( [ p_immutable, freq_immutable, octaves_i
 	const noise = float( 0. ).toVar();
 
 	Loop( { start: int( 0 ), end: octaves }, ( { i } ) => {
-
+		console.log('Loop.i',i)
 		noise.addAssign( amp.mul( _gradientNoise_( p.mul( freq ), freq ) ) );
 		freq.mulAssign( 2. );
 		amp.mulAssign( G );

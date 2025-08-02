@@ -6,16 +6,16 @@ import * as THREE from 'three';
 
 //import { texture, equirectUV } from "three/nodes";
 
-import WebGPU from "three/addons/capabilities/WebGPU.js";
-//import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer";
+//import WebGPU from "three/addons/capabilities/WebGPU.js";
 
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { initPoints, initUseCannon, initUseCanvas, initUseFireEffect, initUseParticle, initUsePoint, initUsePoints, initUseShader, initUseSphereDelUv, initUseStencil, initUseStencilTest ,initUseWater, initUseWaterInYuGuang} from './Fun/LightsFun';
-
-import * as CANNON from "cannon-es";
+//import { initPoints, initUseCannon, initUseCanvas, initUsePoint, initUsePoints, initUseShader, initUseSphereDelUv, initUseStencil, initUseStencilTest ,initUseWater, initUseWaterInYuGuang} from './Fun/LightsFun';
+import { initUseFireEffect, initUseParticle} from './Fun/LightsFun';
+// 
+//import * as CANNON from "cannon-es";
 import TWEEN from "three/examples/jsm/libs/tween.module";
 
-import Stats from "three/examples/jsm/libs/stats.module";
+//import Stats from "three/examples/jsm/libs/stats.module";
 
 export default class Example3 {
     constructor(options = {}) {
@@ -28,7 +28,7 @@ export default class Example3 {
      * 
      * @param {*} params 
      */
-    _init(params = {}) {
+    _init() {
         // 创建场景
         this._scene = new THREE.Scene();
         this._scene.background = new THREE.Color(0xf2f2f2);
@@ -95,51 +95,9 @@ export default class Example3 {
         this._animate(0.01);
     }
 
-    /**
-     * 使用WebGPU
-     * @param {*} params 
-     */
-    _initGPU(params={}){
-        // 判断是否支持WebGPU
-        if(WebGPU.isAvailable() === false){
-            console.log("不支持WebGPU....");
-        }
+  
 
-        this._perspectiveCamera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
-        this._perspectiveCamera.position.set(0,20,20);
-
-        // 加载纹理
-        const equirectTexture = new THREE.TextureLoader().load("./textures/room.jpg");
-        equirectTexture.flipY = false;
-
-        this._scene = new THREE.Scene();
-        //console.log('场景:',this._scene);
-        this._clock = new THREE.Clock();
-        this._scene.backgroundNode = texture(equirectTexture,equirectUV(), 1);
-        
-    
-        // 创建渲染器
-        this._renderer = new WebGPURenderer();
-        this._renderer.setPixelRatio(window.devicePixelRatio);
-        this._renderer.setSize(window.innerWidth,window.innerHeight);
-        this._options.dom.appendChild(this._renderer.domElement);
-        //console.log(2,this._renderer);
-        // 创建控制器
-        this._orbitControls = new OrbitControls(this._perspectiveCamera,this._renderer.domElement);
-        //this._orbitControls.autoRotate = false;
-        //this._orbitControls.rotateSpeed = -0.125;
-        //this._orbitControls.autoRotateSpeed = 1.;
-
-        //console.log(11,this._orbitControls)
-
-        this._renderer.setAnimationLoop(this._animateWebGPU.bind(this));
-
-        this._scene.add(new THREE.AxesHelper(100));
-
-        //this._animate(0.01);
-    }
-
-    _animate(time = 0.01) {
+    _animate() {
         requestAnimationFrame(this._animate.bind(this));
         let deltaTime = this._clock.getDelta();
         if(this._cannon){
@@ -156,7 +114,7 @@ export default class Example3 {
             this._floor.material.uniforms.uTime.value = deltaTime;
         }
 
-        if(this._shaderMaterial && false){
+        if(this._shaderMaterial){
             
             this._shaderMaterial.uniforms.uTime.value += this._clock.getDelta();
         }
@@ -165,12 +123,12 @@ export default class Example3 {
         this._renderer.render(this._scene, this._perspectiveCamera);
 
     }
-    _animateWebGPU(time = 0.01){
+    _animateWebGPU(){
         //this._delta = this._clock.getDelta;
         this._orbitControls ?  this._orbitControls.update() :'';
         this._renderer.render(this._scene,this._perspectiveCamera);
     }
-    _onWindowResizeEvent(params = {}) {
+    _onWindowResizeEvent() {
         this._perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
         this._perspectiveCamera.updateProjectionMatrix();
 

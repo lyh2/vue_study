@@ -1,0 +1,22 @@
+# 忽略系统文件
+.DS_Store
+
+# 忽略环境变量文件
+.env
+
+# 忽略配置文件
+.*
+!*.vue
+!*.ts
+!*.js
+!*.json
+!*.html
+!*.css
+!*.scss
+
+# 忽略构建产物
+dist
+node_modules
+
+# 忽略版本控制目录
+.git

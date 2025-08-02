@@ -57,8 +57,8 @@ export class GraphFromMesh{
         } else {
             var neighbors2 = this.edges[index2][1];
             var exists2 = false;
-            for (var j = 0; j < neighbors2.length; j++) {
-                if (neighbors2[j] === key1) {
+            for (var k = 0; k < neighbors2.length; k++) {
+                if (neighbors2[k] === key1) {
                     exists2 = true;
                     break;
                 }

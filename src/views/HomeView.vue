@@ -48,7 +48,7 @@ const counterStore = useCounterStore();
 
 import { onMounted, ref ,provide,readonly} from 'vue'
 // 传递数据给 PropsView  组件
-let message:string = "雷猴啊"; 
+let message = "雷猴啊"; 
 let exposeRefMsg = ref("通过Expose 、 ref 进行组件通信，子组件可以通过 expose 暴露自身的方法和数据。父组件通过 ref 获取到子组件并调用其方法或访问数据。");
 let modelMsg=ref({msg:"使用v-model传递数据给子组件....",value:0});
 let slotMsg = ref("slot 插槽使用....");
@@ -67,7 +67,7 @@ onMounted(()=>{
 /**
  * 接收子组件传递过来的数据
  */
-function receiveMsgFun(data:any){
+function receiveMsgFun(data){
   console.log(data);
 }
 function slotClick(){
@@ -95,7 +95,7 @@ function callChildFunc(){
 
    provide('msg',msg);
 
-   provide('changeNameMethod',(value: string)=>{
+   provide('changeNameMethod',(value)=>{
     name.value = value;
    })
 

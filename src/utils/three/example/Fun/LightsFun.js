@@ -2,7 +2,7 @@ import * as THREE from "three";
 //import { texture, equirectUV } from "three/nodes";
 //import * as Nodes from "three/nodes";
 
-//import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
+import WebGPU from "three/examples/jsm/capabilities/WebGPU.js";
 //import WebGPURenderer from "three/examples/jsm/renderers/webgpu/WebGPURenderer.js";
 import * as CANNON from "cannon-es";
 
@@ -271,11 +271,11 @@ export function initUsePoints(params = {}) {
     params.renderer.shadowMap.enabled = true;
 
     // 使用gpu 程序化节点 创建粒子效果
-    console.log(Nodes)
+    //console.log(Nodes)
 }
 
 //Blend混合效果: https://www.andersriggelsen.dk/glblendfunc.php
-export function initUseWebGPUNodes(params = {}) {
+export function initUseWebGPUNodes() {
     if (WebGPU.isAvailable() === false) {
         document.body.appendChild(WebGPU.getErrorMessage());
 

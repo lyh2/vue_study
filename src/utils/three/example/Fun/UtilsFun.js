@@ -17,7 +17,7 @@ import { wasm, isReady, ready, generateTangents } from "three/examples/jsm/libs/
 export function initUseEarcut(params = {}) {
     const sourceArray = [0, 0, 40, 30, 60, 80, 90, 120, 20, 10, -10, 20, -40, 50, -60, 70, 0, 100];
     const result = THREE.Earcut.triangulate(sourceArray);
-    //console.log('Earcut.triangulate:',result)
+    console.log('Earcut.triangulate:',result)
 
     // 创建矩形几何体
     let geometry = new THREE.BufferGeometry();
@@ -297,13 +297,13 @@ export function initUseLine(params = {}) {
     params.scene.add(line);
 
     const resArray = line.computeLineDistances();
-    //console.log(resArray);
+    console.log(resArray);
 }
 
 /**
  * 使用扩展的动画库
  */
-export function initUseAnimationCreator(params = {}) {
+export function initUseAnimationCreator() {
     let clip = AnimationClipCreator.CreateRotationAnimation(10, 'x'); // 返回的是动画片段
     let mix = new THREE.AnimationMixer();
     let action = mix.clipAction(clip);
@@ -488,7 +488,8 @@ export function initUseTexture(params = {}) {
         }
 
         texture.needsUpdate = true;
-    })
+    });
+    console.log('colorCtrl',colorCtrl);
 
     params.gui.add(texture, "colorSpace", {
         sRGB: THREE.SRGBColorSpace,
@@ -530,7 +531,7 @@ export function initUseTexture(params = {}) {
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
         // 通过摄像机和鼠标位置更新射线
         raycaster.setFromCamera(mouse, params.camera);
-        const intersects = raycaster.intersectObjects(params.scene.children);
+        //const intersects = raycaster.intersectObjects(params.scene.children);
     })
 }
 
@@ -662,7 +663,7 @@ export function initUseGeometryCenter(params = {}) {
          */
         // 获取包围盒中心点
         let center = duckBox.getCenter(new THREE.Vector3());
-        //console.log('center:',center);
+        console.log('center:',center);
         // 包围盒辅助器
         let boxHelper = new THREE.Box3Helper(duckBox, 0xffff00);
         // 添加包围盒
@@ -1011,8 +1012,7 @@ export function initUseIridescence(params={}){
             // 得到子对象
             let duckMesh = gltf.scene.getObjectByName("LOD3spShape");
             let matcapTexture = new THREE.TextureLoader().load("./texture/matcaps/54584E_B1BAC5_818B91_A7ACA3-512px.png");
-            let preMaterial = duckMa
-            .material;
+            let preMaterial = duckMesh.material;
             duckMesh.material = new THREE.MeshMatcapMaterial({
                 matcap:matcapTexture,
                 map:preMaterial.map,
@@ -1022,12 +1022,12 @@ export function initUseIridescence(params={}){
 
     // 加载纹理 thickness:厚度
     let thicknessMap = new THREE.TextureLoader().load("./texture/diamond/diamond_emissive.png");
-    let normalMap = new THREE.TextureLoader().load("./texture/diamond/diamond_normal.png");
-    let carbonNormal = new THREE.TextureLoader().load("./texture/carbon/Carbon_Normal.png");
-    let scratchNormal = new THREE.TextureLoader().load("./texture/carbon/Scratched_gold_01_1K_Normal.png");
-    let sofaNormal = new THREE.TextureLoader().load("./texture/sofa/normal.png");
+    // let normalMap = new THREE.TextureLoader().load("./texture/diamond/diamond_normal.png");
+    // let carbonNormal = new THREE.TextureLoader().load("./texture/carbon/Carbon_Normal.png");
+    // let scratchNormal = new THREE.TextureLoader().load("./texture/carbon/Scratched_gold_01_1K_Normal.png");
+    // let sofaNormal = new THREE.TextureLoader().load("./texture/sofa/normal.png");
     let brickRoughness = new THREE.TextureLoader().load("./texture/brick/brick_roughness.jpg");
-    let brickColor = new THREE.TextureLoader().load("./texture/brick/brick_diffuse.jpg");
+    //let brickColor = new THREE.TextureLoader().load("./texture/brick/brick_diffuse.jpg");
 
     // 创建球几何体
     const sphereGeometry = new THREE.SphereGeometry(1,32,32);

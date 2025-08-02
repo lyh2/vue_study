@@ -6,8 +6,9 @@
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import Stats from "three/examples/jsm/libs/stats.module.js";
-import { CannonCar, CannonCollideEvent, CannonRigidCar, CannonShape, CannonSphSystem, initArVr,InitOctree, InitOctreeClass, LightClass, OctreeClass, StudyCannon, World3D, YukaClass, YukaClassV2 } from "./Fun/Fun5";
-
+//CannonCar, CannonCollideEvent, CannonRigidCar, CannonShape, CannonSphSystem, initArVr,InitOctree, InitOctreeClass, LightClass, OctreeClass, StudyCannon, World3D, YukaClass, 
+import { YukaClassV2 } from "./Fun/Fun5";
+import * as THREE from 'three';
 
 export default class Example5 {
     constructor(options = {}) {
@@ -19,6 +20,7 @@ export default class Example5 {
      * @param {*} params 
      */
     _init(params={}){
+      console.log('Example5._init:',params);
        //this._obj = new InitOctree(this._options);
        //this._obj = new InitOctreeClass(this._options);
 
@@ -51,6 +53,7 @@ export default class Example5 {
      * @param {*} params 
      */
     _init_(params = {}) {
+      console.log('Example5._init_5:',params);
         this._clock = new THREE.Clock();
 
         // 创建场景
@@ -105,7 +108,7 @@ export default class Example5 {
      * @param {*} params 
      */
     _onWindowResizeEvent(params={}){
-      
+      console.log('Example5._onWindowResizeEvent:',params);
        this._obj._windowResizeFun();
     }
     /**

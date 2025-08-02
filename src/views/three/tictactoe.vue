@@ -35,6 +35,7 @@ import { reactive } from 'vue';
 let graph = null;
 const _AI_ = 2;// 表示AI
 const _ME_ = 1;// 用户开始
+console.log('_ME_',_ME_)
 const _total_ = 3 * 3;// 盒子个数
 const container = ref(null);
 let isRestart = reactive({ value: false });

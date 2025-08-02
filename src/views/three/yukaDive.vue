@@ -19,7 +19,7 @@
   <section v-if="isShowOverlay === false && isFPSControls === true  " class="message-list">
 
       <ul class="msg-ls-ul">
-        <li v-for="item in messages">
+        <li v-for="item in messages" :key="item.text">
           <span class="span-left">{{ item.winner }}</span>
           <span class="span-medium">{{ item.text }}</span>
           <span class="span-right">{{ item.loser }}</span>
@@ -56,6 +56,7 @@ onMounted(() => {
     hudHealth,
     isFPSControls
   });
+  console.log('world:',world);
 });
 </script>
 

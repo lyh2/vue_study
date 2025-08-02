@@ -26,7 +26,8 @@ export default class AttackCompositeGoal extends YUKA.CompositeGoal{
     activate(){
         // 首先移除子目标
         this.clearSubgoals();// Removes all subgoals and ensures Goal#terminate is called for each subgoal.
-
+        //console.log(this.owner.name,this.owner.targetSystem.hasTarget());
+        
         const owner = this.owner;
         // 敌人有空间进行扫射
         if(owner.targetSystem.isTargetShootable() === true){
@@ -43,6 +44,7 @@ export default class AttackCompositeGoal extends YUKA.CompositeGoal{
             // if the target is not visible, go hunt it,
             // 目标不可见就去狩猎目标一个新目标
             this.addSubgoal(new HuntCompositeGoal(owner));
+          
         }
     }
     // Executed in each simulation step. 

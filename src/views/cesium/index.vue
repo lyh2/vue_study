@@ -3,7 +3,7 @@
 </template>
 
 <script setup >
-import { onMounted, ref } from "vue";
+import { onMounted } from "vue";
 import * as Cesium from "cesium";
 import gsap from "gsap";
 
@@ -95,17 +95,17 @@ onMounted(() => {
     viewer.cesiumWidget.creditContainer.style.display = "none";// 不显示logo
     // 设置一个默认视角
     Cesium.Camera.DEFAULT_VIEW_RECTANGLE = Cesium.Rectangle.fromDegrees(104.059322, 30.542164, 104.064096, 30.544878);
-    //initCesium();
-    //initStudy();
+    initCesium();
+    initStudy();
 
     // 加载json 数据
-    //initLoadJson();
+    initLoadJson();
 
     // 加载KML 数据
-    //initKml();
+    initKml();
 
     // 记载czml 数据
-    //initCzml();
+    initCzml();
 
     // 追踪飞机垮洋飞行
     initAir();
@@ -240,6 +240,7 @@ function initKml() {
     }).then(dataSource => {
         viewer.dataSources.add(dataSource);
     });
+    console.log('kmlDataPriomise=',kmlDataPriomise)
 }
 
 /**
@@ -255,7 +256,7 @@ function initLoadJson() {
     dataGeo.then(dataSource => {
         viewer.dataSources.add(dataSource); // 把数据加载到数据集中
         let entities = dataSource.entities.values;
-        entities.forEach((entity, index) => {
+        entities.forEach((entity) => {
             entity.polygon.material = new Cesium.ColorMaterialProperty(Cesium.Color.fromRandom({ alpha: 1 }));
             entity.polygon.outline = true;
 
@@ -301,26 +302,26 @@ function initStudy() {
         flat: true,
     });
     // 为entity 设置材质
-    let material = new Cesium.ColorMaterialProperty(new Cesium.Color(1., 1.0, 1., 1.));
-    // 棋盘纹理
-    let CheckerboardMaterial = new Cesium.CheckerboardMaterialProperty({
-        evenColor: Cesium.Color.RED,
-        oddColor: Cesium.Color.YELLOW,
-        repeat: new Cesium.Cartesian2(2, 2),
-    });
+    // let material = new Cesium.ColorMaterialProperty(new Cesium.Color(1., 1.0, 1., 1.));
+    // // 棋盘纹理
+    // let CheckerboardMaterial = new Cesium.CheckerboardMaterialProperty({
+    //     evenColor: Cesium.Color.RED,
+    //     oddColor: Cesium.Color.YELLOW,
+    //     repeat: new Cesium.Cartesian2(2, 2),
+    // });
 
-    let stripeMaterial = new Cesium.StripeMaterialProperty({
-        evenColor: Cesium.Color.WHITE,
-        oddColor: Cesium.Color.BLACK,
-        repeat: 8,
-    });
+    // let stripeMaterial = new Cesium.StripeMaterialProperty({
+    //     evenColor: Cesium.Color.WHITE,
+    //     oddColor: Cesium.Color.BLACK,
+    //     repeat: 8,
+    // });
 
-    let gridMaterial = new Cesium.GridMaterialProperty({
-        color: Cesium.Color.YELLOW,
-        cellAlpha: Cesium.Math.randomBetween(0.1, 0.8),
-        lineCount: new Cesium.Cartesian2(4, 4),
-        lineThickness: new Cesium.Cartesian2(4., 4.),
-    });
+    // let gridMaterial = new Cesium.GridMaterialProperty({
+    //     color: Cesium.Color.YELLOW,
+    //     cellAlpha: Cesium.Math.randomBetween(0.1, 0.8),
+    //     lineCount: new Cesium.Cartesian2(4, 4),
+    //     lineThickness: new Cesium.Cartesian2(4., 4.),
+    // });
     let appearanceMaterial = new Cesium.Material({
         fabric: {
             uniforms: {
@@ -394,6 +395,7 @@ function initStudy() {
         },
         material: customMaterialProperty
     });
+    console.log('rectangleEntity:',rectangleEntity)
 
 
 
@@ -425,11 +427,11 @@ async function initCesium() {
         //     show: "${distance} < 0.04 && ${feature['building']} === 'buildName'",// 这个值：buildName 在3D 数据中查看
         // });
 
-        const osmBuilding = viewer.scene.primitives.add(tile3D);
-        let terrainProvider = await Cesium.createWorldTerrainAsync({
-            requestWaterMask: true,
-            requestVertexNormals: true
-        });
+        // const osmBuilding = viewer.scene.primitives.add(tile3D);
+        // let terrainProvider = await Cesium.createWorldTerrainAsync({
+        //     requestWaterMask: true,
+        //     requestVertexNormals: true
+        // });
 
         //viewer.terrainProvider = terrainProvider;
     } catch (error) {
@@ -438,11 +440,11 @@ async function initCesium() {
 
 
     // 达州市螺丝村放牛场
-    let position = Cesium.Cartesian3.fromDegrees(108.193932, 31.565115, 1000);
+    //let position = Cesium.Cartesian3.fromDegrees(108.193932, 31.565115, 1000);
     // 设置北京天安门位置
     //position = Cesium.Cartesian3.fromDegrees(116.393428, 39.90923, 500);
     // 成都
-    position = Cesium.Cartesian3.fromDegrees(104.071503, 30.663795, 2000);
+    //position = Cesium.Cartesian3.fromDegrees(104.071503, 30.663795, 2000);
     // viewer.camera.flyTo({
     //     destination: position, durtaion: 2, orientation: {
     //         heading: Cesium.Math.toRadians(90), // 弧度制

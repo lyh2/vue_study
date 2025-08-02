@@ -43,6 +43,7 @@
 
     onMounted(()=>{
         world = new World({dom:container.value,isShowOverlay:isShowOverlay,isLoading:isLoading,roundsLeft,ammo});
+        console.log('first:world',world);
     });
 </script>
 

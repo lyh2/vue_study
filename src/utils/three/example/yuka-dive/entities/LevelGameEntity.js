@@ -14,7 +14,7 @@ export default class LevelGameEntity extends YUKA.GameEntity{
      * 收到消息
      * @param {YUKA.Telegram} telegram 
      */
-    handleMessage(telegram){
+    handleMessage(){
         // 处理消息
         return true;
     }

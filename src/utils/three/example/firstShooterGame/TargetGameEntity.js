@@ -41,8 +41,8 @@ export default class TargetGameEntity extends YUKA.GameEntity{
         telegram.receiver._worldMatrix.toArray(matrixArray);
         // 创建three.js 的矩阵
         const worldMatrix = new THREE.Matrix4().fromArray(matrixArray);
-        const localUp = new THREE.Vector3(0, 1, 0);
-        const worldUp = localUp.clone().applyMatrix4(worldMatrix);
+        //const localUp = new THREE.Vector3(0, 1, 0);
+        //const worldUp = localUp.clone().applyMatrix4(worldMatrix);
         //console.log('靶子本地 Y 轴在世界坐标中的方向:', worldUp.normalize());
 
         // 计算得到逆矩阵

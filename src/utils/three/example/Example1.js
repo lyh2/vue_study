@@ -5,7 +5,7 @@
 import * as THREE from 'three';
 import { LocationBased } from "../../AR/location-based";
 import { WebcamRenderer } from "../../AR/webcam-renderer";
-import { DeviceOrientationControls } from "../../AR/device-orientation-controls";
+//import { DeviceOrientationControls } from "../../AR/device-orientation-controls";
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 
@@ -16,7 +16,7 @@ export default class Example1{
 
     }
 
-    _init(params={}){
+    _init(){
         this.scene = new THREE.Scene();
         this.perspectiveCamera = new THREE.PerspectiveCamera(75,window.innerWidth / window.innerHeight,0.1,1000);
         this.perspectiveCamera.position.set(10,20,20);
@@ -44,7 +44,7 @@ export default class Example1{
         this._animate(0.001);
     }
 
-    _animate(time = 0.001){
+    _animate(){
         //this.orientationControls.update();
         this.arRenderer.update();
 
@@ -54,7 +54,7 @@ export default class Example1{
         requestAnimationFrame(this._animate.bind(this));
     }
 
-    _onWindowResizeEvent(params={}){
+    _onWindowResizeEvent(){
 
     }
 }

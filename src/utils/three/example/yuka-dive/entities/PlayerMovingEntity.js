@@ -87,7 +87,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         }
 
         if(this.status === STATUS_DEAD){
-            if(this.world.debug) console.log('用户死亡!');
+            if(this.world.debug) //console.log('用户死亡!');
             this.reset();
 
             this.world.spawningManager.respawnCompetitor(this);
@@ -239,7 +239,7 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
         this.world.uiManager.updateHealthStatus();
 
         if(this.world.debug){
-			console.log( 'DIVE.Player: Entity with ID %s receives %i health points.', this.uuid, amount );
+			//console.log( 'DIVE.Player: Entity with ID %s receives %i health points.', this.uuid, amount );
 
         }
         return this;
@@ -267,31 +267,34 @@ export default class PlayerMovingEntity extends YUKA.MovingEntity{
     handleMessage(telegram){
         switch(telegram.message){
             case MESSAGE_HIT:
-                const audio = this.audioMaps.get('impact'+YUKA.MathUtils.randInt(1,7));
-                if(audio.isPlaying === true) audio.stop();
-                audio.play();
-                // 减少🩸量
-                this.health -= telegram.data.damage;
+                {
 
-                this.world.uiManager.updateHealthStatus();
-                if(this.world.debug){
-                	console.log( '玩家被：', telegram.sender.name,'击中，损失血量：', telegram.data.damage );
-
-                }
-
-                // 检测玩家是否死亡
-                if(this.health <= 0 && this.status === STATUS_ALIVE){
-                    this.initDeath();
-
-                    const competitors = this.world.competitors;
-                    for(let i =0; i < competitors.length;i++){
-                        const competitor = competitors[i];
-                        if(this !== competitor) this.sendMessage(competitor,MESSAGE_DEAD);
+                    const audio = this.audioMaps.get('impact'+YUKA.MathUtils.randInt(1,7));
+                    if(audio.isPlaying === true) audio.stop();
+                    audio.play();
+                    // 减少🩸量
+                    this.health -= telegram.data.damage;
+    
+                    this.world.uiManager.updateHealthStatus();
+                    if(this.world.debug){
+                        //console.log( '玩家被：', telegram.sender.name,'击中，损失血量：', telegram.data.damage );
+    
                     }
-                    this.world.uiManager.addToMessage(telegram.sender,this);
-                }else{
-                    const angle = this.computeAngleToAttacker(telegram.data.direction);
-                    this.world.uiManager.showDamageIndication(angle);
+    
+                    // 检测玩家是否死亡
+                    if(this.health <= 0 && this.status === STATUS_ALIVE){
+                        this.initDeath();
+    
+                        const competitors = this.world.competitors;
+                        for(let i =0; i < competitors.length;i++){
+                            const competitor = competitors[i];
+                            if(this !== competitor) this.sendMessage(competitor,MESSAGE_DEAD);
+                        }
+                        this.world.uiManager.addToMessage(telegram.sender,this);
+                    }else{
+                        const angle = this.computeAngleToAttacker(telegram.data.direction);
+                        this.world.uiManager.showDamageIndication(angle);
+                    }
                 }
             break;
         }

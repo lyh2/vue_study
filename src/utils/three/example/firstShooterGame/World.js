@@ -56,7 +56,7 @@ export default class World {
     }
     init(){
         this.assetManager.init().then(res=>{
-            //console.log('res:',res);
+            console.log('res:',res);
             World._instance = this;
 
             // 执行成功之后，隐藏加载图层 // 消除overlay
@@ -270,7 +270,7 @@ export default class World {
     // 添加弹孔效果
     addBulletHole(position,normal,audio){
         const bulletHole = this.assetManager.modelMaps.get('bulletHole').clone();
-        //bulletHole.add(audio);
+        bulletHole.add(audio);
 
         const s = 1 + (Math.random() * 1.5);
         bulletHole.scale.set(s,s,s); // 随机改变弹孔大小

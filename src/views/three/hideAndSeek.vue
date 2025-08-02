@@ -53,6 +53,7 @@
 
     onMounted(()=>{
         world = new World({dom:container.value,isShowOverlay:isShowOverlay,isLoading:isLoading,roundsLeft,ammo,playingTime,hits});
+        console.log('hideAndSeek.world:',world);
     });
 </script>
 

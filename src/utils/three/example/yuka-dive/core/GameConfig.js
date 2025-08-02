@@ -61,7 +61,7 @@ const GameConfig = {
 			NOISE_MAX_DISTANCE: 100 // meter
 		},
 		BOUNDING_RADIUS: 0.5, // meter
-		COUNT: 10, // number
+		COUNT: 14, // number
 		HEAD_HEIGHT: 1.5, // meter
 		MAX_HEALTH: 100, // health points
 		DYING_TIME: 3, // seconds dying:垂死的；临终的；临死的；垂死者；临终者

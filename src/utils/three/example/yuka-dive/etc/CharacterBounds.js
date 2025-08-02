@@ -234,7 +234,7 @@ export default class CharacterBounds {
                 entry.inverseMeshMatrixWorld.invert(mesh.matrixWorld);
             }else{
                 if(world.debug){
-                    console.log('逆矩阵在缓冲中,暂时不用更新');
+                    //console.log('逆矩阵在缓冲中,暂时不用更新');
                 }
             }
         }
