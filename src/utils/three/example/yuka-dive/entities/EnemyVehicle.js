@@ -183,9 +183,11 @@ export default class EnemyVehicle extends YUKA.Vehicle {
       }
       //this.name = this.name +'->'+this.memoryRecords.length + '-?'+this.targetSystem.hasTarget()
       //console.log('name:',this.name,this.memoryRecords,this.targetSystem.hasTarget());
-      // update goals
+      // update goals -大脑🧠思考每帧都要执行
       this.brain.execute(); // Executed in each simulation step. 每一帧都要执行
+      // 作出决策没必要每帧都要执行
       if (this.goalArbitrationRegulator.ready()) {
+        // this.goalArbitrationRegulator.ready() 定义这个是为了手动控制执行频率，不用太快，没啥作用，得到一个目标至少得给出执行的时间
         // 顶层决策，迭代计算给每一个目标计算得到一个高的分值
         this.brain.arbitrate(); // This method represents the top level decision process of an agent.
         // It iterates through each goal evaluator and selects the one that has the highest score as the current goal.
@@ -430,10 +432,10 @@ export default class EnemyVehicle extends YUKA.Vehicle {
    */
   canMoveInDirection(direction, position /*返回记录位置*/) {
     position.copy(direction).applyRotation(this.rotation).normalize();
-    position.multiplyScalar(GameConfig.BOT.MOVEMENT.DODGE_SIZE).add(this.position);
+    position.multiplyScalar(GameConfig.BOT.MOVEMENT.DODGE_SIZE /*预定移动距离*/).add(this.position);
 
     const navMesh = this.world.navMesh;
-    const region = navMesh.getRegionForPoint(position, 1);
+    const region = navMesh.getRegionForPoint(position, 1); // 可以判断点是否在区域内
     return region !== null;
   }
 
