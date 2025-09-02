@@ -16,7 +16,7 @@
 import { ref, onMounted } from 'vue';
 import Application from '@/utils/three/Application.js';
 
-let exampleId = ref(7);
+let exampleId = ref(8);
 let app = null,
   container = ref(null);
 defineOptions({
