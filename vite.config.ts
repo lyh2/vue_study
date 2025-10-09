@@ -25,6 +25,9 @@ export default defineConfig({
     //vuePlugin(),
     //mkcert()
   ],
+  define: {
+    global: 'globalThis',
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

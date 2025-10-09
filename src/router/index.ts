@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue'; // 第一种方式先导入，在下面再进行配置
 import ThreeIndexView from '../views/three/index.vue'; // 学习three.js
-import HallView from '../views/three/hall.vue'; // 展馆页面
+import hallView from '@/views/three/hall.vue'; // 展馆页面
 import CesiumIndex from '../views/cesium/index.vue'; //Cesium
 import CesiumProject from '../views/cesium/indexProject.vue'; // Cesium 工程项目
 import world from '../views/three/world.vue'; // 元宇宙项目
@@ -11,6 +11,7 @@ import first from '@/views/three/first.vue'; // yuka 第一人射击游戏，模
 import hideAndSeek from '@/views/three/hideAndSeek.vue'; // 隐藏和搜索
 import yukaDive from '@/views/three/yukaDive.vue';
 import studyView from '@/views/three/study.vue'; //
+import studyPixiViewport from '@/views/pixi/viewport.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,7 +29,7 @@ const router = createRouter({
     {
       path: '/hall',
       name: 'hall',
-      component: HallView,
+      component: hallView,
     },
     {
       path: '/about',
@@ -87,6 +88,11 @@ const router = createRouter({
       path: '/study',
       name: 'study',
       component: studyView,
+    },
+    {
+      path: '/viewport',
+      name: 'viewport',
+      component: studyPixiViewport,
     },
   ],
 });
