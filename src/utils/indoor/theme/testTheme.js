@@ -144,6 +144,9 @@ export const testTheme = {
   pubPointImg: {
     11001: BASEICONS + '/toilet.png',
     11002: BASEICONS + '/ATM.png',
+    11003: BASEICONS + '/water.png',
+    11004: BASEICONS + '/muying.png',
+    11005: BASEICONS + '/huazhuang.png',
     21001: BASEICONS + '/stair.png',
     22006: BASEICONS + '/entry.png',
     21002: BASEICONS + '/escalator.png',

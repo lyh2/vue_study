@@ -2,7 +2,7 @@ export function getElementRect(element) {
   if (!element) return { left: 0, top: 0, width: 0, height: 0 };
 
   const rect = element.getBoundingClientRect();
-  console.log('rect:', rect);
+  //console.log('rect:', rect);
   return {
     left: rect.left + window.scrollX,
     top: rect.top + window.scrollY,

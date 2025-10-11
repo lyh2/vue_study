@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import IndoorMapLoader from './IndoorMapLoader';
 import { default3dTheme } from './theme/default3dTheme';
-import { _0_, _1_, _root_ } from './constaint';
+import { _0_, _1_, _2_, _root_ } from './constaint';
 import { OrbitControls } from 'three/examples/jsm/Addons';
 import { createNameSprites } from './common';
 import { UIManager } from './UIManager';
 import { parseModel } from './Utils';
+import Rect from './Rect';
 
 export default class IndoorMap3D {
   constructor(options) {
@@ -174,6 +175,7 @@ export default class IndoorMap3D {
     //console.log('www', pubPointsJson);
     for (let i = 0; i < pubPointsJson.length; i++) {
       const material = this.spriteMaterialsOfPubPoints[pubPointsJson[i].type];
+      //console.log('material:', pubPointsJson[i], material);
       const sprite = new THREE.Sprite(material);
       sprite.scale.set(imgWidth, imgHeight, 1);
       sprite.oriX = pubPointsJson[i].outline[0][0][0]; // 层级太深了不好
@@ -216,16 +218,34 @@ export default class IndoorMap3D {
   }
 
   setDefaultView() {
+    /** 建筑正面朝向角度，逆时针旋转为正值
+      frontAngle ≈ 0 → 朝 +Z
+      frontAngle ≈ π/2 → 朝 +X
+      frontAngle ≈ π → 朝 -Z
+      frontAngle ≈ -π/2 → 朝 -X
+     */
     const cameraAngle = this.mall.frontAngle + Math.PI / 2;
-    const cameraDir = [Math.cos(cameraAngle), Math.sin(cameraAngle)];
-    const cameraDistance = 500;
-    const tileAngle = (75 * Math.PI) / 180.0;
+    const cameraDir = [Math.sin(cameraAngle), Math.cos(cameraAngle)];
+    const cameraDistance = 800; // 设置半径
+    const tileAngle = (75 * Math.PI) / 180.0; // 相机视角的角度转弧度
+    // 设置相机的位置
     this.camera.position.set(
-      cameraDir[1] * cameraDistance,
-      Math.sin(tileAngle) * cameraDistance,
-      cameraDir[0] * cameraDistance
+      cameraDir[1] * cameraDistance, // x轴sin计算
+      Math.sin(tileAngle) * 0.8 * cameraDistance, // y轴
+      cameraDir[0] * cameraDistance // z轴cos计算
     );
-    this.camera.lookAt(this.scene.position);
+    // 可视化方向向量
+    const frontDir = new THREE.Vector3(cameraDir[0], 0, cameraDir[1]);
+    const arrow = new THREE.ArrowHelper(
+      frontDir.clone().normalize(),
+      new THREE.Vector3(0, 0, 0),
+      1000,
+      0xff0000
+    );
+    arrow.name = 'arrow';
+    this.scene.add(arrow);
+
+    //this.camera.lookAt(this.scene.position);
     this.controls.target.set(0, 0, 0);
     this.controls.update();
     return this;
@@ -233,6 +253,7 @@ export default class IndoorMap3D {
 
   setTopView() {
     this.camera.position.set(0, 500, 0);
+    this.controls.enableRotate = false;
     return this;
   }
   setTheme(theme) {
@@ -274,8 +295,8 @@ export default class IndoorMap3D {
    */
   showNames(bShow) {
     this.mapOptions.showNames = bShow;
-    // 还有代码-----控制文字是否显示
 
+    this.pubPointNamesGroup.visible = bShow;
     return this;
   }
   /**
@@ -283,12 +304,95 @@ export default class IndoorMap3D {
    * @param {*} bShow
    */
   showIcons(bShow) {
-    console.log('bShow是否显示ICON', bShow);
+    //console.log('bShow是否显示ICON', bShow);
+    this.pubPointIconsGroup.visible = bShow;
     return this;
   }
+  /**
+   * 设置是否可以被选择
+   * @param {*} bSelect
+   * @returns
+   */
   setSelectable(bSelect) {
-    console.log('bSelect:', bSelect);
+    //console.log('bSelect:', bSelect);
+    if (bSelect) {
+      // 添加事件监听
+      this.rayCaster = new THREE.Raycaster();
+      this.options.dom.addEventListener('mousedown', this.onSelectObject.bind(this), false);
+      this.options.dom.addEventListener('touchstart', this.onSelectObject.bind(this), false);
+    } else {
+      // 不可选择，则取消事件监听
+      this.options.dom.removeEventListener('mousedown', this.onSelectObject.bind(this), false);
+      this.options.dom.removeEventListener('touchstart', this.onSelectObject.bind(this), false);
+    }
     return this;
+  }
+  /**
+   * 设置选中回调
+   * @param {*} callback
+   */
+  setSelectListener(callback) {
+    this.selectListener = callback;
+    return this;
+  }
+
+  onSelectObject(event) {
+    //console.log('event:', event);
+    event.preventDefault();
+    const mouse = new THREE.Vector2();
+    // 判断是否鼠标点击还是手指触发
+    if (event.type == 'touchstart') {
+      mouse.x = (event.touches[0].clientX / this.canvasWidth) * 2 - 1;
+      mouse.y = -(event.touches[0].clientY / this.canvasHeight) * 2 + 1;
+    } else {
+      mouse.x = (event.clientX / this.canvasWidth) * 2 - 1;
+      mouse.y = -(event.clientY / this.canvasHeight) * 2 + 1;
+    }
+    // const vector = new THREE.Vector3(mouse.x, mouse.y, 1); // 创建一个指向远平面的向量，z=1 就表示远平面
+    // vector.unproject(this.camera);
+
+    // this.rayCaster.set(
+    //   this.camera.position,
+    //   new THREE.Vector3().subVectors(this.camera.position, vector).normalize()
+    // );
+    this.rayCaster.setFromCamera(mouse, this.camera);
+
+    const floorObject = this.mall.getCurrentFloor();
+    if (floorObject !== null) {
+      const intersects = this.rayCaster.intersectObjects(floorObject.children);
+      //console.log('intersects香蕉:', floorObject, intersects);
+      if (intersects.length > _0_) {
+        const firstObject = intersects[0].object;
+        if (this.selectedObj != firstObject) {
+          // 判断是否是首次选择某个对象,是则恢复原来的颜色配置
+          if (this.selectedObj != null) {
+            this.selectedObj.material.color.setHex(this.selectedObj.userData.hex);
+            this.selectedObj.scale.set(1, 1, 1);
+          }
+
+          // 可根据类型判断是否改变颜色
+          firstObject.userData.hex = firstObject.material.color.getHex();
+          firstObject.material.color = new THREE.Color(this.theme.selected);
+          firstObject.scale.set(1, 1, 3.5);
+          //console.log('firstObject:', firstObject);
+          this.selectedObj = firstObject;
+
+          if (this.selectListener) {
+            this.selectListener(firstObject);
+          }
+        }
+      } else {
+        // 没有选中某个对象，判断原来是否有已经被选中的对象，存在则恢复原来的，并且清空+返回选中的对象回调
+        if (this.selectedObj !== null) {
+          this.selectedObj.material.color.setHex(this.selectedObj.userData.hex);
+        }
+
+        this.selectedObj = null;
+        if (this.selectListener) {
+          this.selectListener(null);
+        }
+      }
+    }
   }
   setGui() {
     this.uiManager = new UIManager(this);
@@ -377,6 +481,50 @@ export default class IndoorMap3D {
       const x = Math.round(vec.x * this.canvasWidthHalf);
       const y = Math.round(vec.y * this.canvasHeightHalf);
       sprite.position.set(x, y, 1);
+
+      // 可视显示判断
+      let visible = true;
+      for (let j = 0; j < i; j++) {
+        /**
+         * - __避免重复检测__：
+            - 只检查当前精灵（索引i）与之前已经处理过的精灵（索引0到i-1）
+            - 如果精灵A和精灵B已经检测过碰撞，就不需要再检测B和A
+            - 这减少了50%的检测次数，从O(n²)优化到O(n²/2)
+          - __处理顺序依赖__：
+            - 精灵按顺序处理，先处理的精灵有"优先显示权"
+            - 如果后处理的精灵与先处理的精灵碰撞，后处理的精灵会被隐藏
+            - 这确保了显示优先级的一致性
+         */
+        // 计算得到精灵的宽度
+        const imgWidthHalf_i = sprite.width / _2_;
+        const imgHeightHalf_i = sprite.height / _2_;
+        // 创建矩形碰撞区域
+        const rect_i = new Rect(
+          sprite.position.x - imgWidthHalf_i,
+          sprite.position.y - imgHeightHalf_i,
+          sprite.position.x + imgWidthHalf_i,
+          sprite.position.y + imgHeightHalf_i
+        );
+
+        // 与之前检测过的对象进行判断
+        const sprite_j_prev = spriteList.children[j];
+        const j_position = sprite_j_prev.position;
+        const imgWidthHalf_j = sprite_j_prev.width / _2_;
+        const imgHeightHalf_j = sprite_j_prev.height / _2_;
+        const rect_j = new Rect(
+          j_position.x - imgWidthHalf_j,
+          j_position.y - imgHeightHalf_j,
+          j_position.x + imgWidthHalf_j,
+          j_position.y + imgHeightHalf_j
+        );
+        if (sprite_j_prev.visible && rect_i.isCollide(rect_j)) {
+          // 如果前面检测过的对象是可视化的，现在两个矩形框相交
+          visible = false;
+          break;
+        }
+        //console.log(visibleMargin, rect_i);
+      }
+      sprite.visible = visible;
     }
   }
   onResize() {
@@ -400,10 +548,10 @@ export default class IndoorMap3D {
 
 /**
  * TODO
- * [] -图标遮挡
- * [] -切换楼层
- * [] -切换视图
- * [] -选择房间&图标&文字
+ * ✅ -图标遮挡
+ * ✅ -切换楼层
+ * ✅ -切换视图
+ * ✅ -选择房间&图标&文字
  * [] -路线规划
  * [] -读取dxf文件直接创建3D对象
  */

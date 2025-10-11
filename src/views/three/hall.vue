@@ -15,7 +15,10 @@ onMounted(() => {
   // 加载数据
   app.instance.load('/IndoorMap/data/testMapData.json', () => {
     app.instance.setTheme(testTheme).setTheme(default3dTheme).setGui();
-    app.instance.showNames(true).setSelectable(true);
+    app.instance.showNames(true).showIcons(true).setSelectable(false);
+    // .setSelectListener(selectObject => {
+    //   console.log('选中的对象:', selectObject);
+    // });
   });
 });
 </script>

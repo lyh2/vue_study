@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFExporter } from 'three/examples/jsm/Addons';
 
 export function createNameSprites() {
   // 首先清除已经创建的名称
@@ -69,4 +70,58 @@ export function makeTextSprite(text, parameters) {
   sprite.height = fontSize * 1.4;
   sprite.name = text;
   return sprite;
+}
+var link = null;
+function createALink() {
+  // 创建下载的<a>标签
+  link = document.createElement('a');
+  link.style.display = 'none';
+  document.body.appendChild(link);
+}
+/**
+ * 导出gltf
+ * @param {*} input
+ */
+export function exportGLTF(input, filename) {
+  createALink();
+  const gltfExporter = new GLTFExporter();
+  const options = {
+    trs: false, //trs - bool. Export position, rotation and scale instead of matrix per node. Default is false
+    onlyVisible: true, //onlyVisible - bool. Export only visible objects. Default is true.
+    binary: true, //binary - bool. Export in binary (.glb) format, returning an ArrayBuffer. Default is false.
+    //maxTextureSize://maxTextureSize - int. Restricts the image maximum size (both width and height) to the given value. Default is Infinity.
+    //animations://animations - Array<AnimationClip>. List of animations to be included in the export.
+    //includeCustomExtensions://includeCustomExtensions - bool. Export custom glTF extensions defined on an object's userData.gltfExtensions property. Default is false.
+    //Generates a .gltf (JSON) or .glb (binary) output from the input (Scenes or Objects)
+  };
+
+  gltfExporter.parse(
+    input,
+    result => {
+      if (result instanceof ArrayBuffer) {
+        saveArrayBuffer(result, filename);
+      } else {
+        const output = JSON.stringify(result, null, 2);
+        saveString(output, filename);
+      }
+    },
+    error => {
+      console.log('导出失败:', error);
+    },
+    options
+  );
+}
+
+export function save(blob, filename) {
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+}
+
+export function saveArrayBuffer(buffer, filename) {
+  save(new Blob([buffer], { type: 'application/octet-stream' }), filename);
+}
+
+export function saveString(text, filename) {
+  save(new Blob([text], { text: 'text/plain' }), filename);
 }

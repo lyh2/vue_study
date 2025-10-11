@@ -46,6 +46,7 @@
     "simplex-noise": "^4.0.3",
     "sweetalert2": "^11.14.0",
     "three": "^0.173.0",
+    "three-bvh-csg": "^0.0.17",
     "three-nebula": "^10.0.3",
     "three-pathfinding": "^1.2.0",
     "three-spritetext": "^1.10.0",
