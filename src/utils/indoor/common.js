@@ -1,11 +1,14 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/examples/jsm/Addons';
-
+import { _0_ } from './constaint';
 export function createNameSprites() {
   // 首先清除已经创建的名称
   this.clearChildren(this.pubPointNamesGroup);
   // 获取指定楼层的json数据
-  const funcAreaJson = this.mall.getFloorJson(this.mall.getCurrentFloorId()).funcAreas;
+  const funcAreaJson =
+    this.mall.getCurrentFloorId() !== _0_
+      ? this.mall.getFloorJson(this.mall.getCurrentFloorId()).funcAreas
+      : [];
   for (let i = 0; i < funcAreaJson.length; i++) {
     const sprite = makeTextSprite(funcAreaJson[i].name, this.theme.fontStyle);
     sprite.oriX = funcAreaJson[i].center[0];
@@ -79,7 +82,7 @@ function createALink() {
   document.body.appendChild(link);
 }
 /**
- * 导出gltf
+ * 导出gltf，材质最好是MeshLambertMaterial or MeshBasicMaterial 两种材质
  * @param {*} input
  */
 export function exportGLTF(input, filename) {

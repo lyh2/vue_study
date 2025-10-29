@@ -30,3 +30,7 @@ export const _floor_ = 'floor_'; // 楼层的名称
 export const _room_ = 'room_'; // 房间的名称
 export const _build_ = 'build_'; // 最外层楼层的名称
 export const _plane_ = 'plane_'; // 平面Mesh对象
+export const _arrow_ = 'arrow'; // 箭头
+export const _union_ = 'union'; // 并集
+export const _intersect_ = 'intersect'; // 交集
+export const _subtraction_ = 'subtraction'; // 差集

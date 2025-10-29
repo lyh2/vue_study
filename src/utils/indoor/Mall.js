@@ -92,7 +92,7 @@ export default class Mall {
       this.floors.map(item => {
         if (item.userData.id == floorId) {
           item.visible = true;
-          item.position.z = 0;
+          item.position.y = 0;
         } else {
           item.visible = false;
         }
@@ -113,7 +113,7 @@ export default class Mall {
     this.building.visible = true;
     this.floors.map(item => {
       item.visible = true;
-      item.position.z = item.userData.id * item.userData.height;
+      item.position.y = item.userData.id * item.userData.height;
     });
 
     this.currentFloorId = 0;

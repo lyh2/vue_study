@@ -1,6 +1,6 @@
 import GUI from 'three/examples/jsm/libs/lil-gui.module.min';
 import { _0_ } from './constaint';
-import { unionFloorByBvhCsg } from './bsp';
+import { subFloorByBvhCsg, unionFloorByBvhCsg } from './bsp';
 
 export class UIManager {
   constructor(_this) {
@@ -8,8 +8,8 @@ export class UIManager {
 
     this.gui = new GUI();
     this.options = {
-      floorId: this.currentFloorId,
-      floors: { all: this.currentFloorId },
+      floorId: _this.currentFloorId,
+      floors: { all: _0_ },
       union: () => {
         // 获取并集
         //console.log('并集', this);
@@ -18,6 +18,7 @@ export class UIManager {
       },
       diff: () => {
         // 差集
+        subFloorByBvhCsg.bind(this.owner)();
       },
       selectable: false, // 是否可以选择
     };
@@ -33,6 +34,7 @@ export class UIManager {
     });
     this.gui.add(this.options, 'floorId', this.options.floors).onChange(value => {
       //console.log('选中的漏乘:', value, this.owner);
+      this.owner.currentFloorId = value;
       this.owner.showFloorById(value);
       this._update_union_diff_();
     });

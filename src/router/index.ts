@@ -12,7 +12,8 @@ import hideAndSeek from '@/views/three/hideAndSeek.vue'; // 隐藏和搜索
 import yukaDive from '@/views/three/yukaDive.vue';
 import studyView from '@/views/three/study.vue'; //
 import studyPixiViewport from '@/views/pixi/viewport.vue';
-
+import DxfView from '@/views/three/dxf.vue'; // 读取dxf文件
+import yukaNier from '@/views/three/yukaNier.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -94,6 +95,16 @@ const router = createRouter({
       name: 'viewport',
       component: studyPixiViewport,
     },
+    {
+      path: '/dxf',
+      name: 'dxf',
+      component: DxfView,
+    },
+    {
+      path:'/yukaNier',
+      name:'yukaNier',
+      component:yukaNier
+    }
   ],
 });
 

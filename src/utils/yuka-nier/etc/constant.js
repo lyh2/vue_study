@@ -1,0 +1,13 @@
+export const _player_shot_ = 'playerShot';
+export const _player_hit_ = 'playerHit';
+export const _player_explode_ = 'playerExplode';
+export const _enemy_shot_ = 'enemyShot';
+export const _enemy_hit_ = 'enemyHit';
+export const _enemy_explode_ = 'enemyExplode';
+export const _core_explode_ = 'coreExplode';
+export const _core_shield_hit_ = 'coreShieldHit';
+export const _core_shield_destroyed_ = 'coreShieldDestroyed';
+export const _button_click_ = 'buttonClick';
+export const _max_health_points_ = 8; // 血量
+export const _two_pi_ = Math.PI * 2;
+export const _max_pursuer_health_points_ = 1;

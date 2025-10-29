@@ -1,4 +1,7 @@
 import './assets/main.css'
+import 'element-plus/dist/index.css'
+
+import ElementPlus, { ElLoading } from 'element-plus'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -27,4 +30,9 @@ app.use(store)
 app.use(Vant);
 // Lazyload 指令需要单独进行注册
 //app.use(vant.Lazyload);
+
+// ✅ 注册 Element Plus 全局组件 + 指令
+app.use(ElementPlus)
+//app.directive('loading', ElLoading.directive)
+
 app.mount('#app')

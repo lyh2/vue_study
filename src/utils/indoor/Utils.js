@@ -115,11 +115,26 @@ export function parseModel(json, is3d, theme = '') {
         points = parsePoints(floor.outline[0][0]);
         shape = new THREE.Shape(points);
         geometry = new THREE.ShapeGeometry(shape);
-        plane = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ ...theme.floor }));
+        // [1]直接在 geometry 生成后，映射 (x, y, 0) → (x, 0, y)
+        const pos = geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const x = pos.getX(i);
+          const y = pos.getY(i);
+          pos.setXYZ(i, x, 0, -y);
+        }
+        // [2]使用矩阵改变数据
+        // const matrix = new THREE.Matrix4();
+        // matrix.makeRotationX(Math.PI / 2); // 或 makeBasis 自定义基变换
+        // geometry.applyMatrix4(matrix);
+        plane = new THREE.Mesh(
+          geometry,
+          new THREE.MeshBasicMaterial({ ...theme.floor, side: THREE.FrontSide })
+        );
         plane.position.set(0, 0, 0);
         plane.name = _plane_ + floor.id;
+        //console.log('plane:', plane);
         floorObj.add(plane);
-        floorObj.position.set(0, 0, floorHeight * floor.id);
+        floorObj.position.set(0, floorHeight * floor.id, 0);
         floorObj.userData.height = floorHeight; // 设置楼层间隔高度
         floorObj.userData.points = []; // 存储房间的中心点数据，包含名称等
         floorObj.userData.id = floor.id; // 这个数据应该存储在userData 中
@@ -139,20 +154,23 @@ export function parseModel(json, is3d, theme = '') {
           // 3D 功能区
           points = parsePoints(funcArea.outline[0][0]);
           shape = new THREE.Shape(points); // 创建形状
-          let center = funcArea.center; // 中心点
+
           floorObj.userData.points.push({
             name: funcArea.name,
             type: funcArea.type,
-            position: new THREE.Vector3(
-              center[0],
-              floorHeight,
-              -center[1] // 这里为啥要取负值----------
-            ),
           });
-          roomHeight = floor.high * 3;
+          roomHeight = floor.high * 3.5;
           // solid model
           extrudeSettings = { depth: roomHeight, bevelEnabled: false /*是否启用斜角（倒角）*/ };
           geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+          // 直接在 geometry 生成后，映射 (x, y, 0) → (x, 0, y)
+          const pos = geometry.attributes.position;
+          for (let i = 0; i < pos.count; i++) {
+            const x = pos.getX(i);
+            const y = pos.getY(i);
+            const z = pos.getZ(i);
+            pos.setXYZ(i, x, z, -y);
+          }
           material = new THREE.MeshLambertMaterial(
             theme.room(parseInt(funcArea.type), funcArea.category)
           );
@@ -219,10 +237,10 @@ export function parseModel(json, is3d, theme = '') {
         mesh.name = _build_;
         mesh.userData.name = '最外层轮廓';
 
-        mall.root.add(mesh);
+        //mall.root.add(mesh);
       }
       //mall.root.scale.set(scale, scale, scale);// 暂时不缩放
-      mall.root.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+      //mall.root.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
     }
 
     return mall;

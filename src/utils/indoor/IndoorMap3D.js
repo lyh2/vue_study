@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import IndoorMapLoader from './IndoorMapLoader';
 import { default3dTheme } from './theme/default3dTheme';
-import { _0_, _1_, _2_, _root_ } from './constaint';
+import { _0_, _1_, _2_, _arrow_, _plane_, _root_ } from './constaint';
 import { OrbitControls } from 'three/examples/jsm/Addons';
 import { createNameSprites } from './common';
 import { UIManager } from './UIManager';
@@ -167,12 +167,15 @@ export default class IndoorMap3D {
       // 加载资源
       this.loadSprites();
     }
-    if (this.pubPointIconsGroup.length > _0_) this.clearChildren(this.pubPointIconsGroup);
+    if (this.pubPointIconsGroup.children.length > _0_) this.clearChildren(this.pubPointIconsGroup);
     // 创建图标
-    const pubPointsJson = this.mall.getFloorJson(this.mall.getCurrentFloorId()).pubPoints;
+
+    const pubPointsJson =
+      this.mall.getCurrentFloorId() !== _0_
+        ? this.mall.getFloorJson(this.mall.getCurrentFloorId()).pubPoints
+        : [];
     let imgWidth = 30;
     let imgHeight = 30;
-    //console.log('www', pubPointsJson);
     for (let i = 0; i < pubPointsJson.length; i++) {
       const material = this.spriteMaterialsOfPubPoints[pubPointsJson[i].type];
       //console.log('material:', pubPointsJson[i], material);
@@ -242,8 +245,8 @@ export default class IndoorMap3D {
       1000,
       0xff0000
     );
-    arrow.name = 'arrow';
-    this.scene.add(arrow);
+    arrow.name = _arrow_;
+    if (!this.scene.getObjectByName(_arrow_)) this.scene.add(arrow);
 
     //this.camera.lookAt(this.scene.position);
     this.controls.target.set(0, 0, 0);
@@ -363,7 +366,7 @@ export default class IndoorMap3D {
       //console.log('intersects香蕉:', floorObject, intersects);
       if (intersects.length > _0_) {
         const firstObject = intersects[0].object;
-        if (this.selectedObj != firstObject) {
+        if (this.selectedObj != firstObject && !firstObject.name.includes(_plane_)) {
           // 判断是否是首次选择某个对象,是则恢复原来的颜色配置
           if (this.selectedObj != null) {
             this.selectedObj.material.color.setHex(this.selectedObj.userData.hex);
@@ -373,7 +376,7 @@ export default class IndoorMap3D {
           // 可根据类型判断是否改变颜色
           firstObject.userData.hex = firstObject.material.color.getHex();
           firstObject.material.color = new THREE.Color(this.theme.selected);
-          firstObject.scale.set(1, 1, 3.5);
+          firstObject.scale.set(1, 2.5, 1);
           //console.log('firstObject:', firstObject);
           this.selectedObj = firstObject;
 
@@ -552,6 +555,8 @@ export default class IndoorMap3D {
  * ✅ -切换楼层
  * ✅ -切换视图
  * ✅ -选择房间&图标&文字
+ * ✅ -使用Three-bvh-csg 进行交叉并操作
  * [] -路线规划
- * [] -读取dxf文件直接创建3D对象
+ *
+ *
  */
