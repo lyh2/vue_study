@@ -144,7 +144,7 @@ export default class VehicleControls extends YUKA.EventDispatcher {
 
     // update camera
     const offsetX = this.camera.position.x - this.cameraOffset.x - this.owner.position.x;
-    const offsetZ = this.camera.position.z - this.cameraOffset.z - this.camera.position.z;
+    const offsetZ = this.camera.position.z - this.cameraOffset.z - this.owner.position.z;
 
     if (offsetX !== 0) this.camera.position.x -= offsetX * delta * this.cameraMovementSpeed;
     if (offsetZ !== 0) this.camera.position.z -= offsetZ * delta * this.cameraMovementSpeed;

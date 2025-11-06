@@ -317,71 +317,76 @@ export class CADDraw {
 /**
  * 学习使用 Poly2tri 三角剖分算法库
  */
-export class StudyPoly2tri{
-  constructor(options={}){
+export class StudyPoly2tri {
+  constructor(options = {}) {
     this.options = options;
     this.init();
   }
 
-  init(){
+  init() {
     // 创建场景
     this.scene = new THREE.Scene();
-    this.perspectiveCamera = new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.01,1000);
+    this.perspectiveCamera = new THREE.PerspectiveCamera(
+      45,
+      window.innerWidth / window.innerHeight,
+      0.01,
+      1000
+    );
     this.perspectiveCamera.position.z = 1000;
 
-    this.renderer = new THREE.WebGLRenderer({antialias:true,logarithmicDepthBuffer:true});
-    this.renderer.setSize(window.innerWidth,window.innerHeight);
-    this.renderer.setClearColor(new THREE.Color(0xaaccff),1);
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setClearColor(new THREE.Color(0xaaccff), 1);
     this.options.dom.appendChild(this.renderer.domElement);
     this.renderer.setAnimationLoop(this.animate.bind(this));
 
     this.initPoly2tri();
   }
 
-  initPoly2tri(){
-      const vs1 = [
-        new THREE.Vector2(-222, -50),
-        new THREE.Vector2(-199, 88),
-        new THREE.Vector2(-101, 188),
-        new THREE.Vector2(28, 131),
-        new THREE.Vector2(74, -16),
-        new THREE.Vector2(145, -70),
-        new THREE.Vector2(216, 42),
-        new THREE.Vector2(280, 14),
-        new THREE.Vector2(155, -141),
-        new THREE.Vector2(54, -90),
-        new THREE.Vector2(-20, 54),
-        new THREE.Vector2(-94, 91),
-        new THREE.Vector2(-149, 35),
-        new THREE.Vector2(-161, -44),
-      ];
-    
-      // const vs2 = [
-      //   new THREE.Vector2(0, 86),
-      //   new THREE.Vector2(42, 157),
-      //   new THREE.Vector2(43, 74),
-      //   new THREE.Vector2(115, 115),
-      //   new THREE.Vector2(74, 43),
-      //   new THREE.Vector2(157, 42),
-      //   new THREE.Vector2(86, 0),
-      //   new THREE.Vector2(157, -42),
-      //   new THREE.Vector2(74, -43),
-      //   new THREE.Vector2(115, -115),
-      //   new THREE.Vector2(43, -74),
-      //   new THREE.Vector2(42, -157),
-      //   new THREE.Vector2(0, -86),
-      //   new THREE.Vector2(-42, -157),
-      //   new THREE.Vector2(-43, -74),
-      //   new THREE.Vector2(-115, -115),
-      //   new THREE.Vector2(-74, -43),
-      //   new THREE.Vector2(-157, -42),
-      //   new THREE.Vector2(-86, 0),
-      //   new THREE.Vector2(-157, 42),
-      //   new THREE.Vector2(-74, 43),
-      //   new THREE.Vector2(-115, 115),
-      //   new THREE.Vector2(-43, 74),
-      //   new THREE.Vector2(-42, 157),
-      // ];
+  initPoly2tri() {
+    const vs1 = [
+      new THREE.Vector2(-222, -50),
+      new THREE.Vector2(-199, 88),
+      new THREE.Vector2(-101, 188),
+      new THREE.Vector2(28, 131),
+      new THREE.Vector2(74, -16),
+      new THREE.Vector2(145, -70),
+      new THREE.Vector2(216, 42),
+      new THREE.Vector2(280, 14),
+      new THREE.Vector2(155, -141),
+      new THREE.Vector2(54, -90),
+      new THREE.Vector2(-20, 54),
+      new THREE.Vector2(-94, 91),
+      new THREE.Vector2(-149, 35),
+      new THREE.Vector2(-161, -44),
+    ];
+
+    // const vs2 = [
+    //   new THREE.Vector2(0, 86),
+    //   new THREE.Vector2(42, 157),
+    //   new THREE.Vector2(43, 74),
+    //   new THREE.Vector2(115, 115),
+    //   new THREE.Vector2(74, 43),
+    //   new THREE.Vector2(157, 42),
+    //   new THREE.Vector2(86, 0),
+    //   new THREE.Vector2(157, -42),
+    //   new THREE.Vector2(74, -43),
+    //   new THREE.Vector2(115, -115),
+    //   new THREE.Vector2(43, -74),
+    //   new THREE.Vector2(42, -157),
+    //   new THREE.Vector2(0, -86),
+    //   new THREE.Vector2(-42, -157),
+    //   new THREE.Vector2(-43, -74),
+    //   new THREE.Vector2(-115, -115),
+    //   new THREE.Vector2(-74, -43),
+    //   new THREE.Vector2(-157, -42),
+    //   new THREE.Vector2(-86, 0),
+    //   new THREE.Vector2(-157, 42),
+    //   new THREE.Vector2(-74, 43),
+    //   new THREE.Vector2(-115, 115),
+    //   new THREE.Vector2(-43, 74),
+    //   new THREE.Vector2(-42, 157),
+    // ];
 
     // const    vs2Hole = [
     //       new THREE.Vector2(0, 50),
@@ -395,37 +400,324 @@ export class StudyPoly2tri{
     //     ];
     generateGeometryFromTriangles(createTrianglesByPoly2tri(vs1));
   }
-  animate(){
-    this.renderer.render(this.scene,this.perspectiveCamera);
+  animate() {
+    this.renderer.render(this.scene, this.perspectiveCamera);
   }
-  _windowResizeFun(){
+  _windowResizeFun() {
     this.perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
     this.perspectiveCamera.updateProjectionMatrix();
 
-    this.renderer.setSize(window.innerWidth,window.innerHeight);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 }
 
-export function createTrianglesByPoly2tri(vecs,holes){
+export function createTrianglesByPoly2tri(vecs, holes) {
   // 需要把坐标数据转成poly2tri 支持的格式,只要是包含x,y属性的值就行
   let contour = [];
-  let holeContour =[];
-  for(let i = 0;i < vecs.length;i++){
-    contour.push(new Poly2tri.Point(vecs[i].x,vecs[i].y));
+  let holeContour = [];
+  for (let i = 0; i < vecs.length; i++) {
+    contour.push(new Poly2tri.Point(vecs[i].x, vecs[i].y));
   }
-  if(holes !== undefined){
-    for(let i = 0; i < holes.length;i++){
-      holeContour.push(new Poly2tri.Point(holes[i].x,holes[i].y));
+  if (holes !== undefined) {
+    for (let i = 0; i < holes.length; i++) {
+      holeContour.push(new Poly2tri.Point(holes[i].x, holes[i].y));
     }
     // 添加孔洞
     return new Poly2tri.SweepContext(contour).addHole(holeContour).triangulate().getTriangles();
-  }else{
+  } else {
     // 不存在孔洞的情况
     return new Poly2tri.SweepContext(contour).triangulate().getTriangles();
   }
 }
 
-export function generateGeometryFromTriangles(tris){
+export function generateGeometryFromTriangles(tris) {
   // 通过生成的点创建几何体数据
-  console.log('Poly2tri生成的点:',tris)
+  console.log('Poly2tri生成的点:', tris);
+}
+/**
+ * 判断两个是否发生碰撞
+ * @param {*} box1
+ * @param {*} box2
+ */
+function boxMeshCollision(box1, box2) {
+  const xCollision = box1.right >= box2.left && box1.left <= box2.right;
+  const yCollision = box1.bottom + box1.velocity.y <= box2.top && box1.top >= box2.bottom;
+  const zCollision = box1.front >= box2.back && box1.back <= box2.front;
+
+  return xCollision && yCollision && zCollision;
+}
+class CustomBoxMesh extends THREE.Mesh {
+  constructor(options) {
+    super(
+      new THREE.BoxGeometry(options.width, options.height, options.depth),
+      new THREE.MeshStandardMaterial({ color: options.color })
+    );
+
+    this.width = options.width;
+    this.height = options.height;
+    this.depth = options.depth;
+
+    this.position.set(options.position.x, options.position.y, options.position.z);
+
+    this.right = this.position.x + this.width / 2;
+    this.left = this.position.x - this.width / 2;
+
+    this.bottom = this.position.y - this.height / 2;
+    this.up = this.position.y + this.height / 2;
+
+    this.front = this.position.z + this.depth / 2;
+    this.back = this.position.z - this.depth / 2;
+
+    this.velocity = options.velocity;
+    this.gravity = -0.002;
+
+    this.zAcceleration = options.zAcceleration;
+  }
+
+  update(ground) {
+    this._updateSides();
+    if (this.zAcceleration) this.velocity.z += 0.0003;
+
+    this.position.x += this.velocity.x;
+    this.position.z += this.velocity.z;
+    if (this.name != 'cube') this._applyGravity(ground);
+  }
+  /**
+   * 应用重力
+   * @param {*} ground
+   */
+  _applyGravity(ground) {
+    this.velocity.y += this.gravity;
+    // 判断是否与地面碰撞
+    const isCollision = boxMeshCollision(this, ground);
+    if (isCollision) {
+      const friction = 0.5;
+      this.velocity.y *= friction;
+      this.velocity.y = -this.velocity.y;
+    } else {
+      this.position.y += this.velocity.y;
+    }
+    //console.log('isCollision:', isCollision);
+  }
+  /**
+   * 实时更新Box 6个面的值
+   */
+  _updateSides() {
+    this.right = this.position.x + this.width / 2;
+    this.left = this.position.x - this.width / 2;
+
+    this.bottom = this.position.y - this.height / 2;
+    this.top = this.position.y + this.height / 2;
+
+    this.front = this.position.z + this.depth / 2;
+    this.back = this.position.z - this.depth / 2;
+  }
+}
+/**
+ * 推箱子游戏
+ */
+export class MoveBoxGame {
+  constructor(options) {
+    this.options = options;
+    this.keys = {
+      a: {
+        pressed: false,
+      },
+      d: {
+        pressed: false,
+      },
+      s: {
+        pressed: false,
+      },
+      w: {
+        pressed: false,
+      },
+    };
+    this.frames = 0;
+    this.spawnRate = 200;
+    this.enemies = [];
+    this.animationId = null;
+    this.init();
+  }
+
+  init() {
+    this.scene = new THREE.Scene();
+    this.perspectiveCamera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    this.perspectiveCamera.position.set(4.6, 3, 8);
+
+    this.renderer = new THREE.WebGLRenderer({
+      alpha: true, // alpha - controls the default clear alpha value. When set to true, the value is 0. Otherwise it's 1. Default is false.
+      antialias: true, // antialias - whether to perform antialiasing. Default is false.
+    });
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.options.dom.appendChild(this.renderer.domElement);
+    this.controls = new OrbitControls(this.perspectiveCamera, this.renderer.domElement);
+
+    //this.renderer.setAnimationLoop(this.animate.bind(this));
+    // 给canvas 添加事件
+
+    // 关键修复：设置 tabindex 使 canvas 可聚焦
+    this.renderer.domElement.setAttribute('tabindex', '0');
+    this.renderer.domElement.style.outline = 'none'; // 移除焦点时的轮廓
+
+    this.renderer.domElement.addEventListener('keydown', event => {
+      switch (event.code) {
+        case 'KeyA':
+          this.keys.a.pressed = true;
+          break;
+        case 'KeyD':
+          this.keys.d.pressed = true;
+          break;
+        case 'KeyS':
+          this.keys.s.pressed = true;
+          break;
+        case 'KeyW':
+          this.keys.w.pressed = true;
+          break;
+        case 'Space':
+          this.cube.velocity.y = 0.08;
+          break;
+      }
+    });
+    this.renderer.domElement.addEventListener('keyup', event => {
+      switch (event.code) {
+        case 'KeyA':
+          this.keys.a.pressed = false;
+          break;
+        case 'KeyD':
+          this.keys.d.pressed = false;
+          break;
+        case 'KeyS':
+          this.keys.s.pressed = false;
+          break;
+        case 'KeyW':
+          this.keys.w.pressed = false;
+          break;
+      }
+    });
+    // 确保 canvas 在点击时获得焦点
+    this.renderer.domElement.addEventListener('click', () => {
+      this.renderer.domElement.focus();
+    });
+
+    // 添加环境观
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+    const directionalLight = new THREE.DirectionalLight(0xffccdd, 1);
+    directionalLight.position.set(0, 3, 1);
+    directionalLight.castShadow = true;
+    this.scene.add(directionalLight);
+
+    this.scene.add(new THREE.AxesHelper(100));
+
+    // 创建box
+    this.cube = new CustomBoxMesh({
+      width: 1,
+      height: 1,
+      depth: 1,
+      velocity: {
+        x: 0,
+        y: -0.01,
+        z: 0,
+      },
+      color: '#00ff00',
+
+      position: {
+        x: 0,
+        y: 0,
+        z: 0,
+      },
+      zAcceleration: false,
+    });
+    this.cube.castShadow = true;
+    this.cube.name = 'cube';
+    this.scene.add(this.cube);
+    // ground
+    this.ground = new CustomBoxMesh({
+      width: 10,
+      height: 0.5,
+      depth: 50,
+      color: '#0359a1',
+      position: {
+        x: 0,
+        y: -2,
+        z: 0,
+      },
+      velocity: {
+        x: 0,
+        y: 0,
+        z: 0,
+      },
+
+      zAcceleration: false,
+    });
+
+    this.ground.receiveShadow = true;
+    this.ground.name = 'ground';
+    this.scene.add(this.ground);
+
+    this.animate();
+  }
+
+  animate() {
+    this.animationId = requestAnimationFrame(this.animate.bind(this));
+    this.renderer.render(this.scene, this.perspectiveCamera);
+
+    this.cube.velocity.x = 0;
+    this.cube.velocity.z = 0;
+
+    if (this.keys.a.pressed) this.cube.velocity.x = -0.05;
+    else if (this.keys.d.pressed) this.cube.velocity.x = 0.05;
+
+    if (this.keys.s.pressed) this.cube.velocity.z = 0.05;
+    else if (this.keys.w.pressed) this.cube.velocity.z = -0.05;
+    //console.log(this.keys.a, this.keys.d, this.keys.w, this.keys.s);
+    this.cube.update(this.ground);
+
+    this.enemies.forEach(enemy => {
+      enemy.update(this.ground);
+      if (boxMeshCollision(this.cube, enemy)) {
+        cancelAnimationFrame(this.animationId);
+        //console.log(this.animationId);
+      }
+    });
+
+    if (this.frames % this.spawnRate === 0) {
+      if (this.spawnRate > 20) this.spawnRate -= 20;
+      const enemy = new CustomBoxMesh({
+        width: 1,
+        height: 1,
+        depth: 1,
+        position: {
+          x: (Math.random() - 0.5) * 10,
+          y: 10,
+          z: Math.random() * -20,
+        },
+        velocity: {
+          x: 0,
+          y: 0,
+          z: 0.005,
+        },
+        color: 'red',
+        zAcceleration: true,
+      });
+      enemy.name = 'enemy';
+      enemy.castShadow = true;
+      this.scene.add(enemy);
+      this.enemies.push(enemy);
+    }
+    this.frames++;
+  }
+
+  _windowResizeFun() {
+    this.perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
+    this.perspectiveCamera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
 }

@@ -14,6 +14,7 @@ import studyView from '@/views/three/study.vue'; //
 import studyPixiViewport from '@/views/pixi/viewport.vue';
 import DxfView from '@/views/three/dxf.vue'; // 读取dxf文件
 import yukaNier from '@/views/three/yukaNier.vue';
+import yukaKickoff from '@/views/three/yukaKickoff.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -101,10 +102,15 @@ const router = createRouter({
       component: DxfView,
     },
     {
-      path:'/yukaNier',
-      name:'yukaNier',
-      component:yukaNier
-    }
+      path: '/yukaNier',
+      name: 'yukaNier',
+      component: yukaNier,
+    },
+    {
+      path: '/yukaKickoff',
+      name: 'yukaKickoff',
+      component: yukaKickoff,
+    },
   ],
 });
 
