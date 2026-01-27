@@ -47,26 +47,26 @@ export default class Team extends YUKA.GameEntity {
   constructor(color, ball, pitch, homeGoal, opposingGoal) {
     super();
 
-    this.ball = ball;
-    this.color = color;
+    this.ball = ball; // 足球
+    this.color = color; // 球队的颜色
     this.controllingPlayer = null; // 当前谁控制球队
     this.goals = 0; // 当前球队的得分数
     this.homeGoal = homeGoal; // 自己的球门
     this.opposingGoal = opposingGoal; // 对手的球门
     this.opposingTeam = null; // 对手球队
 
-    this.playerClosestToBall = null; // 离球最近的球队
+    this.playerClosestToBall = null; // 离球最近的队员
     this.pitch = pitch; // 球场
     this.receivingPlayer = null; // 准备接球的
     this.stateMachine = new YUKA.StateMachine(this /* team*/);
     this.supportingPlayer = null; // 支持球员
-    this.supportSpotCalculator = new SupportSpotCalculator(this); // 队员支持计算类
+    this.supportSpotCalculator = new SupportSpotCalculator(this); // 用于计算队员应该如何支持其他队员
 
     // states
     // globalState :State
     // This state logic is called every time the state machine is updated.
     this.stateMachine.globalState = new GlobalState(); // 在状态机中没帧都会被执行的状态
-
+    // 球队有进攻、防守、开球三种状态
     this.stateMachine.add(TEAM_STATES.ATTACKING, new AttackingState());
     this.stateMachine.add(TEAM_STATES.DEFENDING, new DefendingState());
     this.stateMachine.add(TEAM_STATES.PREPARE_FOR_KICKOFF, new PrepareForKickOffState());
@@ -83,14 +83,14 @@ export default class Team extends YUKA.GameEntity {
     return this;
   }
   /**
-   * 创建球队的球员。它还将确保球员朝着对方的目标前进。
+   * 创建球队的球员、还要确保球员朝着对方的目标前进。
    */
   createPlayers() {
     let rotation = Math.PI * 0.5;
     let regions;
 
     if (TEAM.RED === this.color) {
-      // 红队
+      // 红队，在+X轴处，需要朝向-X
       regions = _redDefendingRegions;
       rotation *= -1; // 朝向-x
     } else {
@@ -434,7 +434,7 @@ export default class Team extends YUKA.GameEntity {
    * @param {Player} passer - The player who passes the ball.
    * @param {Number} passPower - The power of the pass.
    * @param {Number} minPassingDistance - The minimum distance of the pass.
-   * @param {Object} pass - The pass object holding receiver and target.
+   * @param {Object} pass - The pass object holding receiver and target. 自定义传球对象
    * @returns {Pass} The best possible pass.
    */
   findPass(passer, passPower, minPassingDistance, pass) {
@@ -442,13 +442,15 @@ export default class Team extends YUKA.GameEntity {
     const minDistanceSquaredDistance = minPassingDistance * minPassingDistance;
     pass.receiver = null;
     const players = this.children;
-
+    // 传球给自己的队友，从所有的队友中选择一个
     for (let i = 0, l = players.length; i < l; i++) {
       const player = players[i];
+      // 到接球 队员的距离
       const squaredDistanceToReceiver = passer.position.squaredDistanceTo(player.position);
       // Make sure the potential receiver is not this player and that it is further away than the minimum pass distance.
       // 确保潜在的接球者不是该球员，并且距离比最小传球距离更远。
       if (player !== passer && squaredDistanceToReceiver >= minDistanceSquaredDistance) {
+        // 得到最佳的接球队员
         if (this.getBestPassToReceiver(passer, player, passPower, _target)) {
           const distanceToGoal = _target.squaredDistanceTo(this.opposingGoal.position);
           if (distanceToGoal < minDistance) {
@@ -496,7 +498,7 @@ export default class Team extends YUKA.GameEntity {
    * within the playing area. If all the passes are invalidated the method
    * returns false. Otherwise the method returns the pass that takes the ball
    * closest to the opponent's goal area.
-   *
+   * 得到最佳的接球队员
    * @param {Player} passer - The player who passes the ball.
    * @param {Player} receiver - The player who receives the ball.
    * @param {Number} passPower - The power of the pass.
@@ -510,11 +512,12 @@ export default class Team extends YUKA.GameEntity {
     _passes.length = 0;
 
     const ball = this.ball;
+    // 计算球到接球员的时间
     const t = ball.timeToCoverDistance(ball.position, receiver.position, passPower);
     if (t < 0) return false;
 
     const interceptRange = t * receiver.maxSpeed * 0.2;
-
+    // 计算以接球者的可接球半径，得到球到圆上的两个切线点
     this.computeTangentPoints(
       receiver.position,
       interceptRange,
@@ -523,8 +526,10 @@ export default class Team extends YUKA.GameEntity {
       _tangent2
     );
     _passes.push(_tangent1, receiver.position, _tangent2);
+    //
     for (let i = 0, l = _passes.length; i < l; i++) {
       const pass = _passes[i];
+      // 取三个点中最近的且能安全的进行传球
       const distanceToGoal = pass.squaredDistanceTo(this.opposingGoal.position);
       if (
         distanceToGoal < minDistance &&
@@ -562,6 +567,12 @@ export default class Team extends YUKA.GameEntity {
 
     const squaredLengthInverse = 1 / squaredlength;
     const root = Math.sqrt(squaredlength - RSq); // 得到点到圆边的距离
+    //切点坐标推导公式：
+    // 切点 T = C + R × [ (R/d²) × u ± (t/d²) × u⊥ ]
+    // - 根据勾股定理：t² = d² - R²
+    //- t 是切线 PT 的长度,d 是 p点到圆心的距离
+    //- u = P - C（从圆心到点P的向量）
+    //- u⊥ 是 u 的垂直向量（在2D中，如果 u = (x, z)，则 u⊥ = (-z, x)）
 
     T1.x = C.x + R * (R * _toPoint.x - _toPoint.z * root) * squaredLengthInverse;
     T1.z = C.z + R * (R * _toPoint.z + _toPoint.x * root) * squaredLengthInverse;

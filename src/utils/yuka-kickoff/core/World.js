@@ -7,6 +7,7 @@ import Pitch from '../entities/Pitch';
 import Ball from '../entities/Ball';
 import Team from '../entities/Team';
 import GUI from 'three/examples/jsm/libs/lil-gui.module.min';
+import { OrbitControls } from 'three/examples/jsm/Addons';
 
 export default class World {
   constructor(options) {
@@ -32,19 +33,19 @@ export default class World {
     this.wallHelpers = [];
     this.supportingSpotsRedHelpers = [];
     this.supportingSpotsBlueHelpers = [];
-    this.playerRedHelpers = [];
+    this.playerRedHelpers = []; // 红队的球员
     this.playerBlueHelpers = [];
 
     this.entityManager = new YUKA.EntityManager();
     this.goalDimensions = {
-      //
+      // 球门的宽高设置，在XZ平面的值
       width: 2,
       height: 1,
     };
 
     this.pitch = null; // 球场对象
     this.pitchDimension = {
-      width: 20,
+      width: 20, // 球场的宽高，在XZ平面的值
       height: 15,
     };
     this.onGoalScored = options.onGoalScored || null; // 进球回调
@@ -57,15 +58,17 @@ export default class World {
   }
 
   init() {
+    // 创建资源加载类
     this.assetManager = new AssetManager(this);
     this.assetManager.init().then(result => {
       if (this.options.onReady) {
         //console.log('result:', result);
+        // 通过回调方法，通知UI界面加载完成
         this.options.onReady(result);
       }
       // 创建场景
       this._initScene();
-      //
+      // 游戏主要对象
       this._initGame();
 
       if (this.debug) {
@@ -76,7 +79,7 @@ export default class World {
       this.onStartAnimation();
     });
   }
-
+  // 帧循环中调用
   update() {
     const delta = this.time.update().getDelta();
     this.entityManager.update(delta);
@@ -93,7 +96,7 @@ export default class World {
         this.playerRedHelpers
       );
     }
-
+    this.controls.update();
     this.renderer.render(this.scene, this.camera);
   }
   /**
@@ -181,10 +184,10 @@ export default class World {
     this.options.dom.appendChild(this.renderer.domElement);
 
     window.addEventListener('resize', this.onWindowResize, false);
-
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     // 创建地面
     const groundGeometry = new THREE.PlaneGeometry(250, 250);
-    groundGeometry.rotateX(Math.PI * -0.5);
+    groundGeometry.rotateX(Math.PI * -0.5); // 平面原来在XY平面，现在绕X轴旋转90°
     const groundMaterial = new THREE.MeshBasicMaterial({
       color: new THREE.Color(0xdb8d6e).convertSRGBToLinear(),
       depthWrite: false,
@@ -311,7 +314,7 @@ export default class World {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
 
-      canvas.width = 256;
+      canvas.width = 256; // 长宽比=4:1
       canvas.height = 64;
 
       context.fillStyle = '#ffff';
@@ -326,7 +329,7 @@ export default class World {
 
       const helper = new THREE.Sprite(material);
       helper.visible = false;
-      helper.scale.set(2, 0.5, 1);
+      helper.scale.set(2, 0.5, 1); // 设置的缩放比例=canvas的长宽比(4:1)
       helper.position.y = 2;
 
       player._renderComponent.add(helper);

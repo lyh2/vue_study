@@ -6,6 +6,9 @@ const _brakingForce = new YUKA.Vector3(); // 刹车
 const _ray = new YUKA.Ray();
 const _intersectionPoint = new YUKA.Vector3(); // 交点
 
+/**
+ * 创建足球对象，足球是一个移动的对象
+ */
 export default class Ball extends YUKA.MovingEntity {
   constructor(pitch /* 球场*/) {
     super();
@@ -27,7 +30,7 @@ export default class Ball extends YUKA.MovingEntity {
       // 速度已经很小了，就表示停止运动了
       this.velocity.set(0, 0, 0);
     }
-    super.update(delta); // 调用父类的更新方法，下面之后才会更新速度等内部值
+    super.update(delta); // 调用父类的更新方法，调用之后才会更新速度等内部值
     if (this._isScored() === false) {
       // 未进球,与墙体进行碰撞检测
       this._collisionDetection();
@@ -50,27 +53,34 @@ export default class Ball extends YUKA.MovingEntity {
     const d = this.previousPosition.squaredDistanceTo(this.position);
     let closestDistance = Infinity; // 最近的距离
     let closestWall = null; // 最近的墙体
+    let intersectionPoint = new YUKA.Vector3(); // 交点
 
     for (let i = 0; i < walls.length; i++) {
       const wall = walls[i];
+      // 存在碰撞
       if (_ray.intersectPlane(wall, _intersectionPoint) !== null) {
+        // 交点与上一个点的距离
         const s = this.previousPosition.squaredDistanceTo(_intersectionPoint);
         if (s <= d && s < closestDistance) {
           // 与墙体相交了
           closestDistance = s;
           closestWall = wall;
+          intersectionPoint.copy(_intersectionPoint);
         }
       }
     }
-
+    // 与墙发生碰撞
     if (closestWall !== null) {
-      this.position.copy(this.previousPosition);
+      this.position.copy(this.previousPosition); // 这个可以复制交点的值
+      //console.log('交点:', intersectionPoint);
+      //this.position.copy(intersectionPoint); // 以交点处开启反弹
       this.velocity.reflect(closestWall.normal); // 得到速度的反射值
     }
   }
   /**
    * 判断是否得分
-   * Checks if the ball crosses both goal lines on the pitch. If a goal is detected, the method returns
+   * Checks if the ball crosses both goal lines on the pitch.
+   * If a goal is detected, the method returns
    * true and informs both teams and the pitch about the score.
    *
    * @return {Boolean} Whether a goal was detected or not.
@@ -89,21 +99,23 @@ export default class Ball extends YUKA.MovingEntity {
     if (goalBlue.leftPost === null) goalBlue.computePosts();
 
     let team = null;
+    // 判断球是否进入红球门
     if (
       checkLineIntersection(
         this.previousPosition.x,
         this.previousPosition.z,
         this.position.x,
-        this.position.z,
-        goalRed.leftPost.x,
+        this.position.z, // 球的于东速度
+        goalRed.leftPost.x, // 球门柱子位置
         goalRed.leftPost.z,
         goalRed.rightPost.x,
         goalRed.rightPost.z
       )
     ) {
+      // 进了就表示蓝队胜
       team = TEAM.BLUE;
     }
-
+    // 判断是否进入蓝队球门
     if (
       checkLineIntersection(
         this.previousPosition.x,
@@ -116,9 +128,10 @@ export default class Ball extends YUKA.MovingEntity {
         goalBlue.rightPost.z
       )
     ) {
+      // 进球则红队胜
       team = TEAM.RED;
     }
-
+    // 有一个球队进球得分
     if (team !== null) {
       // 有一队进球了、
       // 重新把球体放置在原点
@@ -129,6 +142,7 @@ export default class Ball extends YUKA.MovingEntity {
       this.sendMessage(this.pitch, MESSAGE.GOAL_SCORED, 0, { team: team });
       return true;
     }
+    // 没有得分
     return false;
   }
   /**
@@ -140,7 +154,12 @@ export default class Ball extends YUKA.MovingEntity {
     this.velocity.set(0, 0, 0);
     return this;
   }
-
+  /**
+   * 设置速度为0，表示控制住球
+   * * This is used by players and goalkeepers to "trap" a ball, to stop it dead.
+   * That player is then assumed to be in possession of the ball.
+   * @returns
+   */
   trap() {
     this.velocity.set(0, 0, 0);
     return this;
@@ -226,7 +245,6 @@ function checkLineIntersection(
      * - 正值：向量1在向量2的逆时针方向
         - 负值：向量1在向量2的顺时针方向
         - 零值：两个向量平行
-
      */
     return false;
   }

@@ -18,18 +18,19 @@ export default class Player extends YUKA.Vehicle {
   constructor(role, team, pitch, defaultRegionId) {
     super();
     this.accuracy = 0.99; // 踢球的准确性。必须在 [0,1] 范围内。值越低，玩家的表现就越差。
-    this.boundingRadius = 0.2;
+    this.boundingRadius = 0.2; // 半径
 
     this.currentDelta = 0;
-    this.defaultRegionId = defaultRegionId;
+    this.defaultRegionId = defaultRegionId; // 默认区域ID
     this.homeRegionId = defaultRegionId;
-    this.pitch = pitch;
-    this.role = role;
-    this.stateMachine = new YUKA.StateMachine(this);
+    this.pitch = pitch; // 球场
+    this.role = role; // 角色
+
+    this.stateMachine = new YUKA.StateMachine(this); // 状态机
     this.steeringTarget = new YUKA.Vector3(); // 行为目标点
     this.team = team;
     this.updateOrientation = false;
-    this.position.copy(pitch.getRegionById(defaultRegionId).center);
+    this.position.copy(pitch.getRegionById(defaultRegionId).center); // 把玩家放在区域中心点位置
     this.steeringTarget.copy(this.position);
   }
 
@@ -141,13 +142,13 @@ export default class Player extends YUKA.Vehicle {
   }
   /**
    * Returns true if this player is the closes player to the ball.
-   * 是离球最近的人员
+   * 判断我方球员是不是离球最近的人员
    * @return {Boolean} Whether this player is the closes player to the ball or not.
    */
   isClosestPlayerOnPitchToBall() {
     if (this.isClosestTeamMemberToBall()) {
       const ball = this.team.ball;
-      const opponentClosestToBall = this.team.opposingTeam.playerClosestToBall;
+      const opponentClosestToBall = this.team.opposingTeam.playerClosestToBall; // 对方离球最近的球员
       return (
         this.position.squaredDistanceTo(ball.position) <
         opponentClosestToBall.position.squaredDistanceTo(ball.position)
@@ -185,11 +186,17 @@ export default class Player extends YUKA.Vehicle {
     const homeRegion = this.getHomeRegion();
     return homeRegion.isInside(this.position, this.role !== ROLE.GOALKEEPER);
   }
-
+  /**
+   *
+   * @returns 得到指定的区域对象
+   */
   getHomeRegion() {
     return this.pitch.getRegionById(this.homeRegionId);
   }
 
+  /**
+   * 设置每个队员回到自己的初始化位置
+   */
   setDefaultHomeRegion() {
     this.homeRegionId = this.defaultRegionId;
   }

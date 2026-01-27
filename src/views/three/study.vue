@@ -9,7 +9,14 @@
  * Copyright (c) 2024 by ${git_name_email}, All Rights Reserved. 
 -->
 <template>
-  <div class="container" ref="container"></div>
+  <div class="container" ref="container">
+    <video id="video" ref="video" crossOrigin="anonymous" playsinline style="display: none">
+      <source
+        src="./tutorial/videos/0ab25e6c28ebc8d2d755771c3264f280.mp4"
+        type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"'
+      />
+    </video>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -18,12 +25,17 @@ import Application from '@/utils/three/Application.js';
 
 let exampleId = ref(8);
 let app = null,
-  container = ref(null);
+  container = ref(null),
+  video = ref(null);
 defineOptions({
-  name: 'world',
+  name: 'Study',
 });
 onMounted(() => {
-  app = new Application({ dom: container.value, exampleId: exampleId.value });
+  app = new Application({
+    dom: container.value,
+    exampleId: exampleId.value,
+    videoDom: video.value,
+  });
 
   window.onresize = () => {
     app.emit('_onWindowResizeEvent', {

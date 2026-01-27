@@ -8,6 +8,7 @@ import { MESSAGE, TEAM_STATES } from '../core/constants';
 class GlobalState extends YUKA.State {
   onMessage(team, telegram) {
     switch (telegram.message) {
+      // 得分事件
       case MESSAGE.GOAL_SCORED: {
         if (telegram.data.team == team.color) team.goals++; // 球队得分
         team.stateMachine.changeTo(TEAM_STATES.PREPARE_FOR_KICKOFF); // 准备开球

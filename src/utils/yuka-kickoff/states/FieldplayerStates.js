@@ -61,7 +61,7 @@ export default class GlobalState extends YUKA.State {
           player.stateMachine.changeTo(FIELDPLAYER_STATES.RECEIVE_BALL);
         }
         return true;
-      case MESSAGE.SUPPORT_ATTACKER:
+      case MESSAGE.SUPPORT_ATTACKER: // 辅助进攻
         {
           if (player.stateMachine.in(FIELDPLAYER_STATES.SUPPORT_ATTACKER)) return true;
           player.steeringTarget.copy(player.team.getSupportPosition());

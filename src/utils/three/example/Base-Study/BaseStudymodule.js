@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/Addons';
 import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/Addons';
 import * as Poly2tri from 'poly2tri';
+import GUI from 'three/examples/jsm/libs/lil-gui.module.min';
 
 export class MorphAnimation {
   constructor(options) {
@@ -713,6 +714,245 @@ export class MoveBoxGame {
       this.enemies.push(enemy);
     }
     this.frames++;
+  }
+
+  _windowResizeFun() {
+    this.perspectiveCamera.aspect = window.innerWidth / window.innerHeight;
+    this.perspectiveCamera.updateProjectionMatrix();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+}
+
+/**
+ * 学习深度及模版缓存
+ * 1. Depth Buffer（深度缓冲区）
+原理：
+深度缓冲区（也称为 Z-Buffer）是一个用于存储每个像素深度值的缓冲区。深度值通常表示从相机到物体表面的距离。在渲染过程中，当多个物体重叠时，深度测试用于确定哪个物体应该被显示（即哪个物体更近）。
+深度测试的基本原理是：对于每个像素，当有一个新的片段（fragment）要绘制时，会将其深度值与深度缓冲区中当前存储的深度值进行比较。如果新的片段深度值小于（或根据设置的比较函数）当前深度缓冲区中的值，则新的片段颜色会被写入颜色缓冲区，并且深度缓冲区更新为新的深度值。否则，片段被丢弃。
+在 Three.js 中，默认情况下深度测试是开启的，并且深度比较函数为 LessEqual（即当片段的深度值小于或等于当前深度缓冲区值时通过测试）。
+使用条件：
+当需要正确渲染三维场景中的物体遮挡关系时，必须使用深度缓冲区。
+在 Three.js 中，深度缓冲区是默认创建的，除非在创建 WebGLRenderer 时明确指定 depthBuffer: false。
+可以通过以下方式控制深度测试：
+1、
+const renderer = new THREE.WebGLRenderer({ depthBuffer: true }); // 默认即为true
+2、也可以在材质级别控制深度测试：
+material.depthTest = true; // 或 false
+还可以设置深度比较函数：
+material.depthFunc = THREE.LessEqualDepth; // 默认值，其他值如：NeverDepth, AlwaysDepth, EqualDepth, etc.
+material.depthFunc = THREE.AlwaysDepth; // 总是通过
+material.depthFunc = THREE.NeverDepth;  // 总是不通过
+material.depthFunc = THREE.LessDepth;   // 默认：小于则通过
+material.depthFunc = THREE.GreaterDepth; // 大于则通过
+ * 
+stencilBuffer：
+ * 模板缓冲区是一个用于存储每个像素模板值的缓冲区。模板测试通常用于实现一些特殊效果，如镜面反射、阴影、轮廓显示等。模板测试发生在深度测试之前（在标准的渲染管线中，顺序是：模板测试 -> 深度测试 -> 混合）。
+模板测试的原理是：根据设定的模板函数和参考值，将当前片段的模板值与模板缓冲区中对应位置的模板值进行比较。根据比较结果决定是否通过测试，并且可以根据测试结果更新模板缓冲区中的值。
+模板测试的设置包括：
+          stencilFunc: 设置模板测试的函数（如 always, equal, not equal 等）和参考值、掩码。
+          stencilOp: 设置当模板测试通过、失败或深度测试失败时如何更新模板缓冲区（如 keep, replace, increment, decrement 等）。
+ */
+export class StudyDepthStencil {
+  constructor(options) {
+    this.options = options;
+    this.init();
+  }
+
+  init() {
+    this.scene = new THREE.Scene();
+    this.perspectiveCamera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      100
+    );
+
+    this.perspectiveCamera.position.set(0, 10, 10);
+
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, depth: true });
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.options.dom.appendChild(this.renderer.domElement);
+    this.renderer.setClearColor(0x222222);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    directionalLight.position.set(1, 1, 1);
+    this.scene.add(directionalLight);
+    //
+    this.scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+    this.scene.add(new THREE.AxesHelper(100));
+
+    // depth 深度测试
+    // 创建两个几何体
+    const cubeGeometry = new THREE.BoxGeometry(1, 1, 1);
+    const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+
+    // 创建材质
+    /**
+     * .depthFunc : Integer
+        Which depth function to use. Default is LessEqualDepth. See the depth mode constants for all possible values.
+
+        .depthTest : Boolean
+        Whether to have depth test enabled when rendering this material. Default is true. When the depth test is disabled, the depth write will also be implicitly disabled.
+
+        .depthWrite : Boolean
+        Whether rendering this material has any effect on the depth buffer. Default is true.
+
+        When drawing 2D overlays it can be useful to disable the depth writing in order to layer several things together without creating z-index artifacts.
+     */
+    this.cubeMaterial = new THREE.MeshPhongMaterial({
+      color: 0xff0000,
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    this.sphereMaterial = new THREE.MeshPhongMaterial({
+      color: 0x0000ff,
+      transparent: true,
+      opacity: 0.8,
+    });
+
+    // 创建立方体和球体网格
+    this.cube = new THREE.Mesh(cubeGeometry, this.cubeMaterial);
+    this.sphere = new THREE.Mesh(sphereGeometry, this.sphereMaterial);
+
+    // 设置位置 - 让它们部分重叠
+    this.cube.position.set(-0.5, 0, 0);
+    this.sphere.position.set(0.5, 0, 0);
+    this.controls = new OrbitControls(this.perspectiveCamera, this.renderer.domElement);
+    // 添加到场景
+    this.scene.add(this.cube);
+    this.scene.add(this.sphere);
+    /**
+     * Which depth function the material uses to compare incoming pixels Z-depth against the current Z-depth buffer value. If the result of the comparison is true, the pixel will be drawn.
+     * 材质使用哪个深度函数来将传入像素 Z 深度与当前 Z 深度缓冲区值进行比较。如果比较结果为真，则绘制该像素。
+     */
+    this.depthFuncMap = {
+      'THREE.NeverDepth': THREE.NeverDepth, //will never return true.永远不会返回 true。
+      'THREE.AlwaysDepth': THREE.AlwaysDepth, //will always return true.将始终返回 true。
+      'THREE.EqualDepth': THREE.EqualDepth, //will return true if the incoming pixel Z-depth is equal to the current buffer Z-depth.如果传入像素 Z 深度等于当前缓冲区 Z 深度，则返回 true。
+      'THREE.LessDepth': THREE.LessDepth, //will return true if the incoming pixel Z-depth is less than the current buffer Z-depth.如果传入像素 Z 深度小于当前缓冲区 Z 深度，则返回 true。
+      'THREE.LessEqualDepth': THREE.LessEqualDepth, //is the default and will return true if the incoming pixel Z-depth is less than or equal to the current buffer Z-depth.是默认值，如果传入像素 Z 深度小于或等于当前缓冲区 Z 深度，则返回 true。
+      'THREE.GreaterEqualDepth': THREE.GreaterEqualDepth, //will return true if the incoming pixel Z-depth is greater than or equal to the current buffer Z-depth.如果传入像素 Z 深度大于或等于当前缓冲区 Z 深度，则返回 true。
+      'THREE.GreaterDepth': THREE.GreaterDepth, //will return true if the incoming pixel Z-depth is greater than the current buffer Z-depth.如果传入像素 Z 深度大于当前缓冲区 Z 深度，则返回 true。
+      'THREE.NotEqualDepth': THREE.NotEqualDepth, //will return true if the incoming pixel Z-depth is not equal to the current buffer Z-depth.如果传入像素 Z 深度不等于当前缓冲区 Z 深度，则返回 true。
+    };
+    this.depthFuncArr = [
+      'THREE.NeverDepth',
+      'THREE.AlwaysDepth',
+      'THREE.EqualDepth',
+      'THREE.LessDepth',
+      'THREE.LessEqualDepth',
+      'THREE.GreaterEqualDepth',
+      'THREE.GreaterDepth',
+      'THREE.NotEqualDepth',
+    ];
+    // 创建GUI
+    const gui = new GUI();
+    const cubeFolder = gui.addFolder('cube');
+    cubeFolder
+      .add(this.cubeMaterial, 'depthTest')
+      .name('depthTest')
+      .onChange(value => {
+        this.cubeMaterial.depthTest = value;
+        this.update();
+      });
+    cubeFolder
+      .add(this.cubeMaterial, 'depthWrite')
+      .name('depthWrite')
+      .onChange(value => {
+        this.cubeMaterial.depthWrite = value;
+        this.update();
+      });
+    cubeFolder
+      .add({ depthFunc: 'THREE.LessEqualDepth' }, 'depthFunc', this.depthFuncArr)
+      .name('depthFunc')
+      .onChange(value => {
+        this.cubeMaterial.depthFunc = this.depthFuncMap[value];
+        this.cubeMaterial.needsUpdate = true;
+      });
+    cubeFolder
+      .add(this.cube, 'renderOrder', [0, 1])
+      .name('renderOrder')
+      .onChange(value => {
+        //console.log('renderOrder:', value);
+        this.cube.renderOrder = value;
+        this.update();
+      });
+    // sphere
+    const sphereFolder = gui.addFolder('sphere');
+    sphereFolder
+      .add(this.sphereMaterial, 'depthTest')
+      .name('depthTest')
+      .onChange(value => {
+        this.sphereMaterial.depthTest = value;
+        this.update();
+      });
+    sphereFolder
+      .add(this.sphereMaterial, 'depthWrite')
+      .name('depthWrite')
+      .onChange(value => {
+        this.sphereMaterial.depthWrite = value;
+        this.update();
+      });
+    sphereFolder
+      .add({ depthFunc: 'THREE.LessEqualDepth' }, 'depthFunc', this.depthFuncArr)
+      .name('depthFunc')
+      .onChange(value => {
+        // 将字符串映射到Three.js常量
+        this.sphereMaterial.depthFunc = this.depthFuncMap[value];
+        this.update();
+      });
+    sphereFolder
+      .add(this.cube, 'renderOrder', [0, 1])
+      .name('renderOrder')
+      .onChange(value => {
+        //console.log('renderOrder:', value);
+        this.sphere.renderOrder = value;
+        this.update();
+      });
+    // stencil
+    // 注意：这里只是模板测试的示例代码，实际使用时需要取消注释并确保变量不重复声明
+
+    // 2. 创建主要物体（一个立方体）
+    const stencilCubeGeometry = new THREE.BoxGeometry();
+    const stencilCubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const stencilCube = new THREE.Mesh(stencilCubeGeometry, stencilCubeMaterial);
+    this.scene.add(stencilCube);
+    stencilCube.position.set(0, 2, 0);
+
+    // 3. 创建放大的立方体作为轮廓
+    const outlineGeometry = new THREE.BoxGeometry(1.1, 1.1, 1.1); // 稍微大一点
+    const outlineMaterial = new THREE.MeshBasicMaterial({
+      color: 0xffff00,
+      side: THREE.BackSide, // 只渲染背面，避免与原始立方体重叠
+    });
+
+    const outline = new THREE.Mesh(outlineGeometry, outlineMaterial);
+
+    // 4. 配置轮廓的模板材质
+    outlineMaterial.stencilWrite = true;
+    outlineMaterial.stencilFunc = THREE.AlwaysStencilFunc; // 总是通过测试
+    outlineMaterial.stencilZPass = THREE.ReplaceStencilOp; // 当深度通过时，将模板值替换为参考值
+    outline.position.set(0, 2, 0);
+    this.scene.add(outline);
+
+    // 5. 配置原始立方体的模板材质
+    stencilCubeMaterial.stencilWrite = false; // 不写入模板
+    stencilCubeMaterial.stencilFunc = THREE.NotEqualStencilFunc; // 只渲染在模板值不等于参考值的地方
+    stencilCubeMaterial.stencilRef = 1; // 参考值设为 1
+
+    this.renderer.setAnimationLoop(this.animate.bind(this));
+  }
+
+  update() {
+    this.cubeMaterial.needsUpdate = true;
+    this.sphereMaterial.needsUpdate = true;
+  }
+  animate() {
+    this.renderer.render(this.scene, this.perspectiveCamera);
+    // 旋转几何体以便更好地观察
+    this.cube.rotation.y += 0.01;
+    this.sphere.rotation.y += 0.01;
   }
 
   _windowResizeFun() {

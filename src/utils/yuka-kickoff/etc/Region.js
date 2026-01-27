@@ -1,6 +1,6 @@
 export default class Region {
   /**
-   *
+   * 球场整个区域
    * @param {*} center - 区域的中心点
    * @param {*} width - 区域的宽度
    * @param {*} height - 区域的高度
@@ -26,9 +26,10 @@ export default class Region {
     let marginX, marginY;
 
     if (isHalfSize === true) {
+      // 留下边距
       marginX = this.width * 0.25; // 1/4 的位置
       marginY = this.height * 0.25;
-
+      // 简单的矩形判断
       return (
         position.x > this.left + marginX &&
         position.x < this.right - marginX &&
@@ -36,6 +37,7 @@ export default class Region {
         position.z < this.top - marginY
       );
     } else {
+      // 没有边距的判断
       return (
         position.x > this.left &&
         position.x < this.right &&

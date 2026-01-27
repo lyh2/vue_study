@@ -39,14 +39,14 @@ export default class FieldPlayer extends Player {
     this.steering.add(pursuitBehavior);
 
     // states
-    this.stateMachine.globalState = new GlobalState();
-    this.stateMachine.add(FIELDPLAYER_STATES.CHASE_BALL, new ChaseBallState());
-    this.stateMachine.add(FIELDPLAYER_STATES.DRIBBLE, new DribbleState());
-    this.stateMachine.add(FIELDPLAYER_STATES.KICK_BALL, new KickBallState());
-    this.stateMachine.add(FIELDPLAYER_STATES.RECEIVE_BALL, new ReceiverBallState());
-    this.stateMachine.add(FIELDPLAYER_STATES.RETURN_HOME, new ReturnHomeState());
-    this.stateMachine.add(FIELDPLAYER_STATES.SUPPORT_ATTACKER, new SupportAttackerState());
-    this.stateMachine.add(FIELDPLAYER_STATES.WAIT, new WaitState());
+    this.stateMachine.globalState = new GlobalState(); // 没帧都会执行的状态
+    this.stateMachine.add(FIELDPLAYER_STATES.CHASE_BALL, new ChaseBallState()); //追球
+    this.stateMachine.add(FIELDPLAYER_STATES.DRIBBLE, new DribbleState()); //运球
+    this.stateMachine.add(FIELDPLAYER_STATES.KICK_BALL, new KickBallState()); //踢球
+    this.stateMachine.add(FIELDPLAYER_STATES.RECEIVE_BALL, new ReceiverBallState()); //接球
+    this.stateMachine.add(FIELDPLAYER_STATES.RETURN_HOME, new ReturnHomeState()); // 回防
+    this.stateMachine.add(FIELDPLAYER_STATES.SUPPORT_ATTACKER, new SupportAttackerState()); // 辅助进攻
+    this.stateMachine.add(FIELDPLAYER_STATES.WAIT, new WaitState()); // 等待
     this.stateMachine.changeTo(FIELDPLAYER_STATES.WAIT);
   }
 

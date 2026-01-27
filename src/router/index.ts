@@ -15,6 +15,13 @@ import studyPixiViewport from '@/views/pixi/viewport.vue';
 import DxfView from '@/views/three/dxf.vue'; // 读取dxf文件
 import yukaNier from '@/views/three/yukaNier.vue';
 import yukaKickoff from '@/views/three/yukaKickoff.vue';
+import MCPTest from '@/views/mcp/test.vue';
+import ContactForm from '@/views/mcp/contact-form.vue';
+import PixelArt from '@/views/pixel/pixel.vue';
+import NpcView from '@/views/three/npc.vue';
+import pindouView from '@/views/pixi/pindou.vue';
+import CustomPixiView from '@/views/pixi/模范Pixi.js的设计原理.vue';
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -110,6 +117,36 @@ const router = createRouter({
       path: '/yukaKickoff',
       name: 'yukaKickoff',
       component: yukaKickoff,
+    },
+    {
+      path: '/mcp-test',
+      name: 'mcpTest',
+      component: MCPTest,
+    },
+    {
+      path: '/contact-form',
+      name: 'contactForm',
+      component: ContactForm,
+    },
+    {
+      path: '/pixelArt',
+      name: 'pixelArt',
+      component: PixelArt,
+    },
+    {
+      path: '/npc',
+      name: 'npc',
+      component: NpcView,
+    },
+    {
+      path: '/pindou',
+      name: 'pindou',
+      component: pindouView,
+    },
+    {
+      path: '/customPixi',
+      name: 'customPixi',
+      component: CustomPixiView,
     },
   ],
 });

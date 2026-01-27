@@ -20,13 +20,13 @@ export default class Pitch extends YUKA.GameEntity {
     this.walls = [
       new YUKA.Plane(new YUKA.Vector3(0, 0, -1), 7.5), // top  在-Z轴的位置
       new YUKA.Plane(new YUKA.Vector3(0, 0, 1), 7.5), // bottom 在Z轴的位置
-      new YUKA.Plane(new YUKA.Vector3(-1, 0, 0), 10), // right 在-X轴的位置
-      new YUKA.Plane(new YUKA.Vector3(1, 0, 0), 10), // left 在+X轴的位置
+      new YUKA.Plane(new YUKA.Vector3(1, 0, 0), 10), // right 在-X轴的位置
+      new YUKA.Plane(new YUKA.Vector3(-1, 0, 0), 10), // left 在+X轴的位置
     ];
     // 是否开始比赛
     this.isPlaying = true;
 
-    // 守门员是否控球
+    // 守门员是否控球，Possession：拥有
     this.isGoalKeeperInBallPossession = false;
 
     //
@@ -47,13 +47,13 @@ export default class Pitch extends YUKA.GameEntity {
     this._createRegions();
   }
   /**
-   * 生成该音高的区域。所有区域都位于原点的 XZ 中。
+   * 分割大区域生成小区域格子。所有区域都位于原点的 XZ 中。
    * Generates the regions of this pitch. All regions lie in a XZ at the origin.
    */
   _createRegions() {
     const playingArea = this.playingArea;
     let id = 0;
-    // width = 3.3,height = 5
+    // width = 3.3,height = 5 // 得到每段的宽高值
     const width = playingArea.width / this.regionCountWidth; // 20 / 6 = 3.3;
     const height = playingArea.height / this.regionCountHeight; // 15 / 3 = 5
     // 列
@@ -64,7 +64,7 @@ export default class Pitch extends YUKA.GameEntity {
         const x = col * width + width / 2 - playingArea.width / 2;
         const y = 0;
         const z = row * height + height / 2 - playingArea.height / 2;
-
+        // 创建小区域
         this.regions[id] = new Region(new YUKA.Vector3(x, y, z), width, height, id);
         id++;
       }

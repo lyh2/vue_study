@@ -28,9 +28,9 @@ export default class Goal extends YUKA.GameEntity {
    */
   getDirection(direction) {
     if (this.color === TEAM.RED) {
-      direction.set(-1, 0, 0); // 左边
+      direction.set(-1, 0, 0); // 红队在右边，+X轴
     } else {
-      direction.set(1, 0, 0); // 右边
+      direction.set(1, 0, 0); // 蓝队在左边，-X轴
     }
     return direction;
   }
