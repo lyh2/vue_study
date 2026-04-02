@@ -2,7 +2,7 @@
  * ## 1. 角色-相机关系架构
     __核心思想__：相机不是直接绑定在角色身上，而是通过一个"跟随者"系统来实现平滑跟随。
     - __角色（Character）__：玩家控制的3D模型，可以移动和旋转
-    - __尾部对象（Tail）__：一个虚拟的3D对象，附加在角色后方，定义了相机的理想位置
+    - __尾部对象（Tail）__：一个虚拟的3D对象，附加在角色后方，定义了相机的理想位置，也就是：相机的锚点
     - __跟随者（Follower）__：一个中间对象，相机实际附加在这个对象上
     - __相机（Camera）__：观察场景的视角
     这种分层架构允许相机有独立的运动逻辑，而不是僵硬地固定在角色身上。
@@ -14,13 +14,13 @@
     └── 相机 (Camera) - 实际渲染视角
         - __位置__：附加在角色身上 `character.add(tail)`
         - __坐标__：`tail.position.set(0, 0.5, -4)` - 在角色后方4个单位，高度0.5的位置
-        - __作用__：定义相机&#x7684;__&#x7406;想目标位置__，相当于一个"位置标记点"
+        - __作用__：定义相机理想目标位置__，相当于一个"位置标记点"
         - __特性__：随着角色移动而移动，始终保持相对位置
 
         ### follower（跟随者对象）
 
         - __位置__：独立于场景中的对象
-        - __作用__：相机&#x7684;__&#x5B9E;际载体__，通过平滑插值移动到tail的位置
+        - __作用__：相机实际载体__，通过平滑插值移动到tail的位置
         - __特性__：有自己的运动逻辑，不直接绑定在角色上
 
  */
@@ -29,7 +29,12 @@ import * as THREE from 'three';
 import { DRACOLoader, GLTFLoader, OrbitControls } from 'three/examples/jsm/Addons';
 
 /**
- * 第三人称控制
+ * 第三人称控制中：“理想位置”和“实际位置” 需要进行分开
+ * 
+  tail 负责告诉你相机应该在哪
+  follower 负责慢慢追过去，作为相机的平滑参考锚点
+  OrbitControls 负责让相机绕角色旋转
+  这样相机不会因为角色瞬间转身而硬切，同时又允许玩家用鼠标自由观察。
  */
 export class ThirdPersonController {
   constructor(options) {
@@ -49,16 +54,20 @@ export class ThirdPersonController {
       1000
     );
 
-    this.perspectiveCamera.position.set(0, 1.6, 0);
+    this.perspectiveCamera.position.set(0, 2.1, -4);
 
     this.character_position = new THREE.Vector3(); // 玩家的位置
-    this.camera_position = new THREE.Vector3(); // 相机的位置
     this.tail_position = new THREE.Vector3(); // 尾随着位置
-    this.camera_offset = new THREE.Vector3(); // 相机的偏移量
+    this.look_target = new THREE.Vector3(); // 相机平滑观察目标
+    this.look_target_position = new THREE.Vector3(); // 相机目标点的即时位置
+    this.target_delta = new THREE.Vector3(); // 相机围绕目标旋转时的平移补偿
 
     this.distance = 4;
     this.velocity = 0;
     this.speed = 0;
+    this.turnVelocity = 0;
+    this.turnSpeed = 2.8;
+    this.turnMoveSpeed = 0.045;
 
     // 尾随者对象
     this.tail = new THREE.Object3D();
@@ -69,8 +78,8 @@ export class ThirdPersonController {
     this.follower = new THREE.Object3D();
     this.follower.name = 'follower';
 
-    this.follower.add(this.perspectiveCamera); // 相机挂载在一个空对象上
-
+    this.scene.add(this.follower); // 跟随者对象挂载在场景中
+    this.scene.add(this.perspectiveCamera);
     // 添加环境光
     const ambientLight = new THREE.AmbientLight(0xfff, 1.2);
     this.scene.add(ambientLight);
@@ -94,7 +103,12 @@ export class ThirdPersonController {
     this.options.dom.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.perspectiveCamera, this.renderer.domElement);
-    //this.controls.enableDamping = true;
+    this.controls.enableDamping = true;
+    this.controls.enablePan = false;
+    this.controls.minDistance = 2;
+    this.controls.maxDistance = 12;
+    this.controls.minPolarAngle = 0.3;
+    this.controls.maxPolarAngle = Math.PI / 2 - 0.05;
 
     this.clock = new THREE.Clock();
     this.previousTime = 0;
@@ -122,7 +136,18 @@ export class ThirdPersonController {
       gltf.scene.receiveShadow = true;
 
       this.scene.add(this.character);
-      this.perspectiveCamera.lookAt(this.character.position);
+      this.character.updateMatrixWorld(true);
+      this.tail.updateMatrixWorld(true);
+      this.tail_position.setFromMatrixPosition(this.tail.matrixWorld);
+      this.follower.position.copy(this.tail_position);
+      this.look_target.set(this.character.position.x, 2.2, this.character.position.z);
+      this.perspectiveCamera.position.set(
+        this.tail_position.x,
+        this.tail_position.y + 1.6,
+        this.tail_position.z
+      );
+      this.controls.target.copy(this.look_target);
+      this.controls.update();
 
       this.mixer = new THREE.AnimationMixer(this.character);
       this.actions = {
@@ -213,7 +238,6 @@ export class ThirdPersonController {
     newAction.crossFadeFrom(this.actions[this.prevAnimate], 0.3);
   }
   animate() {
-    this.renderer.render(this.scene, this.perspectiveCamera);
     this.scene.traverse(child => {
       if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
         child.material.needsUpdate = true;
@@ -230,67 +254,55 @@ export class ThirdPersonController {
       this.mixer.update(deltaTime);
     }
     let speed = 0;
+    const isTurningLeft = !!this.keyboards['a'];
+    const isTurningRight = !!this.keyboards['d'];
+    const isTurning = isTurningLeft || isTurningRight;
+
     /** Running forwards */
     if (this.keyboards['r']) {
       speed = 0.2;
-
-      if (this.actions.run) {
-        if (this.prevAnimate != 'run') this.crossFadeAnimation(this.actions['run']);
-
-        this.prevAnimate = 'run';
-      }
-    }
-    /** Walking forward */
-    if (this.keyboards['w']) {
+    } else if (this.keyboards['w']) {
+      /** Walking forward */
       speed = 0.09;
-
-      if (this.actions.walk) {
-        if (this.prevAnimate != 'walk') this.crossFadeAnimation(this.actions['walk']);
-
-        this.prevAnimate = 'walk';
-      }
+    } else if (this.keyboards['s']) {
+      /** Walking backwards */
+      speed = -0.09;
+    } else if (isTurning) {
+      // 转向时给一点前进速度，让角色形成自然的弧线移动
+      speed = this.turnMoveSpeed;
     }
 
-    /** Walking backwards */
+    /** 根据输入切换动画 */
     if (this.keyboards['s']) {
-      speed = -0.09;
-
-      if (this.actions.walk) {
-        if (this.prevAnimate != 'back') this.crossFadeAnimation(this.actions['back']);
-
+      if (this.actions.back && this.prevAnimate != 'back') {
+        this.crossFadeAnimation(this.actions.back);
         this.prevAnimate = 'back';
       }
-    }
-
-    /** Ilde state */
-    if (!this.keyboards['w'] && !this.keyboards['s']) {
-      speed = 0;
-      if (this.actions.idle && this.prevAnimate != 'idle') {
-        if (this.prevAnimate != 'idle') this.crossFadeAnimation(this.actions['idle']);
-
-        this.prevAnimate = 'idle';
+    } else if (this.keyboards['r']) {
+      if (this.actions.run && this.prevAnimate != 'run') {
+        this.crossFadeAnimation(this.actions.run);
+        this.prevAnimate = 'run';
       }
-    }
-
-    /* Turn character  转换方向
-  
-    */
-    if (this.keyboards['a']) {
-      if (this.character) {
-        this.character.rotateY(0.05);
+    } else if (this.keyboards['w'] || isTurning) {
+      if (this.actions.walk && this.prevAnimate != 'walk') {
+        this.crossFadeAnimation(this.actions.walk);
+        this.prevAnimate = 'walk';
       }
+    } else if (this.actions.idle && this.prevAnimate != 'idle') {
+      this.crossFadeAnimation(this.actions.idle);
+      this.prevAnimate = 'idle';
     }
-    if (this.keyboards['d']) {
-      if (this.character) {
-        this.character.rotateY(-0.05);
-      }
-    }
-
+    // 存在玩家角色
     if (this.character) {
       /**
        * 设置玩家超正向移动，速度逐渐增加
        *  Move character along Z axis
        */
+      const turnDirection = (isTurningLeft ? 1 : 0) - (isTurningRight ? 1 : 0);
+      const targetTurnVelocity = turnDirection * this.turnSpeed;
+      this.turnVelocity += (targetTurnVelocity - this.turnVelocity) * 0.2;
+      this.character.rotateY(this.turnVelocity * deltaTime);
+
       this.velocity += (speed - this.velocity) * 0.3; // 0.09*0.3=0.027,0.027 + (0.09-0.027)*0.3=0.0459,0.0459 + (0.09 - 0.0459) *0.3=0.05913
       this.character.translateZ(this.velocity); // 是让角色沿着其自身的前进方向移动
       /**
@@ -300,7 +312,7 @@ export class ThirdPersonController {
             - __X轴__：向右（红色）
             - __Y轴__：向上（绿色）
             - __Z轴__：向前（蓝色）
-            这是计算机图形学中&#x7684;__&#x6807;准约定__。
+            这是计算机图形学中准约定__。
             ### 2. 3D建模软件的导出规范
             大多数3D建模软件（Blender、Maya、3ds Max等）导出模型时：
             - 默认将模型&#x7684;__&#x6B63;&#x9762;__&#x671D;向Z轴正方向
@@ -312,12 +324,9 @@ export class ThirdPersonController {
        * 平滑得到玩家的位置
        */
       this.character_position.lerp(this.character.position, 0.4);
-
-      /**
-       * Set default camera position Vector3 to the follower
-       * 相机默认的位置是需要到 follower的位置处
-       */
-      this.camera_position.copy(this.follower.position);
+      this.look_target_position.set(this.character.position.x, 2.2, this.character.position.z);
+      this.look_target.lerp(this.look_target_position, 0.4);
+      this.character.updateMatrixWorld(true);
 
       /**
        * Set tail_position Vector3 to absolute tail position
@@ -325,37 +334,18 @@ export class ThirdPersonController {
        */
       this.tail_position.setFromMatrixPosition(this.tail.matrixWorld);
 
-      /*
-       *
-       *    Calculate a offset camera vector, based on the character's
-       *   position. Offset represented by the direction vector3 from
-       *   the camera (follower) to the character
-       */
-
-      this.camera_offset.copy(this.character_position).sub(this.camera_position).normalize();
-      const distanceDifference =
-        this.character_position.distanceTo(this.camera_position) - this.distance;
-      // 得到新的follower 位置
-      this.follower.position.addScaledVector(this.camera_offset, distanceDifference);
-
       /**
-       * Lerp camera to the tail position
+       * follower 仍然保留为平滑后的理想机位参考点
        */
       this.follower.position.lerp(this.tail_position, 0.02);
 
-      /**
-       * Update position of the character
-       * for the camera
-       */
-
-      const newPosition = new THREE.Vector3(
-        this.character.position.x,
-        2.2,
-        this.character.position.z
-      );
-      // 设置相机新的朝向位置
-      this.perspectiveCamera.lookAt(newPosition);
+      // 目标点移动时，让相机整体平移同样的增量，从而保持当前鼠标绕视角的结果
+      this.target_delta.copy(this.look_target).sub(this.controls.target);
+      this.perspectiveCamera.position.add(this.target_delta);
+      this.controls.target.copy(this.look_target);
     }
+    this.controls.update();
+    this.renderer.render(this.scene, this.perspectiveCamera);
   }
 
   _windowResizeFun() {

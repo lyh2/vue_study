@@ -2,11 +2,11 @@
 //import {  MorphAnimation } from './Base-Study/BaseStudymodule';
 //import { StudyPoly2tri } from "./Base-Study/BaseStudyModule";
 
-import { StudyDepthStencil } from './Base-Study/BaseStudyModule';
+//import { StudyDepthStencil } from './Base-Study/BaseStudyModule';
 
 //import { StudyGeometryParameters } from '@/utils/tutorial/tutorial';
 
-//import { ThirdPersonController } from './third-person-controller-第三人称控制';
+import { ThirdPersonController } from './third-person-controller-第三人称控制';
 
 //import { MoveBoxGame } from './Base-Study/BaseStudyModule';
 export default class Example8 {
@@ -26,11 +26,11 @@ export default class Example8 {
     //
     //this._obj = new MoveBoxGame(this._options);
 
-    //this._obj = new ThirdPersonController(this._options);
+    this._obj = new ThirdPersonController(this._options);
 
     //this._obj = new StudyGeometryParameters(this._options);
 
-    this._obj = new StudyDepthStencil(this._options);
+    //this._obj = new StudyDepthStencil(this._options);
   }
 
   _onWindowResizeEvent() {
