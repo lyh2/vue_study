@@ -56,25 +56,24 @@ export class ThirdPersonController {
 
     this.perspectiveCamera.position.set(0, 2.1, -4);
 
-    this.character_position = new THREE.Vector3(); // 玩家的位置
-    this.tail_position = new THREE.Vector3(); // 尾随着位置
+    this.tail_position = new THREE.Vector3(); // 理想相机的位置，这个值是固定提前设定好的在角色某一处的位置
     this.look_target = new THREE.Vector3(); // 相机平滑观察目标
     this.look_target_position = new THREE.Vector3(); // 相机目标点的即时位置
     this.target_delta = new THREE.Vector3(); // 相机围绕目标旋转时的平移补偿
 
-    this.distance = 4;
-    this.velocity = 0;
-    this.speed = 0;
-    this.turnVelocity = 0;
-    this.turnSpeed = 2.8;
-    this.turnMoveSpeed = 0.045;
+    this.distance = 4; // 相机距离角色的距离
+    this.velocity = 0; // 角色的速度
+    this.turnVelocity = 0; // 角色的转向速度
+    this.turnSpeed = 2.8; // 角色的转向速度
+    this.turnMoveSpeed = 0.045; // 角色的转向时给一点前进速度，让角色形成自然的弧线移动
 
-    // 尾随者对象
+    // tail 负责告诉你相机应该在哪个最理想的位置
     this.tail = new THREE.Object3D();
     this.tail.name = 'tail';
     this.tail.position.y = 0.5; // 在Charactor 坐标系下的位置
     this.tail.position.z = -this.distance; // 在角色的-Z轴处，表示在校色的背面
 
+    // 创建一个相机的父级对象，便于更好的计算相机位置及变换操作
     this.follower = new THREE.Object3D();
     this.follower.name = 'follower';
 
@@ -99,12 +98,13 @@ export class ThirdPersonController {
     this.renderer = new THREE.WebGLRenderer({ antialias: true });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(window.devicePixelRatio);
-
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.options.dom.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.perspectiveCamera, this.renderer.domElement);
     this.controls.enableDamping = true;
-    this.controls.enablePan = false;
+    this.controls.enablePan = false; // 是否允许平移
     this.controls.minDistance = 2;
     this.controls.maxDistance = 12;
     this.controls.minPolarAngle = 0.3;
@@ -125,10 +125,12 @@ export class ThirdPersonController {
     this.actions = {};
     this.character = null;
     this.characterAnimation = [];
+    // 加载模型
     gltfLoader.load('./third-person-control/Character.glb', gltf => {
+      //console.log('模型数据:', gltf);
       gltf.scene.scale.set(1, 1, 1);
       this.character = gltf.scene;
-      this.characterAnimation = gltf.animations;
+      this.characterAnimation = gltf.animations; // 得到动画片段数组
 
       this.character.add(this.tail); // 把tail 添加到玩家对象上
 
@@ -137,15 +139,20 @@ export class ThirdPersonController {
 
       this.scene.add(this.character);
       this.character.updateMatrixWorld(true);
-      this.tail.updateMatrixWorld(true);
-      this.tail_position.setFromMatrixPosition(this.tail.matrixWorld);
-      this.follower.position.copy(this.tail_position);
+      //----------------------------
+      this.tail.updateMatrixWorld(true); // 首先更新tail的世界矩阵，更新自己及子孙节点的世界矩阵
+      this.tail_position.setFromMatrixPosition(this.tail.matrixWorld); // 从tail的世界矩阵中得到tail的世界坐标系位置
+      this.follower.position.copy(this.tail_position); // 先设置相机跟谁着对象的初始位置为tail的位置
+      //----------------------------------------------------------------
+      // 设置相机的目标位置 = 角色的位置 + 头顶高度
       this.look_target.set(this.character.position.x, 2.2, this.character.position.z);
+      // 相机的初始化位置 = tail 的值
       this.perspectiveCamera.position.set(
         this.tail_position.x,
         this.tail_position.y + 1.6,
         this.tail_position.z
       );
+      // orbitControls的target设置为look_target(角色的位置)
       this.controls.target.copy(this.look_target);
       this.controls.update();
 
@@ -207,18 +214,19 @@ export class ThirdPersonController {
     this.floor.mesh = new THREE.Mesh(this.floor.geometry, this.floor.material);
     this.floor.mesh.receiveShadow = true;
     this.floor.mesh.position.y = 0;
-    this.floor.mesh.rotation.x = -Math.PI * 0.5;
+    this.floor.mesh.rotation.x = -Math.PI * 0.5; // 绕X轴旋转90度
     this.scene.add(this.floor.mesh);
     this.scene.add(new THREE.AxesHelper(100));
     this.keyboards = {};
     window.addEventListener(
       'keydown',
       event => {
-        console.log(event);
+        //console.log(event); // 键盘按下事件消息
         this.keyboards[event.key] = true;
       },
       false
     );
+    // 键盘抬起事件
     window.addEventListener(
       'keyup',
       event => {
@@ -226,18 +234,7 @@ export class ThirdPersonController {
       },
       false
     );
-    this.renderer.setAnimationLoop(this.animate.bind(this));
-  }
-  /**
-   * 进行动画过渡
-   * @param {*} newAction
-   */
-  crossFadeAnimation(newAction) {
-    newAction.reset();
-    newAction.play();
-    newAction.crossFadeFrom(this.actions[this.prevAnimate], 0.3);
-  }
-  animate() {
+    // 下面开启阴影是不是每一帧都要设置呢？其实不需要，正常情况下只需要设置一次就可以了，除非你场景中动态添加了新的Mesh对象，那么你就需要在添加后设置它的castShadow和receiveShadow属性，并且如果这个Mesh对象的材质是MeshStandardMaterial或者MeshPhysicalMaterial，那么你还需要设置它的material.needsUpdate = true;来让它更新材质以支持阴影。
     this.scene.traverse(child => {
       if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
         child.material.needsUpdate = true;
@@ -245,7 +242,19 @@ export class ThirdPersonController {
         child.receiveShadow = true;
       }
     });
-
+    // 开启渲染
+    this.renderer.setAnimationLoop(this.animate.bind(this));
+  }
+  /**
+   * 进行动画过渡
+   * @param {*} newAction
+   */
+  crossFadeAnimation(newAction) {
+    newAction.reset(); // 重置新动画的状态数据，使的恢复到初始值
+    newAction.play();
+    newAction.crossFadeFrom(this.actions[this.prevAnimate], 0.3);
+  }
+  animate() {
     const elapsedTime = this.clock.getElapsedTime();
     const deltaTime = elapsedTime - this.previousTime;
     this.previousTime = elapsedTime;
@@ -295,15 +304,15 @@ export class ThirdPersonController {
     // 存在玩家角色
     if (this.character) {
       /**
-       * 设置玩家超正向移动，速度逐渐增加
-       *  Move character along Z axis
+       * 处理角色转向
        */
-      const turnDirection = (isTurningLeft ? 1 : 0) - (isTurningRight ? 1 : 0);
-      const targetTurnVelocity = turnDirection * this.turnSpeed;
-      this.turnVelocity += (targetTurnVelocity - this.turnVelocity) * 0.2;
-      this.character.rotateY(this.turnVelocity * deltaTime);
+      const turnDirection = (isTurningLeft ? 1 : 0) - (isTurningRight ? 1 : 0); // 表示转向方向：左转=1，右转=-1，不转=0
+      const targetTurnVelocity = turnDirection * this.turnSpeed; // 目标转向速度
+      this.turnVelocity += (targetTurnVelocity - this.turnVelocity) * 0.2; // 平滑
+      this.character.rotateY(this.turnVelocity * deltaTime); // 旋转角色
 
-      this.velocity += (speed - this.velocity) * 0.3; // 0.09*0.3=0.027,0.027 + (0.09-0.027)*0.3=0.0459,0.0459 + (0.09 - 0.0459) *0.3=0.05913
+      // 处理角色前进(沿着角色自身前方Z轴的方向移动)
+      this.velocity += (speed - this.velocity) * 0.3; // 0.09*0.3=0.027,0.027 + (0.09-0.027)*0.3=0.0459,0.0459 + (0.09 - 0.0459) *0.3=0.05913， 达到一种自然加速、减速的效果，否则直接到达设定的速度比较突兀
       this.character.translateZ(this.velocity); // 是让角色沿着其自身的前进方向移动
       /**
        * ## 为什么是Z轴而不是其他轴？
@@ -315,7 +324,7 @@ export class ThirdPersonController {
             这是计算机图形学中准约定__。
             ### 2. 3D建模软件的导出规范
             大多数3D建模软件（Blender、Maya、3ds Max等）导出模型时：
-            - 默认将模型&#x7684;__&#x6B63;&#x9762;__&#x671D;向Z轴正方向
+            - 默认将模型向Z轴正方向
             - 这是行业标准，确保模型在不同软件和引擎中保持一致
        */
 
@@ -323,7 +332,6 @@ export class ThirdPersonController {
        * Smoothly move character position Vector3 to actiual character position
        * 平滑得到玩家的位置
        */
-      this.character_position.lerp(this.character.position, 0.4);
       this.look_target_position.set(this.character.position.x, 2.2, this.character.position.z);
       this.look_target.lerp(this.look_target_position, 0.4);
       this.character.updateMatrixWorld(true);
@@ -333,11 +341,7 @@ export class ThirdPersonController {
        * 得到tail 的世界坐标系下的位置值
        */
       this.tail_position.setFromMatrixPosition(this.tail.matrixWorld);
-
-      /**
-       * follower 仍然保留为平滑后的理想机位参考点
-       */
-      this.follower.position.lerp(this.tail_position, 0.02);
+      this.follower.position.lerp(this.tail_position, 0.02); // 相机的父容器平滑插值到tail的位置
 
       // 目标点移动时，让相机整体平移同样的增量，从而保持当前鼠标绕视角的结果
       this.target_delta.copy(this.look_target).sub(this.controls.target);
