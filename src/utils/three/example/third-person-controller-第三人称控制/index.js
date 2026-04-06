@@ -78,6 +78,9 @@ export class ThirdPersonController {
     this.follower.name = 'follower';
 
     this.scene.add(this.follower); // 跟随者对象挂载在场景中
+    // OrbitControls 需要直接操作世界坐标系中的相机。
+    // 如果相机挂在 follower 下，再同时修改 follower.position 和 camera.position，
+    // 会导致父子位移叠加，出现相机越跟越远、拖拽抖动的问题。
     this.scene.add(this.perspectiveCamera);
     // 添加环境光
     const ambientLight = new THREE.AmbientLight(0xfff, 1.2);
@@ -146,12 +149,9 @@ export class ThirdPersonController {
       //----------------------------------------------------------------
       // 设置相机的目标位置 = 角色的位置 + 头顶高度
       this.look_target.set(this.character.position.x, 2.2, this.character.position.z);
-      // 相机的初始化位置 = tail 的值
-      this.perspectiveCamera.position.set(
-        this.tail_position.x,
-        this.tail_position.y + 1.6,
-        this.tail_position.z
-      );
+      // 相机保持在世界坐标中，初始位置参考 follower 的平滑锚点。
+      this.perspectiveCamera.position.copy(this.follower.position);
+      this.perspectiveCamera.position.y += 1.6;
       // orbitControls的target设置为look_target(角色的位置)
       this.controls.target.copy(this.look_target);
       this.controls.update();
