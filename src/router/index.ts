@@ -21,6 +21,7 @@ import PixelArt from '@/views/pixel/pixel.vue';
 import NpcView from '@/views/three/npc.vue';
 import pindouView from '@/views/pixi/pindou.vue';
 import CustomPixiView from '@/views/pixi/模范Pixi.js的设计原理.vue';
+import ShotGunView from '@/views/three/shot-gun.vue'; // 子弹射击游戏
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -147,6 +148,11 @@ const router = createRouter({
       path: '/customPixi',
       name: 'customPixi',
       component: CustomPixiView,
+    },
+    {
+      path: '/shotgun',
+      name: 'shotgun',
+      component: ShotGunView,
     },
   ],
 });
