@@ -22,6 +22,8 @@ import NpcView from '@/views/three/npc.vue';
 import pindouView from '@/views/pixi/pindou.vue';
 import CustomPixiView from '@/views/pixi/模范Pixi.js的设计原理.vue';
 import ShotGunView from '@/views/three/shot-gun.vue'; // 子弹射击游戏
+import driveCarView from '@/views/开车游戏-模拟godot的Starter Kit Racing游戏/drive-car.vue'; // 开车游戏
+import editCarView from '@/views/开车游戏-模拟godot的Starter Kit Racing游戏/edit-car.vue'; // 编辑开车游戏的场景
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -153,6 +155,16 @@ const router = createRouter({
       path: '/shotgun',
       name: 'shotgun',
       component: ShotGunView,
+    },
+    {
+      path: '/driveCar',
+      name: 'driveCar',
+      component: driveCarView,
+    },
+    {
+      path: '/editCar',
+      name: 'editCar',
+      component: editCarView,
     },
   ],
 });

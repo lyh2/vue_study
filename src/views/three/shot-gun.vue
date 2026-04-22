@@ -21,7 +21,7 @@ const crosshair = ref<HTMLImageElement | null>(null);
 let app = null;
 
 onMounted(() => {
-  console.log(container.value);
+  //console.log(container.value);
   app = new ShotGunApp({ dom: container.value, crosshair: crosshair.value });
 
   ElMessageBox.alert('Start Play', 'Welcome to the game!', {
