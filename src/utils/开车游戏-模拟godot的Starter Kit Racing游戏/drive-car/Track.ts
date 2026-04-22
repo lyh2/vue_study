@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-export const ORIENT_DEG = { 0: 0, 10: 180, 16: 80, 22: 270 };
+export const ORIENT_DEG = { 0: 0, 10: 180, 16: 90, 22: 270 };
 
 /**
  * 网格系统基础参数
