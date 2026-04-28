@@ -433,7 +433,12 @@ function eraseRoad(threeRef, gx, gz) {
     threeRef.value.trackGroup.remove(cell.mesh);
   }
   threeRef.value.grid.delete(key);
-  // 计算当前位置四个方向的数据
+
+  /**-------------------------------------
+   * [1.优化点]计算当前位置四个方向的数据,最好的实现是获取四个方向上的类型和朝向之后，再
+   * 从这个四个里面选择最优或者是最合适类型和朝向
+   * 
+   ------------------------------------------*/
   resolveCell(threeRef, gx, gz - 1); // 北方向
   resolveCell(threeRef, gx, gz + 1); // 南方向
   resolveCell(threeRef, gx + 1, gz); // 东
@@ -550,13 +555,14 @@ function getPresenceMask(threeRef, gx, gz) {
   return mask;
 }
 /**
- * 当前位置处，没有放置模型，则计算得到当前块的类型和朝向
+ * 在当前位置处，原来没有放置模型，现在则新计算得到当前块的类型和朝向
  * @param threeRef
  * @param gx
  * @param gz
  * @returns
  */
 function resolveNewTile(threeRef, gx, gz) {
+  // 1.获取“可用连接掩码”，如果没有则旋转方向
   const pMask = getAvailableMask(threeRef, gx, gz);
 
   if (bitCount(pMask) >= 3) {
@@ -627,13 +633,13 @@ function connectedExitCount(threeRef, gx, gz) {
 function getAvailableMask(threeRef, gx, gz) {
   let mask = 0;
   const dirs = [
-    //[dx, dz, bit, oppBit] ：dx,dz表示当前的gx,gz的偏移值,用于定位北边的邻居格子
+    //[dx, dz, bit, oppBit] ：dx,dz表示当前的gx,gz的偏移值,
     // bit: 表示当前格子有向北的出口
     // oppBit: 检查邻居格子是否有向南的出口
-    [0, -1, 8, 4],
-    [0, 1, 4, 8],
-    [1, 0, 2, 1],
-    [-1, 0, 1, 2],
+    [0, -1, 8, 4], // 北(8)-> 可连接的是南方(4)
+    [0, 1, 4, 8], // 南(4)->可连接的是北方(8)
+    [1, 0, 2, 1], // 东(2)->可连接的是西方(1)
+    [-1, 0, 1, 2], // 西(1)->可连接的是东方(2)
   ]; // 这是用来定义规则的
   // 循环判断四个方向上的格子
   for (const [dx, dz, bit, oppBit] of dirs) {

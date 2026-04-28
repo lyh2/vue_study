@@ -13,7 +13,6 @@ const _quat = new THREE.Quaternion();
 const _up = new THREE.Vector3(0, 1, 0);
 
 // 物理参数
-const SPEED_SCALE = 12.5; // 速度缩放系数
 const LINEAR_DAMP = 0.1; // 线性阻尼系数，模拟空气阻尼及地面摩擦
 
 /**

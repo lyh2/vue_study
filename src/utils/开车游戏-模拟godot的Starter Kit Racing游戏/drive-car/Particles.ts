@@ -49,7 +49,7 @@ export class SmokeTrails {
   }
 
   update(dt, vehicle) {
-    const shouldEmit = vehicle.driftIntensity > 0.25;
+    const shouldEmit = vehicle.driftIntensity > 0.25; // 根据汽车的漂移强度决定是否发射粒子
 
     if (shouldEmit) {
       if (vehicle.wheelBL) this.emitAtWheel(vehicle.wheelBL, vehicle);

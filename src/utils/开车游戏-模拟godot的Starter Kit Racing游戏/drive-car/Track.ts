@@ -105,7 +105,7 @@ export function encodeCells(cells) {
     // 例如：类型= 2(二进制10)，方向=1(二进制01) -> 1001 = 9；把类型向左移动了两位 1 * 2^3 + 1 * 2^ 0 = 8+1=9
     bytes[i * 3 + 2] = (ti << 2) | oi; // 类型索引左移2位，方向索引直接或到低2位
   }
-  console.log('bytes:', bytes);
+  //console.log('bytes:', bytes);
   return bytesToBase64Url(bytes);
 }
 
