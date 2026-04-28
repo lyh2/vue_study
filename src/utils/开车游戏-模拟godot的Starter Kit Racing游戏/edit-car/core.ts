@@ -251,8 +251,8 @@ function updateGhost(threeRef, gx, gz) {
   threeRef.value.grid.set(key, ghostCell);
 
   const [type, orient] = resolveNewTile(threeRef, gx, gz);
-  ghostCell.type = type;
-  ghostCell.orient = orient;
+  ghostCell.type = type + '';
+  ghostCell.orient = Number(orient);
 
   addGhostPiece(threeRef, type, orient, gx, gz, 0.4);
 
@@ -715,7 +715,7 @@ function getPinchMid() {
   };
 }
 
-/** 在场景中放置/更新一个格子的3D模型
+/** 在场景指定位置处，放置or更新的3D模型
  * 位置 = (gx + 0.5) * CELL_RAW , (gz + 0.5) * CELL_RAW ,使位置在格子的中心点位置，旋转根据ORIENT_DEG映射朝向
  *
  * @param gx
@@ -724,13 +724,16 @@ function getPinchMid() {
  */
 export function placeMesh(threeRef, gx, gz, cell) {
   if (cell.mesh) {
-    // 存在3D模型
+    // 存在3D模型，存在模型表示更新替换之前的模型
     threeRef.value.trackGroup.remove(cell.mesh);
+    // 清除内存数据
+    cell.mesh.geometry.dispose();
+    cell.mesh.material.dispose();
   }
-
+  // 找到指定名称的模型
   const model = threeRef.value.models[cell.type];
   if (!model) return;
-
+  // 克隆模型，避免直接操作原始模型
   const mesh = model.clone();
   // 把位置设置到格子到中心点处
   mesh.position.set((gx + 0.5) * CELL_RAW, 0.5, (gz + 0.5) * CELL_RAW);
