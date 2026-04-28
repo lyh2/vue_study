@@ -23,7 +23,7 @@ let isDrawing = false;
 let isErasing = false;
 let panStart = { x: 0, y: 0 };
 let cameraStart = { x: 0, z: 0 };
-let lastDrawCell = null;
+let lastDrawCellXZ = null;
 let spaceDown = false;
 
 const pointers = new Map();
@@ -34,7 +34,6 @@ const ghostNeighborBackups = []; // 用于恢复原有格子的邻居信息
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
-let hoveredCell = null;
 
 /**
  * 添加事件监听
@@ -54,12 +53,13 @@ export function initInput(threeRef) {
       x: e.clientX,
       y: e.clientY,
     });
+    //console.log('pointerdown.......');
     // 双指触控 -> 平移+ 缩放
     if (pointers.size === 2) {
       isDrawing = false;
       isErasing = false;
       isPanning = true;
-
+      //console.log('pointers.size === 2');
       const mid = getPinchMid();
       panStart.x = mid.x;
       panStart.y = mid.y;
@@ -81,7 +81,7 @@ export function initInput(threeRef) {
       panStart.y = e.clientY;
       cameraStart.x = threeRef.value.cameraTarget.x;
       cameraStart.z = threeRef.value.cameraTarget.z;
-
+      //console.log('e.button === 1 || (e.button === 0 && (e.ctrlKey || e.metaKey || spaceDown))');
       el.style.cursor = 'grabbing';
       return;
     }
@@ -93,18 +93,20 @@ export function initInput(threeRef) {
         isDrawing = true; // 绘画
       }
 
-      lastDrawCell = null;
-
+      lastDrawCellXZ = null;
+      //console.log('e.button===0');
       // 触屏：延迟到pointermove 确认是单指手势再绘制(防止双指误触)
       if (e.pointerType !== 'touch') handleDraw(threeRef, e.clientX, e.clientY);
     } else if (e.button === 2) {
+      //console.log('e.button===2 ');
       isErasing = true; // 右键擦除
-      lastDrawCell = null;
+      lastDrawCellXZ = null;
       handleDraw(threeRef, e.clientX, e.clientY);
     }
   });
   //鼠标移动
   el.addEventListener('pointermove', e => {
+    console.log('pointermove....');
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     // 双指触控 -> 平移+ 缩放
     if (pointers.size === 2 && isPanning) {
@@ -155,10 +157,8 @@ export function initInput(threeRef) {
     if (e.pointerType === 'mouse') {
       const cell = screenToGrid(threeRef, e.clientX, e.clientY);
       if (cell) {
-        hoveredCell = cell;
         updateGhost(threeRef, cell.gx, cell.gz);
       } else {
-        hoveredCell = null;
         clearGhost(threeRef);
       }
     }
@@ -169,13 +169,13 @@ export function initInput(threeRef) {
     if (pointers.size === 0) {
       // 触屏 tap: 如果之前延迟了绘制且没有 move,现在执行单次放置
 
-      if ((isDrawing || isErasing) && lastDrawCell === null && !isPanning) {
+      if ((isDrawing || isErasing) && lastDrawCellXZ === null && !isPanning) {
         handleDraw(threeRef, e.clientX, e.clientY);
       }
       isPanning = false;
       isDrawing = false;
       isErasing = false;
-      lastDrawCell = null;
+      lastDrawCellXZ = null;
       el.style.cursor = spaceDown ? 'grab' : '';
     }
   });
@@ -233,7 +233,8 @@ export function initInput(threeRef) {
 }
 
 export function selectTool(threeRef, tool) {
-  threeRef.value.tool = tool;
+  const inputState = useInputStore();
+  inputState.setTool(tool);
 }
 
 function updateGhost(threeRef, gx, gz) {
@@ -349,19 +350,30 @@ function screenToGrid(threeRef, clientX, clientY) {
   const gz = Math.floor(hit.z / threeRef.value.cellWorld);
   return { gx: gx, gz: gz };
 }
-
+/**
+ * 在鼠标点击处放置模型
+ * 1. 需要把点击点转换到网格坐标系下
+ * 2.放置模型需要计算模型的变换(什么模型？及旋转角度与已知的模型进行匹配)
+ * @param threeRef
+ * @param x
+ * @param y
+ * @returns
+ */
 function handleDraw(threeRef, x, y) {
-  const cell = screenToGrid(threeRef, x, y);
-  if (!cell) return;
+  const cellXZ = screenToGrid(threeRef, x, y);
+  if (!cellXZ) return;
   // 判断是否在同一个位置
-  if (lastDrawCell && lastDrawCell.gx === cell.gx && lastDrawCell.gz === cell.gz) return;
+  if (lastDrawCellXZ && lastDrawCellXZ.gx === cellXZ.gx && lastDrawCellXZ.gz === cellXZ.gz) {
+    //console.log('点击同一个位置:.....');
+    return;
+  }
 
-  lastDrawCell = cell;
+  lastDrawCellXZ = cellXZ;
 
   if (isErasing) {
-    eraseRoad(threeRef, cell.gx, cell.gz);
+    eraseRoad(threeRef, cellXZ.gx, cellXZ.gz);
   } else if (isDrawing) {
-    placeRoad(threeRef, cell.gx, cell.gz);
+    placeRoad(threeRef, cellXZ.gx, cellXZ.gz);
   }
 }
 
@@ -410,25 +422,23 @@ function resolveCellAndNeighbors(threeRef, gx, gz) {
  * @param gz
  */
 function eraseRoad(threeRef, gx, gz) {
-  // 获取可以
+  // 1.获取指定的key
   const key = cellKey(gx, gz);
   if (!threeRef.value.grid.has(key)) return;
 
   const cell = threeRef.value.grid.get(key);
-  if (cell.isFinish) return; // 终点线不可擦除
+  if (cell.isFinish) return; // 终点线或者只有一个时，不可擦除
 
   if (cell.mesh) {
     threeRef.value.trackGroup.remove(cell.mesh);
-    cell.mesh.geometry.dispose();
-    cell.mesh.material.dispose();
   }
   threeRef.value.grid.delete(key);
-
-  resolveCell(threeRef, gx, gz - 1);
-  resolveCell(threeRef, gx, gz + 1);
-  resolveCell(threeRef, gx + 1, gz);
-  resolveCell(threeRef, gx - 1, gz);
-
+  // 计算当前位置四个方向的数据
+  resolveCell(threeRef, gx, gz - 1); // 北方向
+  resolveCell(threeRef, gx, gz + 1); // 南方向
+  resolveCell(threeRef, gx + 1, gz); // 东
+  resolveCell(threeRef, gx - 1, gz); // 西
+  // 保存数据
   save(threeRef);
 }
 
@@ -443,6 +453,7 @@ function eraseRoad(threeRef, gx, gz) {
 // ═══════════════════════════════════════════════════════════
 function save(threeRef) {
   const arr = [];
+  // Map 可以直接进行循环
   for (const [key, cell] of threeRef.value.grid) {
     const [gx, gz] = key.split(',').map(Number);
 
@@ -455,21 +466,22 @@ function save(threeRef) {
 
 /** 解析并放置一个格子(自动选择模型和朝向)
  * 新格子使用：resolveNewTile,已用格子使用:resolveTile
- *
- *
  * @param threeRef
- * @param gx
- * @param gz
+ * @param gx 东南西北
+ * @param gz 东南西北 四个方向
+ *
  */
 function resolveCell(threeRef, gx, gz) {
   const key = cellKey(gx, gz);
   const cell = threeRef.value.grid.get(key);
   if (!cell) return;
 
-  let baseType, orient;
+  let baseType, orient; // 得到类型和方向
   if (!cell.mesh) {
+    // 如果当前方向上，还是空的，没有放置模型，则计算当前位置的类型和朝向
     [baseType, orient] = resolveNewTile(threeRef, gx, gz);
   } else {
+    // 已经存在模型了，则计算连接行，需要调整角度以便进行匹配
     const cMask = getConnectivityMask(threeRef, gx, gz);
     const currentExits = getCellExits(cell);
     const currentConnected = currentExits & cMask;
@@ -537,6 +549,13 @@ function getPresenceMask(threeRef, gx, gz) {
 
   return mask;
 }
+/**
+ * 当前位置处，没有放置模型，则计算得到当前块的类型和朝向
+ * @param threeRef
+ * @param gx
+ * @param gz
+ * @returns
+ */
 function resolveNewTile(threeRef, gx, gz) {
   const pMask = getAvailableMask(threeRef, gx, gz);
 
@@ -726,9 +745,6 @@ export function placeMesh(threeRef, gx, gz, cell) {
   if (cell.mesh) {
     // 存在3D模型，存在模型表示更新替换之前的模型
     threeRef.value.trackGroup.remove(cell.mesh);
-    // 清除内存数据
-    cell.mesh.geometry.dispose();
-    cell.mesh.material.dispose();
   }
   // 找到指定名称的模型
   const model = threeRef.value.models[cell.type];

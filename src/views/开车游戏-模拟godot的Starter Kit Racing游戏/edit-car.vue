@@ -304,7 +304,7 @@ function onPlay() {
   }
 
   const encoded = encodeCells(getCellsArray(threeRef));
-  window.open('index.html?map=' + encoded, '_black');
+  window.open('driveCar?map=' + encoded, '_black');
 }
 </script>
 

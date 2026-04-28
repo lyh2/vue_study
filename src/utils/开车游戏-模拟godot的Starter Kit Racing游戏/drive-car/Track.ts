@@ -66,11 +66,11 @@ function bytesToBase64Url(bytes: Uint8Array) {
   let binary = '';
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
-    return btoa(binary)
-      .replace(/\+/g, '-') // 将'+'替换为'-'
-      .replace(/\//g, '_') // 将'/'替换为'_'
-      .replace(/=+$/, ''); // 移除末尾的'='填充字符
   }
+  return btoa(binary)
+    .replace(/\+/g, '-') // 将'+'替换为'-'
+    .replace(/\//g, '_') // 将'/'替换为'_'
+    .replace(/=+$/, ''); // 移除末尾的'='填充字符
 }
 
 /**
@@ -105,6 +105,7 @@ export function encodeCells(cells) {
     // 例如：类型= 2(二进制10)，方向=1(二进制01) -> 1001 = 9；把类型向左移动了两位 1 * 2^3 + 1 * 2^ 0 = 8+1=9
     bytes[i * 3 + 2] = (ti << 2) | oi; // 类型索引左移2位，方向索引直接或到低2位
   }
+  console.log('bytes:', bytes);
   return bytesToBase64Url(bytes);
 }
 
