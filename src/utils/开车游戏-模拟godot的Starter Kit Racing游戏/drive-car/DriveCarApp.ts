@@ -13,7 +13,7 @@ import {
 } from 'crashcat';
 import { loadModels } from './load-model';
 import { buildTrack, computeSpawnPosition, computeTrackBounds, decodeCells } from './Track';
-import { initRenderer, initScene, initLights, initWindowResize } from './common';
+import { initRenderer, initScene, initLights, initWindowResize } from './three3D';
 import { buildWallColliders, createSphereBody } from './Physics';
 import { Vehicle } from './Vehicle';
 import { Camera } from './Camera';
@@ -55,18 +55,21 @@ class DriveCarApp {
     let spawn = null; // 生成的位置
     if (mapParam) {
       try {
+        // 1.解析map参数中包含的赛道数据
         customCells = decodeCells(mapParam);
+        //2.计算出赛道中车辆的初始位置
         spawn = computeSpawnPosition(customCells);
       } catch (e) {
         console.warn('Invalid map parameter,using default track');
       }
     }
+    // 计算所有赛道的总边界，用于调整摄像机、灯光和雾效范围
     // compute track bounds and size physics/shadows to  fit
     const bounds = computeTrackBounds(customCells);
     const hw = bounds.halfWidth; // 得到轨道的半宽和半高，用于调整摄像机、灯光和雾效范围
     const hd = bounds.halfHeight;
-    const groundSize = Math.max(hw, hd) * 2 + 20;
-
+    const groundSize = Math.max(hw, hd) * 2 + 20; // 取半值最大的作为地面的大小
+    // 添加阴影
     const shadowExtent = Math.max(hw, hd) + 10;
     this.directionalLight.shadow.camera.left = -shadowExtent;
     this.directionalLight.shadow.camera.right = shadowExtent;
@@ -166,7 +169,7 @@ class DriveCarApp {
   animate() {
     const dt = Math.min(this.clock.getDelta(), 1 / 30);
     const input = this.controls.update();
-
+    //console.log('打印输出查看dt的值:', dt);
     updateWorld(this.world, this.contactListener, dt);
 
     this.vehicle.update(dt, input);

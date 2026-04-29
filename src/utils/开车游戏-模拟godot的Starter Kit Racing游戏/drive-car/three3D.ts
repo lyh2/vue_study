@@ -6,7 +6,7 @@ export function initRenderer(dom: HTMLElement) {
   const renderer = new THREE.WebGLRenderer({
     antialias: true,
     logarithmicDepthBuffer: true,
-    //outputBufferType: THREE.FloatType,
+    //outputBufferType: THREE.HalfFloatType,
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);

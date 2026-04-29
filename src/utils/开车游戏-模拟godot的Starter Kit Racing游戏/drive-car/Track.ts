@@ -108,7 +108,11 @@ export function encodeCells(cells) {
   //console.log('bytes:', bytes);
   return bytesToBase64Url(bytes);
 }
-
+/**
+ * 解析传递过来的map参数，得到赛道数据
+ * @param str
+ * @returns
+ */
 export function decodeCells(str: string) {
   const bytes = base64UrlToBytes(str);
   const cells = [];
@@ -125,11 +129,16 @@ export function decodeCells(str: string) {
   return cells;
 }
 
+/**
+ * 计算整个赛道的中心点及半宽高值
+ * @param cells =[[x,z,type,orient],[x,z,type,orient]]
+ * @returns
+ */
 export function computeTrackBounds(cells: Array<any>) {
   // 如果没有赛道数据，返回默认的赛道边界
   if (!cells || cells.length === 0)
     return { centerX: 0, centerZ: 0, halfWidth: 30, halfHeight: 30 };
-  // 计算赛道的最小，最大值坐标值
+  // 计算赛道XZ两轴的最小，最大值坐标值
   let minX = Infinity;
   let maxX = -Infinity;
   let minZ = Infinity;
@@ -163,8 +172,9 @@ export function computeSpawnPosition(cells: Array<any>) {
   // 查找finish类型的赛道块，作为起点
   for (const c of cells) {
     if (c[2] === 'track-finish') {
+      // 数组第三个元素表示：当前赛道类型
       cell = c;
-      break;
+      break; // 找到第一个finish类型的赛道块，跳出循环
     }
   }
 
