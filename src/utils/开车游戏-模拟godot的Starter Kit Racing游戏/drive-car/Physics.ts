@@ -136,6 +136,12 @@ export function buildWallColliders(world, debugGroup, customCells) {
       // 如果每段覆盖 0°~45°、45°~90°……用起点角度会导致分段在端点处拼接，
       // 旋转方向突然变化产生折角。用中点角度让每个盒子居中对称，
       // 相邻盒子首尾重叠，消除缝隙。
+      /**
+       * - `i / numSeg` = 第 i 段的起点占比
+        - `(i + 1) / numSeg` = 第 i 段的终点占比
+        - `(i + 0.5) / numSeg` = 起点和终点的平均数 = 中点占比
+
+       */
       const aMid = arcStart + ((i + 0.5) / numSeg) * ARC_SPAN;
 
       // 碰撞体尺寸：[半厚, 半高, 半长]
@@ -303,15 +309,10 @@ export function createSphereBody(world, spawnPos) {
  * @param quaternion [x, y, z, w]
  */
 function addDebugBox(group, halfExtents, position, quaternion) {
-  const geo = new THREE.BoxGeometry(
-    halfExtents[0] * 2,
-    halfExtents[1] * 2,
-    halfExtents[2] * 2
-  );
+  const geo = new THREE.BoxGeometry(halfExtents[0] * 2, halfExtents[1] * 2, halfExtents[2] * 2);
   const mesh = new THREE.Mesh(geo, _debugMaterial);
   mesh.position.set(position[0], position[1], position[2]);
 
   if (quaternion) mesh.quaternion.set(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
   group.add(mesh);
 }
-
