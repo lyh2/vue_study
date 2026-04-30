@@ -358,7 +358,7 @@
         const dx = (e.clientX - dragStartX) / pxPerUnit;
         const dy = (e.clientY - dragStartY) / pxPerUnit;
         camera.cx = dragCamCX - dx;
-        camera.cz = dragCamCZ + dy; // Y 轴翻转（canvas y 向下）
+        camera.cz = dragCamCZ - dy;
         draw();
       });
       window.addEventListener('mouseup', () => {
