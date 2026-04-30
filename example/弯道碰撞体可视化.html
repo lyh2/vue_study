@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>弯道圆弧中心旋转原理可视化</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        background: #1a1a2e;
+        color: #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+      h1 {
+        font-size: 16px;
+        margin-bottom: 10px;
+        color: #64ffda;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      canvas {
+        border: 1px solid #2a2a4a;
+        border-radius: 8px;
+        background: #0f0f1a;
+        cursor: crosshair;
+      }
+      .panel {
+        background: #16213e;
+        border: 1px solid #2a2a4a;
+        border-radius: 8px;
+        padding: 16px 20px;
+        min-width: 340px;
+        max-width: 420px;
+        font-size: 13px;
+        line-height: 1.7;
+      }
+      .panel h2 {
+        font-size: 15px;
+        color: #64ffda;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #2a2a4a;
+        padding-bottom: 4px;
+      }
+      .panel h3 {
+        font-size: 13px;
+        color: #ffd700;
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+      .param-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 2px 0;
+        border-bottom: 1px solid #1a1a3e;
+      }
+      .param-name {
+        color: #8899bb;
+      }
+      .param-val {
+        color: #ffd700;
+        font-weight: bold;
+      }
+      .param-desc {
+        color: #88bb88;
+        font-size: 11px;
+      }
+      .highlight-block {
+        background: #1a1a3e;
+        border-left: 3px solid #ff6d00;
+        padding: 8px 12px;
+        margin: 8px 0;
+        border-radius: 0 6px 6px 0;
+        font-size: 12px;
+      }
+      .legend {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        margin-top: 6px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+      }
+      .color-box {
+        width: 20px;
+        height: 12px;
+        border-radius: 2px;
+        border: 1px solid #555;
+        flex-shrink: 0;
+      }
+      .formula {
+        color: #bb86fc;
+        font-style: italic;
+      }
+      .info-tip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.85);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        pointer-events: none;
+        display: none;
+        border: 1px solid #64ffda;
+        z-index: 100;
+        max-width: 280px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+      }
+      .controls button {
+        background: #2a2a4a;
+        color: #64ffda;
+        border: 1px solid #4a4a6a;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .controls button.active {
+        background: #64ffda22;
+        border-color: #64ffda;
+      }
+      .controls button:hover {
+        background: #3a3a5a;
+      }
+      .controls label {
+        font-size: 12px;
+        color: #8899bb;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🏎️ 弯道 <code>ARC_CENTER</code> 旋转原理 — 为什么模型中的"左下角"会变换位置？</h1>
+    <div class="container">
+      <div>
+        <div class="controls">
+          <label>切换朝向:</label>
+          <button id="btn0" class="active" onclick="setOrient(0)">orient=0 (0°)</button>
+          <button id="btn90" onclick="setOrient(16)">orient=16 (90°)</button>
+          <button id="btn180" onclick="setOrient(10)">orient=10 (180°)</button>
+          <button id="btn270" onclick="setOrient(22)">orient=22 (270°)</button>
+        </div>
+        <canvas id="canvas" width="660" height="660"></canvas>
+      </div>
+      <div class="panel">
+        <h2>🔑 关键问题解答</h2>
+
+        <div class="highlight-block">
+          <b>❓ 模型圆心在左下角，为什么旋转后到了右上角？</b><br /><br />
+          <b>答：</b>圆弧中心 <code>ARC_CENTER</code> 是在<b>单元格局部坐标系</b>中定义的。<br />
+          它的值
+          <code>(-CELL_HALF, +CELL_HALF)</code>
+          在<b>局部</b>看是<b>「左上角」</b>（假设+X右，+Z下）。<br /><br />
+          当单元格旋转 90° 时，这个<b>局部坐标</b>被
+          <b>2D 旋转矩阵</b>旋转到<b>世界坐标</b>：<br /><br />
+          <span class="formula">x' = ARC_CENTER_X·cos(θ) + ARC_CENTER_Z·sin(θ)</span><br />
+          <span class="formula">z' = -ARC_CENTER_X·sin(θ) + ARC_CENTER_Z·cos(θ)</span><br /><br />
+          对于 90° (θ=π/2, cos=0, sin=1)：<br />
+          <b>x' = 0·(-4.995) + 1·(4.995) = +4.995</b><br />
+          <b>z' = -1·(-4.995) + 0·(4.995) = +4.995</b><br /><br />
+          所以旋转后偏移变成了 <code>(+CELL_HALF, +CELL_HALF)</code>。<br />
+          <b>本质上</b>：ARC_CENTER 在单元格的物理角点位置不变，但<b>旋转的是单元格本身</b>。
+        </div>
+
+        <h3>📐 单元格局部坐标系</h3>
+        <div class="param-row">
+          <span class="param-name">CELL_RAW</span><span class="param-val">9.99</span
+          ><span class="param-desc">原始边长</span>
+        </div>
+        <div class="param-row">
+          <span class="param-name">GRID_SCALE (S)</span><span class="param-val">0.75</span
+          ><span class="param-desc">缩放</span>
+        </div>
+        <div class="param-row">
+          <span class="param-name">CELL_HALF</span><span class="param-val">4.995</span
+          ><span class="param-desc">半长</span>
+        </div>
+        <div class="param-row" style="background: #ff6d0022">
+          <span class="param-name">ARC_CENTER_X</span><span class="param-val">-4.995</span
+          ><span class="param-desc">= -CELL_HALF</span>
+        </div>
+        <div class="param-row" style="background: #ff6d0022">
+          <span class="param-name">ARC_CENTER_Z</span><span class="param-val">+4.995</span
+          ><span class="param-desc">= +CELL_HALF</span>
+        </div>
+
+        <h3>🔵🔴 当前显示</h3>
+        <div class="param-row">
+          <span class="param-name">当前 orient</span>
+          <span class="param-val" id="orientDisplay">0 (0°)</span>
+          <span class="param-desc">cr=1, sr=0</span>
+        </div>
+        <div class="param-row" style="color: #4fc3f7">
+          <span class="param-name">外弧 R</span><span class="param-val">9.74</span
+          ><span class="param-desc">= 2×CELL_HALF - 0.25</span>
+        </div>
+        <div class="param-row" style="color: #81c784">
+          <span class="param-name">内弧 R</span><span class="param-val">0.25</span
+          ><span class="param-desc">= WALL_HALF_THICK</span>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="color-box" style="background: #ff6d00"></div>
+            <span>圆弧中心 ●</span>
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background: #4fc3f7"></div>
+            <span>外弧（外墙护栏）</span>
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background: #81c784"></div>
+            <span>内弧（内侧路沿）</span>
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background: #ffd700"></div>
+            <span>单元格边界</span>
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background: #bb86fc"></div>
+            <span>局部→世界 偏移向量</span>
+          </div>
+          <div class="legend-item">
+            <div class="color-box" style="background: rgba(0, 0, 0, 0); border-color: #666"></div>
+            <span>↕ +Z = 南 (向下)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-tip" id="tip"></div>
+
+    <script>
+      const CELL_RAW = 9.99;
+      const S = 0.75;
+      const CELL_HALF = CELL_RAW / 2;
+
+      const ARC_CENTER_X = -CELL_HALF; // -4.995
+      const ARC_CENTER_Z = CELL_HALF; // +4.995
+
+      const WALL_HALF_THICK = 0.25;
+      const OUTER_R = 2 * CELL_HALF - WALL_HALF_THICK; // 9.74
+      const INNER_R = WALL_HALF_THICK; // 0.25
+      const ARC_SPAN = -Math.PI / 2;
+      const OUTER_SEG = 8;
+      const INNER_SEG = 3;
+      const OUTER_SEG_HALF_LEN = ((OUTER_R * (Math.PI / 2)) / OUTER_SEG / 2) * S;
+      const INNER_SEG_HALF_LEN = ((INNER_R * (Math.PI / 2)) / INNER_SEG / 2) * S;
+
+      const orientMap = {
+        0: { deg: 0, btn: 'btn0' },
+        16: { deg: 90, btn: 'btn90' },
+        10: { deg: 180, btn: 'btn180' },
+        22: { deg: 270, btn: 'btn270' },
+      };
+
+      let currentOrient = 0;
+
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const tip = document.getElementById('tip');
+
+      function setOrient(code) {
+        currentOrient = code;
+        document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+        document.getElementById(orientMap[code].btn).classList.add('active');
+        draw();
+      }
+
+      function worldToCanvas(wx, wz) {
+        // +X → 右, +Z → 下（南），上北下南
+        const px = canvas.width / 2 + (wx / WORLD_EXTENT) * (canvas.width / 2);
+        const py = canvas.height / 2 + (wz / WORLD_EXTENT) * (canvas.height / 2);
+        return [px, py];
+      }
+
+      function drawLine(x1, y1, x2, y2, color, width = 1, dash = []) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function drawCircle(cx, cy, r, color, width = 1, dash = []) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function drawFillCircle(cx, cy, r, color) {
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      function drawText(
+        text,
+        x,
+        y,
+        color = '#fff',
+        size = 11,
+        align = 'center',
+        baseline = 'middle'
+      ) {
+        ctx.fillStyle = color;
+        ctx.font = `${size}px "SFMono-Regular", Consolas, monospace`;
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.fillText(text, x, y);
+      }
+
+      function drawBox(cx, cy, halfW, halfH, angle, color) {
+        const w = halfW * 2,
+          h = halfH * 2;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(-angle);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.fillStyle = color + '33';
+        ctx.fillRect(-w / 2, -h / 2, w, h);
+        ctx.strokeRect(-w / 2, -h / 2, w, h);
+        ctx.restore();
+      }
+
+      function arcPoint(cx, cy, r, angle) {
+        return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
+      }
+
+      function drawArrow(x1, y1, x2, y2, color, width = 2) {
+        const angle = Math.atan2(y2 - y1, x2 - x1);
+        const headLen = 8;
+        drawLine(x1, y1, x2, y2, color, width);
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(x2, y2);
+        ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function draw() {
+        const code = currentOrient;
+        const { deg } = orientMap[code];
+        const rad = (deg * Math.PI) / 180;
+        const cr = Math.cos(rad),
+          sr = Math.sin(rad);
+
+        // 选一个单元格，让它居中显示
+        const gx = 0,
+          gz = 0;
+        const cx = (gx + 0.5) * CELL_RAW * S;
+        const cz = (gz + 0.5) * CELL_RAW * S;
+
+        // 圆弧中心世界坐标
+        const wcx = cx + (ARC_CENTER_X * cr + ARC_CENTER_Z * sr) * S;
+        const wcz = cz + (-ARC_CENTER_X * sr + ARC_CENTER_Z * cr) * S;
+
+        // 局部 ARC_CENTER 不旋转的值
+        const lx_local = cx + ARC_CENTER_X * S;
+        const lz_local = cz + ARC_CENTER_Z * S;
+
+        // 世界范围
+        const MAX_EXTENT = OUTER_R * S * 1.5;
+        window.WORLD_EXTENT = MAX_EXTENT;
+
+        // 清除
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // ---- 1. 网格背景 ----
+        for (let gz2 = -3; gz2 <= 3; gz2++) {
+          for (let gx2 = -3; gx2 <= 3; gx2++) {
+            const gcx = (gx2 + 0.5) * CELL_RAW * S;
+            const gcz = (gz2 + 0.5) * CELL_RAW * S;
+            const [px, py] = worldToCanvas(gcx, gcz);
+            const hp = ((CELL_RAW * S) / 2 / MAX_EXTENT) * (canvas.width / 2);
+            ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.strokeRect(px - hp, py - hp, hp * 2, hp * 2);
+            ctx.setLineDash([]);
+            if ((gx2 + gz2) % 2 === 0) {
+              drawText(`(${gx2},${gz2})`, px, py + hp + 14, 'rgba(255,255,255,0.15)', 8);
+            }
+          }
+        }
+
+        // ---- 2. 目标单元格 ----
+        const [cellPx, cellPy] = worldToCanvas(cx, cz);
+        const cellHP = ((CELL_RAW * S) / 2 / MAX_EXTENT) * (canvas.width / 2);
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.strokeRect(cellPx - cellHP, cellPy - cellHP, cellHP * 2, cellHP * 2);
+        ctx.setLineDash([]);
+        drawText(
+          `单元格 (0,0) orient=${code} (${deg}°)`,
+          cellPx,
+          cellPy - cellHP - 12,
+          '#ffd700',
+          12
+        );
+
+        // ---- 3. 标注单元格的四角方向 ----
+        for (const [dx, dz, label] of [
+          [-1, -1, '西北'],
+          [1, -1, '东北'],
+          [1, 1, '东南'],
+          [-1, 1, '西南'],
+        ]) {
+          const [px, py] = worldToCanvas(cx + dx * CELL_HALF * S, cz + dz * CELL_HALF * S);
+          drawText(label, px, py, 'rgba(255,255,255,0.25)', 9);
+        }
+        drawText('↑ 北 (−Z)', 30, 22, 'rgba(255,255,255,0.3)', 11, 'left');
+        drawText('→ 东 (+X)', 30, 38, 'rgba(255,255,255,0.3)', 11, 'left');
+        drawText('↓ 南 (+Z)', 30, 54, 'rgba(255,255,255,0.3)', 11, 'left');
+
+        // ---- 4. 显示局部 ARC_CENTER（不旋转，灰色）----
+        const [lpx, lpy] = worldToCanvas(lx_local, lz_local);
+        drawFillCircle(lpx, lpy, 4, 'rgba(255,255,255,0.3)');
+        drawCircle(lpx, lpy, 6, 'rgba(255,255,255,0.3)', 1, [3, 3]);
+        drawText('局部ARC_CENTER', lpx - 14, lpy - 16, 'rgba(255,255,255,0.3)', 9, 'right');
+
+        // ---- 5. 从局部到旋转后的偏移向量 ----
+        // 从局部 ARC_CENTER 到旋转后 ARC_CENTER 画一条带箭头的线
+        const [wpx, wpy] = worldToCanvas(wcx, wcz);
+        drawArrow(lpx, lpy, wpx, wpy, '#bb86fc', 2);
+        // 标注旋转角度
+        const midX = (lpx + wpx) / 2;
+        const midY = (lpy + wpy) / 2;
+        drawText(`旋转 ${deg}°`, midX + 8, midY - 8, '#bb86fc', 10, 'left');
+
+        // ---- 6. 显示旋转后的 ARC_CENTER（橙色）----
+        drawFillCircle(wpx, wpy, 7, '#ff6d00');
+        drawCircle(wpx, wpy, 11, '#ff6d00', 2);
+        drawText(`ARC_CENTER (${deg}°)`, wpx + 14, wpy - 14, '#ff6d00', 11, 'left');
+
+        // ---- 7. 绘制外弧 ----
+        const arcStart = -rad;
+        for (let i = 0; i < OUTER_SEG; i++) {
+          const aMid = arcStart + ((i + 0.5) / OUTER_SEG) * ARC_SPAN;
+          const bx = wcx + OUTER_R * Math.cos(aMid) * S;
+          const bz = wcz + OUTER_R * Math.sin(aMid) * S;
+          const [bpx, bpy] = worldToCanvas(bx, bz);
+          const segW = (OUTER_SEG_HALF_LEN / MAX_EXTENT) * (canvas.width / 2);
+          const segH = ((WALL_HALF_THICK * S) / MAX_EXTENT) * (canvas.width / 2);
+          drawBox(bpx, bpy, segW, segH, -aMid, '#4fc3f7');
+        }
+
+        // 外弧虚线轨迹
+        ctx.strokeStyle = 'rgba(79,195,247,0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        for (let s = 0; s <= 60; s++) {
+          const a = arcStart + (s / 60) * ARC_SPAN;
+          const wx0 = wcx + OUTER_R * Math.cos(a) * S;
+          const wz0 = wcz + OUTER_R * Math.sin(a) * S;
+          const [px0, py0] = worldToCanvas(wx0, wz0);
+          if (s === 0) ctx.moveTo(px0, py0);
+          else ctx.lineTo(px0, py0);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 起终点标注
+        for (const [angle, label] of [
+          [arcStart, '起'],
+          [arcStart + ARC_SPAN, '终'],
+        ]) {
+          const wx0 = wcx + (OUTER_R + 0.5) * Math.cos(angle) * S;
+          const wz0 = wcz + (OUTER_R + 0.5) * Math.sin(angle) * S;
+          const [px0, py0] = worldToCanvas(wx0, wz0);
+          drawText(`${label} (${Math.round((angle * 180) / Math.PI)}°)`, px0, py0, '#4fc3f7', 10);
+        }
+
+        // 半径标注
+        const labelAngle = arcStart + ARC_SPAN * 0.3;
+        const [rlx, rly] = arcPoint(
+          wpx,
+          wpy,
+          ((OUTER_R * S * 0.5) / MAX_EXTENT) * (canvas.width / 2),
+          labelAngle
+        );
+        drawText(`外弧 R=${OUTER_R}`, rlx, rly, '#4fc3f7', 11);
+
+        // ---- 8. 绘制内弧 ----
+        for (let i = 0; i < INNER_SEG; i++) {
+          const aMid = arcStart + ((i + 0.5) / INNER_SEG) * ARC_SPAN;
+          const bx = wcx + INNER_R * Math.cos(aMid) * S;
+          const bz = wcz + INNER_R * Math.sin(aMid) * S;
+          const [bpx, bpy] = worldToCanvas(bx, bz);
+          const segW = (INNER_SEG_HALF_LEN / MAX_EXTENT) * (canvas.width / 2);
+          const segH = ((WALL_HALF_THICK * S) / MAX_EXTENT) * (canvas.width / 2);
+          drawBox(bpx, bpy, segW, segH, -aMid, '#81c784');
+        }
+        drawText(`内弧 R=${INNER_R}`, wpx + 12, wpy + 24, '#81c784', 11, 'left');
+
+        // ---- 9. 车流路径（标出入口方向）----
+        const midR = (OUTER_R + INNER_R) / 2;
+        ctx.strokeStyle = 'rgba(255,82,82,0.35)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 6]);
+        ctx.beginPath();
+        const pStart = arcStart - 0.1;
+        const pEnd = arcStart + ARC_SPAN + 0.1;
+        for (let s = 0; s <= 40; s++) {
+          const a = pStart + (s / 40) * (pEnd - pStart);
+          const px = wcx + midR * Math.cos(a) * S;
+          const pz = wcz + midR * Math.sin(a) * S;
+          const [ppx, ppy] = worldToCanvas(px, pz);
+          if (s === 0) ctx.moveTo(ppx, ppy);
+          else ctx.lineTo(ppx, ppy);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 更新面板显示
+        document.getElementById('orientDisplay').innerHTML = `${code} (${deg}°)`;
+
+        // ---- 10. 鼠标悬停 ----
+        canvas.onmousemove = e => {
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          const wx = ((mx - canvas.width / 2) / (canvas.width / 2)) * MAX_EXTENT;
+          const wz = ((my - canvas.height / 2) / (canvas.height / 2)) * MAX_EXTENT;
+          tip.style.display = 'block';
+          tip.style.left = e.clientX + 12 + 'px';
+          tip.style.top = e.clientY - 10 + 'px';
+          tip.innerHTML = `世界: X=${wx.toFixed(2)}, Z=${wz.toFixed(2)}`;
+        };
+        canvas.onmouseleave = () => {
+          tip.style.display = 'none';
+        };
+      }
+
+      draw();
+    </script>
+  </body>
+</html>
