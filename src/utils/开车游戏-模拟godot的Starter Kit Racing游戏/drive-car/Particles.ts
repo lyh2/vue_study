@@ -17,11 +17,11 @@ const POOL_SIZE = 64;
 const _worldPos = new THREE.Vector3();
 
 interface ParticleType {
-  sprite: THREE.Sprite;       // 粒子精灵
-  life: number;               // 当前剩余生命（秒），<= 0 表示死亡/空闲
-  maxLife: number;            // 初始生命值，用于计算生命进度 t
-  velocity: THREE.Vector3;    // 速度向量（米/秒），决定粒子飘散方向和速率
-  initialScale: number;       // 初始缩放基数，每个粒子取随机值产生大小变化
+  sprite: THREE.Sprite; // 粒子精灵
+  life: number; // 当前剩余生命（秒），<= 0 表示死亡/空闲
+  maxLife: number; // 初始生命值，用于计算生命进度 t，表示当前粒子的最大生命值
+  velocity: THREE.Vector3; // 速度向量（米/秒），决定粒子飘散方向和速率
+  initialScale: number; // 初始缩放基数，每个粒子取随机值产生大小变化
 }
 
 /**
@@ -46,7 +46,7 @@ interface ParticleType {
  * Sprite 把这个过程内置了，省事且高效。
  */
 export class SmokeTrails {
-  public particles: Array<ParticleType>;
+  public particles: Array<ParticleType>; // 保存所有粒子对象
   public material: THREE.SpriteMaterial;
   public emitIndex: number;
 
@@ -69,10 +69,10 @@ export class SmokeTrails {
       sprite.visible = false; // 初始全部隐藏
       sprite.scale.setScalar(0.25);
       scene.add(sprite); // 预先加入场景，后续只需控制 visible
-
+      sprite.name = `smoke-trail-${i}`; // 方便查找
       this.particles.push({
         sprite: sprite,
-        life: 0,           // life = 0 表示死亡/空闲
+        life: 0, // life = 0 表示死亡/空闲
         maxLife: 0,
         velocity: new THREE.Vector3(),
         initialScale: 0,
@@ -144,7 +144,7 @@ export class SmokeTrails {
       //   真实烟雾从轮胎缝隙喷出时是压缩状态，看起来颜色深；扩散开后变淡。
       //   先增后减模拟了这个「压缩→扩散」的视觉过程。
       const alpha = t < 0.5 ? t * 2 : (1 - t) * 2;
-      p.sprite.material.opacity = alpha;
+      p.sprite.material.opacity = alpha; // 0表示完全透明，1表示完全不透明
 
       // █ 大小动画：先膨胀再收缩
       //
@@ -164,9 +164,11 @@ export class SmokeTrails {
       //   先胀后缩 + 先显后隐，组合出「 puff  puff 」的蓬松感。
       let scaleFactor;
       if (t < 0.5) {
-        scaleFactor = 0.5 + t * 1.0;
+        scaleFactor = 0.5 + t * 1.0; // 粒子前半生膨胀，系数变大
       } else {
-        scaleFactor = 1 - (t - 0.5) * 1.6;
+        // t >= 0.5时，
+        // t-0.5 = .0~0.5，乘以 1.6 => 0.~0.8
+        scaleFactor = 1 - (t - 0.5) * 1.6; // 粒子后半生收缩，系数变小
       }
 
       p.sprite.scale.setScalar(p.initialScale * scaleFactor);
@@ -183,7 +185,7 @@ export class SmokeTrails {
    *
    * emitIndex 像钟表的秒针一样在对象池中循环：
    * 每次发射取当前位置的粒子，然后 index 前进一位。
-   * 由于粒子的生命周期（0.5 秒）远小于轮询一圈所需时间（64/2≈32 帧 ≈ 0.5 秒 @60fps），
+   * 由于粒子的生命周期（0.5 秒）远小于轮询一圈所需时间（64/2(这里的2是因为每一帧需要发射两个粒子，因此除以2)≈32 帧 ≈ 0.5 秒 @60fps），
    * 被复用的粒子此时已经死亡，因此不会出现「把一个存活粒子突然拽到新位置」的跳变。
    *
    * 但如果帧率降到 30fps，循环一圈需要约 1 秒，此时确实可能复用还在存活的粒子。
@@ -214,11 +216,7 @@ export class SmokeTrails {
     // X/Z 方向：(random-0.5)*0.2 ⇒ -0.1~0.1 米/秒，轻微向两侧扩散
     // Y 方向：random*0.1 ⇒ 0~0.1 米/秒，烟雾上升（热空气）
     // 整体速度偏小，因为烟雾应该「飘散」而不是「喷射」
-    p.velocity.set(
-      (Math.random() - 0.5) * 0.2,
-      Math.random() * 0.1,
-      (Math.random() - 0.5) * 0.2
-    );
+    p.velocity.set((Math.random() - 0.5) * 0.2, Math.random() * 0.1, (Math.random() - 0.5) * 0.2);
 
     // 粒子存活 0.5 秒 —— 这是一个调优值。
     // 太短：烟雾来不及扩散就消失，看起来断断续续
