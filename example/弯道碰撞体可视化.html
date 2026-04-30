@@ -3,219 +3,200 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>弯道圆弧中心旋转原理可视化</title>
+    <title>弯道碰撞体参数调节与可视化</title>
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
       }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
       body {
         font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-        background: #1a1a2e;
+        background: #111122;
         color: #e0e0e0;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        padding: 20px;
+        padding: 8px;
       }
       h1 {
-        font-size: 16px;
-        margin-bottom: 10px;
+        font-size: 15px;
+        margin-bottom: 6px;
         color: #64ffda;
+        flex-shrink: 0;
       }
-      .container {
+      .main-layout {
         display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
+        gap: 8px;
+        flex: 1;
+        min-height: 0;
       }
-      canvas {
-        border: 1px solid #2a2a4a;
-        border-radius: 8px;
-        background: #0f0f1a;
-        cursor: crosshair;
-      }
-      .panel {
+      .left-panel {
         background: #16213e;
         border: 1px solid #2a2a4a;
         border-radius: 8px;
-        padding: 16px 20px;
-        min-width: 340px;
-        max-width: 420px;
-        font-size: 13px;
-        line-height: 1.7;
+        padding: 8px 12px;
+        width: 210px;
+        font-size: 11px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex-shrink: 0;
+        overflow-y: auto;
       }
-      .panel h2 {
-        font-size: 15px;
+      .left-panel h2 {
+        font-size: 12px;
         color: #64ffda;
-        margin-bottom: 8px;
         border-bottom: 1px solid #2a2a4a;
         padding-bottom: 4px;
+        margin-bottom: 2px;
       }
-      .panel h3 {
-        font-size: 13px;
-        color: #ffd700;
-        margin-top: 10px;
-        margin-bottom: 4px;
+      .slider-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
       }
-      .param-row {
+      .slider-group label {
         display: flex;
         justify-content: space-between;
-        padding: 2px 0;
-        border-bottom: 1px solid #1a1a3e;
-      }
-      .param-name {
+        font-size: 11px;
         color: #8899bb;
       }
-      .param-val {
+      .slider-group label span.val {
         color: #ffd700;
         font-weight: bold;
       }
-      .param-desc {
-        color: #88bb88;
-        font-size: 11px;
+      .slider-group input[type='range'] {
+        width: 100%;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: #2a2a4a;
+        border-radius: 2px;
+        outline: none;
       }
-      .highlight-block {
-        background: #1a1a3e;
-        border-left: 3px solid #ff6d00;
-        padding: 8px 12px;
-        margin: 8px 0;
-        border-radius: 0 6px 6px 0;
-        font-size: 12px;
+      .slider-group input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #64ffda;
+        cursor: pointer;
       }
-      .legend {
+      .right-area {
         display: flex;
         flex-direction: column;
-        gap: 3px;
-        margin-top: 6px;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
       }
-      .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
+      .canvas-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        border: 1px solid #2a2a4a;
+        border-radius: 8px;
+        background: #0a0a18;
+        overflow: hidden;
       }
-      .color-box {
-        width: 20px;
-        height: 12px;
-        border-radius: 2px;
-        border: 1px solid #555;
-        flex-shrink: 0;
-      }
-      .formula {
-        color: #bb86fc;
-        font-style: italic;
+      .canvas-wrap canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        cursor: crosshair;
       }
       .info-tip {
         position: fixed;
-        background: rgba(0, 0, 0, 0.85);
+        background: rgba(0, 0, 0, 0.9);
         color: #fff;
-        padding: 8px 12px;
+        padding: 6px 10px;
         border-radius: 6px;
-        font-size: 12px;
+        font-size: 11px;
         pointer-events: none;
         display: none;
         border: 1px solid #64ffda;
         z-index: 100;
-        max-width: 280px;
+        max-width: 260px;
       }
-      .controls {
+      .legend {
         display: flex;
-        gap: 8px;
-        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin-top: 6px;
+        font-size: 11px;
+      }
+      .legend-item {
+        display: flex;
         align-items: center;
+        gap: 5px;
       }
-      .controls button {
-        background: #2a2a4a;
-        color: #64ffda;
-        border: 1px solid #4a4a6a;
-        padding: 6px 14px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
+      .color-box {
+        width: 14px;
+        height: 10px;
+        border-radius: 2px;
+        border: 1px solid #555;
+        flex-shrink: 0;
       }
-      .controls button.active {
-        background: #64ffda22;
-        border-color: #64ffda;
-      }
-      .controls button:hover {
-        background: #3a3a5a;
-      }
-      .controls label {
-        font-size: 12px;
-        color: #8899bb;
+      .param-tag {
+        position: absolute;
+        background: rgba(0, 0, 0, 0.75);
+        color: #ffd700;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-size: 9px;
+        pointer-events: none;
+        white-space: nowrap;
+        border: 1px solid rgba(255, 215, 0, 0.3);
       }
     </style>
   </head>
   <body>
-    <h1>🏎️ 弯道 <code>ARC_CENTER</code> 旋转原理 — 为什么模型中的"左下角"会变换位置？</h1>
-    <div class="container">
-      <div>
-        <div class="controls">
-          <label>切换朝向:</label>
-          <button id="btn0" class="active" onclick="setOrient(0)">orient=0 (0°)</button>
-          <button id="btn90" onclick="setOrient(16)">orient=16 (90°)</button>
-          <button id="btn180" onclick="setOrient(10)">orient=10 (180°)</button>
-          <button id="btn270" onclick="setOrient(22)">orient=22 (270°)</button>
-        </div>
-        <canvas id="canvas" width="660" height="660"></canvas>
-      </div>
-      <div class="panel">
-        <h2>🔑 关键问题解答</h2>
+    <h1>🏎️ 弯道碰撞体参数实时调节 (单元格 (0,0))</h1>
+    <div class="main-layout">
+      <!-- 左侧滑条面板 -->
+      <div class="left-panel">
+        <h2>🎛️ 参数控制</h2>
 
-        <div class="highlight-block">
-          <b>❓ 模型圆心在左下角，为什么旋转后到了右上角？</b><br /><br />
-          <b>答：</b>圆弧中心 <code>ARC_CENTER</code> 是在<b>单元格局部坐标系</b>中定义的。<br />
-          它的值
-          <code>(-CELL_HALF, +CELL_HALF)</code>
-          在<b>局部</b>看是<b>「左上角」</b>（假设+X右，+Z下）。<br /><br />
-          当单元格旋转 90° 时，这个<b>局部坐标</b>被
-          <b>2D 旋转矩阵</b>旋转到<b>世界坐标</b>：<br /><br />
-          <span class="formula">x' = ARC_CENTER_X·cos(θ) + ARC_CENTER_Z·sin(θ)</span><br />
-          <span class="formula">z' = -ARC_CENTER_X·sin(θ) + ARC_CENTER_Z·cos(θ)</span><br /><br />
-          对于 90° (θ=π/2, cos=0, sin=1)：<br />
-          <b>x' = 0·(-4.995) + 1·(4.995) = +4.995</b><br />
-          <b>z' = -1·(-4.995) + 0·(4.995) = +4.995</b><br /><br />
-          所以旋转后偏移变成了 <code>(+CELL_HALF, +CELL_HALF)</code>。<br />
-          <b>本质上</b>：ARC_CENTER 在单元格的物理角点位置不变，但<b>旋转的是单元格本身</b>。
+        <div class="slider-group">
+          <label>朝向 orient <span class="val" id="vOrient">0°</span></label>
+          <input type="range" id="sOrient" min="0" max="360" step="1" value="0" />
         </div>
-
-        <h3>📐 单元格局部坐标系</h3>
-        <div class="param-row">
-          <span class="param-name">CELL_RAW</span><span class="param-val">9.99</span
-          ><span class="param-desc">原始边长</span>
+        <div class="slider-group">
+          <label>CELL_RAW <span class="val" id="vCellRaw">9.99</span></label>
+          <input type="range" id="sCellRaw" min="3" max="20" step="0.01" value="9.99" />
         </div>
-        <div class="param-row">
-          <span class="param-name">GRID_SCALE (S)</span><span class="param-val">0.75</span
-          ><span class="param-desc">缩放</span>
+        <div class="slider-group">
+          <label>GRID_SCALE (S) <span class="val" id="vScale">0.75</span></label>
+          <input type="range" id="sScale" min="0.1" max="2.0" step="0.01" value="0.75" />
         </div>
-        <div class="param-row">
-          <span class="param-name">CELL_HALF</span><span class="param-val">4.995</span
-          ><span class="param-desc">半长</span>
+        <div class="slider-group">
+          <label>WALL_HALF_THICK <span class="val" id="vWallThick">0.25</span></label>
+          <input type="range" id="sWallThick" min="0.05" max="1.0" step="0.01" value="0.25" />
         </div>
-        <div class="param-row" style="background: #ff6d0022">
-          <span class="param-name">ARC_CENTER_X</span><span class="param-val">-4.995</span
-          ><span class="param-desc">= -CELL_HALF</span>
+        <div class="slider-group" style="opacity: 0.6">
+          <label>WALL_X <span class="val" id="vWallX">4.75</span></label>
+          <input type="range" id="sWallX" min="1" max="8" step="0.01" value="4.75" />
         </div>
-        <div class="param-row" style="background: #ff6d0022">
-          <span class="param-name">ARC_CENTER_Z</span><span class="param-val">+4.995</span
-          ><span class="param-desc">= +CELL_HALF</span>
+        <div class="slider-group">
+          <label>外弧分段 OUTER_SEG <span class="val" id="vOuterSeg">8</span></label>
+          <input type="range" id="sOuterSeg" min="2" max="20" step="1" value="8" />
         </div>
-
-        <h3>🔵🔴 当前显示</h3>
-        <div class="param-row">
-          <span class="param-name">当前 orient</span>
-          <span class="param-val" id="orientDisplay">0 (0°)</span>
-          <span class="param-desc">cr=1, sr=0</span>
+        <div class="slider-group">
+          <label>内弧分段 INNER_SEG <span class="val" id="vInnerSeg">3</span></label>
+          <input type="range" id="sInnerSeg" min="1" max="12" step="1" value="3" />
         </div>
-        <div class="param-row" style="color: #4fc3f7">
-          <span class="param-name">外弧 R</span><span class="param-val">9.74</span
-          ><span class="param-desc">= 2×CELL_HALF - 0.25</span>
-        </div>
-        <div class="param-row" style="color: #81c784">
-          <span class="param-name">内弧 R</span><span class="param-val">0.25</span
-          ><span class="param-desc">= WALL_HALF_THICK</span>
+        <div
+          class="slider-group"
+          style="margin-top: 4px; border-top: 1px solid #2a2a4a; padding-top: 4px"
+        >
+          <label style="color: #4fc3f7">OUTER_R = <span id="vOuterR">9.74</span></label>
+          <label style="color: #81c784">INNER_R = <span id="vInnerR">0.25</span></label>
+          <label style="color: #bb86fc">CELL_HALF = <span id="vCellHalf">4.995</span></label>
         </div>
 
         <div class="legend">
@@ -225,76 +206,204 @@
           </div>
           <div class="legend-item">
             <div class="color-box" style="background: #4fc3f7"></div>
-            <span>外弧（外墙护栏）</span>
+            <span>外弧（外墙）</span>
           </div>
           <div class="legend-item">
             <div class="color-box" style="background: #81c784"></div>
-            <span>内弧（内侧路沿）</span>
+            <span>内弧（路沿）</span>
           </div>
           <div class="legend-item">
             <div class="color-box" style="background: #ffd700"></div>
-            <span>单元格边界</span>
+            <span>单元格</span>
           </div>
           <div class="legend-item">
-            <div class="color-box" style="background: #bb86fc"></div>
-            <span>局部→世界 偏移向量</span>
+            <div class="color-box" style="background: #ff5252"></div>
+            <span>车流路径</span>
           </div>
           <div class="legend-item">
             <div class="color-box" style="background: rgba(0, 0, 0, 0); border-color: #666"></div>
-            <span>↕ +Z = 南 (向下)</span>
+            <span>↑北 −Z，↓南 +Z</span>
           </div>
+        </div>
+      </div>
+
+      <!-- 右侧画布 -->
+      <div class="right-area">
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="canvas"></canvas>
         </div>
       </div>
     </div>
     <div class="info-tip" id="tip"></div>
 
     <script>
-      const CELL_RAW = 9.99;
-      const S = 0.75;
-      const CELL_HALF = CELL_RAW / 2;
-
-      const ARC_CENTER_X = -CELL_HALF; // -4.995
-      const ARC_CENTER_Z = CELL_HALF; // +4.995
-
-      const WALL_HALF_THICK = 0.25;
-      const OUTER_R = 2 * CELL_HALF - WALL_HALF_THICK; // 9.74
-      const INNER_R = WALL_HALF_THICK; // 0.25
-      const ARC_SPAN = -Math.PI / 2;
-      const OUTER_SEG = 8;
-      const INNER_SEG = 3;
-      const OUTER_SEG_HALF_LEN = ((OUTER_R * (Math.PI / 2)) / OUTER_SEG / 2) * S;
-      const INNER_SEG_HALF_LEN = ((INNER_R * (Math.PI / 2)) / INNER_SEG / 2) * S;
-
-      const orientMap = {
-        0: { deg: 0, btn: 'btn0' },
-        16: { deg: 90, btn: 'btn90' },
-        10: { deg: 180, btn: 'btn180' },
-        22: { deg: 270, btn: 'btn270' },
+      // ---- 参数状态 ----
+      const params = {
+        orientDeg: 0,
+        cellRaw: 9.99,
+        scale: 0.75,
+        wallHalfThick: 0.25,
+        wallX: 4.75,
+        outerSeg: 8,
+        innerSeg: 3,
       };
 
-      let currentOrient = 0;
+      // ---- 推导参数 ----
+      function derived(p) {
+        const cellHalf = p.cellRaw / 2;
+        const outerR = 2 * cellHalf - p.wallHalfThick;
+        const innerR = p.wallHalfThick;
+        const arcSpan = -Math.PI / 2;
+        const outerSegHalfLen = ((outerR * (Math.PI / 2)) / p.outerSeg / 2) * p.scale;
+        const innerSegHalfLen = ((innerR * (Math.PI / 2)) / p.innerSeg / 2) * p.scale;
+        const rad = (p.orientDeg * Math.PI) / 180;
+        const cr = Math.cos(rad),
+          sr = Math.sin(rad);
+        return { cellHalf, outerR, innerR, arcSpan, outerSegHalfLen, innerSegHalfLen, rad, cr, sr };
+      }
 
+      // ---- DOM 引用 ----
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
       const tip = document.getElementById('tip');
+      const canvasWrap = document.getElementById('canvasWrap');
 
-      function setOrient(code) {
-        currentOrient = code;
-        document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
-        document.getElementById(orientMap[code].btn).classList.add('active');
-        draw();
+      // ---- 响应式尺寸调整 ----
+      function resizeCanvas() {
+        const rect = canvasWrap.getBoundingClientRect();
+        // 取整数尺寸（物理像素对齐，避免模糊）
+        const w = Math.floor(rect.width);
+        const h = Math.floor(rect.height);
+        if (canvas.width !== w || canvas.height !== h) {
+          canvas.width = w;
+          canvas.height = h;
+          draw();
+        }
       }
 
-      function worldToCanvas(wx, wz) {
-        // +X → 右, +Z → 下（南），上北下南
-        const px = canvas.width / 2 + (wx / WORLD_EXTENT) * (canvas.width / 2);
-        const py = canvas.height / 2 + (wz / WORLD_EXTENT) * (canvas.height / 2);
+      // 窗口大小变化时重新调整
+      let resizeTimer = null;
+      window.addEventListener('resize', () => {
+        if (resizeTimer) cancelAnimationFrame(resizeTimer);
+        resizeTimer = requestAnimationFrame(resizeCanvas);
+      });
+      // 初始尺寸
+      setTimeout(resizeCanvas, 10);
+
+      // ---- 滑条绑定 ----
+      const sliders = [
+        { id: 'sOrient', key: 'orientDeg', display: 'vOrient', fmt: v => v + '°' },
+        { id: 'sCellRaw', key: 'cellRaw', display: 'vCellRaw', fmt: v => v.toFixed(2) },
+        { id: 'sScale', key: 'scale', display: 'vScale', fmt: v => v.toFixed(2) },
+        { id: 'sWallThick', key: 'wallHalfThick', display: 'vWallThick', fmt: v => v.toFixed(2) },
+        { id: 'sWallX', key: 'wallX', display: 'vWallX', fmt: v => v.toFixed(2) },
+        { id: 'sOuterSeg', key: 'outerSeg', display: 'vOuterSeg', fmt: v => v },
+        { id: 'sInnerSeg', key: 'innerSeg', display: 'vInnerSeg', fmt: v => v },
+      ];
+
+      sliders.forEach(s => {
+        const el = document.getElementById(s.id);
+        el.addEventListener('input', () => {
+          params[s.key] =
+            s.key === 'outerSeg' || s.key === 'innerSeg'
+              ? parseInt(el.value)
+              : parseFloat(el.value);
+          document.getElementById(s.display).textContent = s.fmt(params[s.key]);
+          draw();
+        });
+      });
+
+      // ---- 相机控制（平移/缩放） ----
+      const camera = {
+        cx: 0, // 世界坐标 X 中心
+        cz: 0, // 世界坐标 Z 中心
+        extent: 14, // 视口范围（短边对应的世界长度）
+      };
+      let isDragging = false;
+      let dragStartX = 0,
+        dragStartY = 0;
+      let dragCamCX = 0,
+        dragCamCZ = 0;
+
+      function w2c(wx, wz) {
+        // 以 canvas 短边为基准计算像素/世界比例
+        const pxPerUnit = Math.min(canvas.width, canvas.height) / camera.extent;
+        const ox = (canvas.width - Math.min(canvas.width, canvas.height)) / 2;
+        const px = ox + (wx - camera.cx) * pxPerUnit + Math.min(canvas.width, canvas.height) / 2;
+        const py = canvas.height / 2 + (wz - camera.cz) * pxPerUnit;
         return [px, py];
       }
 
-      function drawLine(x1, y1, x2, y2, color, width = 1, dash = []) {
+      // 像素坐标 -> 世界坐标
+      function c2w(px, py) {
+        const pxPerUnit = Math.min(canvas.width, canvas.height) / camera.extent;
+        const ox = (canvas.width - Math.min(canvas.width, canvas.height)) / 2;
+        const wx = camera.cx + (px - ox - Math.min(canvas.width, canvas.height) / 2) / pxPerUnit;
+        const wz = camera.cz + (py - canvas.height / 2) / pxPerUnit;
+        return [wx, wz];
+      }
+
+      // 鼠标拖拽平移
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        dragCamCX = camera.cx;
+        dragCamCZ = camera.cz;
+        canvas.style.cursor = 'grabbing';
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        const pxPerUnit = Math.min(canvas.width, canvas.height) / camera.extent;
+        const dx = (e.clientX - dragStartX) / pxPerUnit;
+        const dy = (e.clientY - dragStartY) / pxPerUnit;
+        camera.cx = dragCamCX - dx;
+        camera.cz = dragCamCZ + dy; // Y 轴翻转（canvas y 向下）
+        draw();
+      });
+      window.addEventListener('mouseup', () => {
+        if (isDragging) {
+          isDragging = false;
+          canvas.style.cursor = 'crosshair';
+        }
+      });
+
+      // 滚轮缩放
+      canvas.addEventListener(
+        'wheel',
+        e => {
+          e.preventDefault();
+          const factor = e.deltaY > 0 ? 1.12 : 1 / 1.12;
+          // 以鼠标位置为中心缩放
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          const pxPerUnit = Math.min(canvas.width, canvas.height) / camera.extent;
+          const worldMX =
+            camera.cx +
+            (mx -
+              (canvas.width - Math.min(canvas.width, canvas.height)) / 2 -
+              Math.min(canvas.width, canvas.height) / 2) /
+              pxPerUnit;
+          const worldMY = camera.cz + (my - canvas.height / 2) / pxPerUnit;
+          camera.extent = Math.max(1, Math.min(200, camera.extent * factor));
+          // 缩放后保持鼠标位置不变
+          const pxPerUnit2 = Math.min(canvas.width, canvas.height) / camera.extent;
+          camera.cx =
+            worldMX -
+            (mx -
+              (canvas.width - Math.min(canvas.width, canvas.height)) / 2 -
+              Math.min(canvas.width, canvas.height) / 2) /
+              pxPerUnit2;
+          camera.cz = worldMY - (my - canvas.height / 2) / pxPerUnit2;
+          draw();
+        },
+        { passive: false }
+      );
+
+      function drawLine(x1, y1, x2, y2, color, w = 1, dash = []) {
         ctx.strokeStyle = color;
-        ctx.lineWidth = width;
+        ctx.lineWidth = w;
         ctx.setLineDash(dash);
         ctx.beginPath();
         ctx.moveTo(x1, y1);
@@ -303,9 +412,9 @@
         ctx.setLineDash([]);
       }
 
-      function drawCircle(cx, cy, r, color, width = 1, dash = []) {
+      function drawCircle(cx, cy, r, color, w = 1, dash = []) {
         ctx.strokeStyle = color;
-        ctx.lineWidth = width;
+        ctx.lineWidth = w;
         ctx.setLineDash(dash);
         ctx.beginPath();
         ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -320,33 +429,23 @@
         ctx.fill();
       }
 
-      function drawText(
-        text,
-        x,
-        y,
-        color = '#fff',
-        size = 11,
-        align = 'center',
-        baseline = 'middle'
-      ) {
+      function drawText(txt, x, y, color = '#fff', size = 11, align = 'center', base = 'middle') {
         ctx.fillStyle = color;
         ctx.font = `${size}px "SFMono-Regular", Consolas, monospace`;
         ctx.textAlign = align;
-        ctx.textBaseline = baseline;
-        ctx.fillText(text, x, y);
+        ctx.textBaseline = base;
+        ctx.fillText(txt, x, y);
       }
 
-      function drawBox(cx, cy, halfW, halfH, angle, color) {
-        const w = halfW * 2,
-          h = halfH * 2;
+      function drawBox(cx, cy, hw, hh, angle, color) {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.rotate(-angle);
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
         ctx.fillStyle = color + '33';
-        ctx.fillRect(-w / 2, -h / 2, w, h);
-        ctx.strokeRect(-w / 2, -h / 2, w, h);
+        ctx.fillRect(-hw, -hh, hw * 2, hh * 2);
+        ctx.strokeRect(-hw, -hh, hw * 2, hh * 2);
         ctx.restore();
       }
 
@@ -354,216 +453,333 @@
         return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)];
       }
 
-      function drawArrow(x1, y1, x2, y2, color, width = 2) {
+      function drawArrow(x1, y1, x2, y2, color, w = 2) {
         const angle = Math.atan2(y2 - y1, x2 - x1);
-        const headLen = 8;
-        drawLine(x1, y1, x2, y2, color, width);
+        const hl = 8;
+        drawLine(x1, y1, x2, y2, color, w);
         ctx.fillStyle = color;
         ctx.beginPath();
         ctx.moveTo(x2, y2);
-        ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
-        ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+        ctx.lineTo(x2 - hl * Math.cos(angle - 0.4), y2 - hl * Math.sin(angle - 0.4));
+        ctx.lineTo(x2 - hl * Math.cos(angle + 0.4), y2 - hl * Math.sin(angle + 0.4));
         ctx.closePath();
         ctx.fill();
       }
 
-      function draw() {
-        const code = currentOrient;
-        const { deg } = orientMap[code];
-        const rad = (deg * Math.PI) / 180;
-        const cr = Math.cos(rad),
-          sr = Math.sin(rad);
+      function drawDashedArc(ccx, ccy, r, start, end, color, w = 1.5) {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = w;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        for (let s = 0; s <= 60; s++) {
+          const a = start + (s / 60) * (end - start);
+          const [px, py] = arcPoint(ccx, ccy, r, a);
+          if (s === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
 
-        // 选一个单元格，让它居中显示
+      // ---- 绘图主函数 ----
+      function draw() {
+        const p = params;
+        const d = derived(p);
+
+        // 单元格世界坐标 (居中)
         const gx = 0,
           gz = 0;
-        const cx = (gx + 0.5) * CELL_RAW * S;
-        const cz = (gz + 0.5) * CELL_RAW * S;
+        const cx = (gx + 0.5) * p.cellRaw * p.scale;
+        const cz = (gz + 0.5) * p.cellRaw * p.scale;
 
-        // 圆弧中心世界坐标
-        const wcx = cx + (ARC_CENTER_X * cr + ARC_CENTER_Z * sr) * S;
-        const wcz = cz + (-ARC_CENTER_X * sr + ARC_CENTER_Z * cr) * S;
+        // ARC_CENTER 局部坐标
+        const arcCenterLX = -d.cellHalf;
+        const arcCenterLZ = d.cellHalf;
 
-        // 局部 ARC_CENTER 不旋转的值
-        const lx_local = cx + ARC_CENTER_X * S;
-        const lz_local = cz + ARC_CENTER_Z * S;
+        // ARC_CENTER 世界坐标（旋转后）
+        const wcx = cx + (arcCenterLX * d.cr + arcCenterLZ * d.sr) * p.scale;
+        const wcz = cz + (-arcCenterLX * d.sr + arcCenterLZ * d.cr) * p.scale;
 
-        // 世界范围
-        const MAX_EXTENT = OUTER_R * S * 1.5;
-        window.WORLD_EXTENT = MAX_EXTENT;
+        // 局部 ARC_CENTER（不旋转）
+        const lx_local = cx + arcCenterLX * p.scale;
+        const lz_local = cz + arcCenterLZ * p.scale;
 
-        // 清除
+        // 利用当前相机（首次绘制时自动居中）
+        if (!camera._initialized) {
+          const WE = Math.max(p.cellRaw * p.scale * 1.8, d.outerR * p.scale * 2.0);
+          camera._initialized = true;
+          camera.cx = cx;
+          camera.cz = cz;
+          camera.extent = WE;
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // ---- 1. 网格背景 ----
-        for (let gz2 = -3; gz2 <= 3; gz2++) {
-          for (let gx2 = -3; gx2 <= 3; gx2++) {
-            const gcx = (gx2 + 0.5) * CELL_RAW * S;
-            const gcz = (gz2 + 0.5) * CELL_RAW * S;
-            const [px, py] = worldToCanvas(gcx, gcz);
-            const hp = ((CELL_RAW * S) / 2 / MAX_EXTENT) * (canvas.width / 2);
+        // 像素/世界单位比例（用于将世界长度转为像素）
+        const pxPerUnit = Math.min(canvas.width, canvas.height) / camera.extent;
+
+        // ---- 网格（用 w2c 对每个角变换，支持相机平移/缩放）----
+        const gridMin = Math.floor(gx - 5),
+          gridMax = Math.ceil(gx + 5);
+        for (let gz2 = gridMin; gz2 <= gridMax; gz2++) {
+          for (let gx2 = gridMin; gx2 <= gridMax; gx2++) {
+            const ggx = (gx2 + 0.5) * p.cellRaw * p.scale;
+            const ggz = (gz2 + 0.5) * p.cellRaw * p.scale;
+            const [px, py] = w2c(ggx, ggz);
+            const [px0, py0] = w2c(
+              ggx - (p.cellRaw * p.scale) / 2,
+              ggz - (p.cellRaw * p.scale) / 2
+            );
+            const [px1, py1] = w2c(
+              ggx + (p.cellRaw * p.scale) / 2,
+              ggz + (p.cellRaw * p.scale) / 2
+            );
+            const ch = px1 - px0;
+            const cv = py1 - py0;
             ctx.strokeStyle = 'rgba(255,255,255,0.05)';
             ctx.lineWidth = 1;
-            ctx.setLineDash([3, 3]);
-            ctx.strokeRect(px - hp, py - hp, hp * 2, hp * 2);
+            ctx.setLineDash([2, 2]);
+            ctx.strokeRect(px0, py0, ch, cv);
             ctx.setLineDash([]);
-            if ((gx2 + gz2) % 2 === 0) {
-              drawText(`(${gx2},${gz2})`, px, py + hp + 14, 'rgba(255,255,255,0.15)', 8);
-            }
+            if ((gx2 + gz2) % 2 === 0)
+              drawText(`(${gx2},${gz2})`, px, py + cv / 2 + 12, 'rgba(255,255,255,0.12)', 7);
           }
         }
 
-        // ---- 2. 目标单元格 ----
-        const [cellPx, cellPy] = worldToCanvas(cx, cz);
-        const cellHP = ((CELL_RAW * S) / 2 / MAX_EXTENT) * (canvas.width / 2);
+        // ---- 目标单元格 ----
+        const [cpx, cpy] = w2c(cx, cz);
+        const [cp0x, cp0y] = w2c(cx - d.cellHalf * p.scale, cz - d.cellHalf * p.scale);
+        const [cp1x, cp1y] = w2c(cx + d.cellHalf * p.scale, cz + d.cellHalf * p.scale);
+        const cw = cp1x - cp0x,
+          cwh = cp1y - cp0y;
         ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 2;
         ctx.setLineDash([6, 4]);
-        ctx.strokeRect(cellPx - cellHP, cellPy - cellHP, cellHP * 2, cellHP * 2);
+        ctx.strokeRect(cp0x, cp0y, cw, cwh);
         ctx.setLineDash([]);
-        drawText(
-          `单元格 (0,0) orient=${code} (${deg}°)`,
-          cellPx,
-          cellPy - cellHP - 12,
-          '#ffd700',
-          12
-        );
 
-        // ---- 3. 标注单元格的四角方向 ----
-        for (const [dx, dz, label] of [
-          [-1, -1, '西北'],
-          [1, -1, '东北'],
-          [1, 1, '东南'],
-          [-1, 1, '西南'],
-        ]) {
-          const [px, py] = worldToCanvas(cx + dx * CELL_HALF * S, cz + dz * CELL_HALF * S);
-          drawText(label, px, py, 'rgba(255,255,255,0.25)', 9);
-        }
-        drawText('↑ 北 (−Z)', 30, 22, 'rgba(255,255,255,0.3)', 11, 'left');
-        drawText('→ 东 (+X)', 30, 38, 'rgba(255,255,255,0.3)', 11, 'left');
-        drawText('↓ 南 (+Z)', 30, 54, 'rgba(255,255,255,0.3)', 11, 'left');
+        // ---- 方向标注 ----
+        drawText(`orient=${p.orientDeg}° S=${p.scale}`, cpx, cp0y - 12, '#ffd700', 12);
+        drawText('↑北', 30, 18, 'rgba(255,255,255,0.25)', 11, 'left');
+        drawText('→东', 30, 33, 'rgba(255,255,255,0.25)', 11, 'left');
+        drawText('↓南', 30, 48, 'rgba(255,255,255,0.25)', 11, 'left');
 
-        // ---- 4. 显示局部 ARC_CENTER（不旋转，灰色）----
-        const [lpx, lpy] = worldToCanvas(lx_local, lz_local);
-        drawFillCircle(lpx, lpy, 4, 'rgba(255,255,255,0.3)');
-        drawCircle(lpx, lpy, 6, 'rgba(255,255,255,0.3)', 1, [3, 3]);
-        drawText('局部ARC_CENTER', lpx - 14, lpy - 16, 'rgba(255,255,255,0.3)', 9, 'right');
+        // ---- 局部 ARC_CENTER（灰色，不旋转）----
+        const [lpx, lpy] = w2c(lx_local, lz_local);
+        drawFillCircle(lpx, lpy, 4, 'rgba(255,255,255,0.25)');
+        drawCircle(lpx, lpy, 6, 'rgba(255,255,255,0.25)', 1, [2, 2]);
 
-        // ---- 5. 从局部到旋转后的偏移向量 ----
-        // 从局部 ARC_CENTER 到旋转后 ARC_CENTER 画一条带箭头的线
-        const [wpx, wpy] = worldToCanvas(wcx, wcz);
-        drawArrow(lpx, lpy, wpx, wpy, '#bb86fc', 2);
-        // 标注旋转角度
-        const midX = (lpx + wpx) / 2;
-        const midY = (lpy + wpy) / 2;
-        drawText(`旋转 ${deg}°`, midX + 8, midY - 8, '#bb86fc', 10, 'left');
+        // ---- 旋转偏移向量 ----
+        const [wpx, wpy] = w2c(wcx, wcz);
+        drawArrow(lpx, lpy, wpx, wpy, '#bb86fc', 1.5);
+        const mx = (lpx + wpx) / 2,
+          my = (lpy + wpy) / 2;
+        drawText(`旋转${p.orientDeg}°`, mx + 6, my - 8, '#bb86fc', 9, 'left');
 
-        // ---- 6. 显示旋转后的 ARC_CENTER（橙色）----
+        // ---- ARC_CENTER（橙色）----
         drawFillCircle(wpx, wpy, 7, '#ff6d00');
         drawCircle(wpx, wpy, 11, '#ff6d00', 2);
-        drawText(`ARC_CENTER (${deg}°)`, wpx + 14, wpy - 14, '#ff6d00', 11, 'left');
 
-        // ---- 7. 绘制外弧 ----
-        const arcStart = -rad;
-        for (let i = 0; i < OUTER_SEG; i++) {
-          const aMid = arcStart + ((i + 0.5) / OUTER_SEG) * ARC_SPAN;
-          const bx = wcx + OUTER_R * Math.cos(aMid) * S;
-          const bz = wcz + OUTER_R * Math.sin(aMid) * S;
-          const [bpx, bpy] = worldToCanvas(bx, bz);
-          const segW = (OUTER_SEG_HALF_LEN / MAX_EXTENT) * (canvas.width / 2);
-          const segH = ((WALL_HALF_THICK * S) / MAX_EXTENT) * (canvas.width / 2);
+        // ========================
+        // 参数标注（直接画在图上）
+        // ========================
+
+        // 1. CELL_RAW 标注 (单元格底部边长)
+        const cellLeft = cx - d.cellHalf * p.scale;
+        const cellRight = cx + d.cellHalf * p.scale;
+        const cellBottom = cz + d.cellHalf * p.scale;
+        const [clx, cly] = w2c(cellLeft, cellBottom);
+        const [crx, cry] = w2c(cellRight, cellBottom);
+        const annoY = cry + 20;
+        drawLine(clx, annoY - 3, crx, annoY - 3, 'rgba(255,215,0,0.5)', 1, [2, 2]);
+        drawText(
+          `CELL_RAW=${p.cellRaw} (世界${(p.cellRaw * p.scale).toFixed(2)})`,
+          (clx + crx) / 2,
+          annoY + 10,
+          'rgba(255,215,0,0.6)',
+          9
+        );
+
+        // 2. WALL_X 标注 (直道墙壁偏移)
+        // 在单元格右侧画一条水平线标注 WALL_X
+        const wallXWorldPos = d.cellHalf * p.scale; // 到边缘的距离
+        const wallXWorld = d.cellHalf * p.scale - p.wallHalfThick * p.scale; // 墙壁位置
+        const [wlx, wly] = w2c(cx + wallXWorld, cz);
+        const [wrx, wry] = w2c(cx + d.cellHalf * p.scale, cz);
+        drawLine(wlx, wly - 4, wrx, wry - 4, 'rgba(200,200,100,0.5)', 1, [2, 2]);
+        const midX = (wlx + wrx) / 2;
+        drawText(`WALL_X=${p.wallX}`, midX, wly - 14, 'rgba(200,200,100,0.6)', 9);
+
+        // 3. ARC_CENTER 坐标标注
+        drawText(`ARC_CENTER (${p.orientDeg}°)`, wpx + 14, wpy - 14, '#ff6d00', 10, 'left');
+        const arcCenterLabel = `局部=(${arcCenterLX.toFixed(2)},${arcCenterLZ.toFixed(2)}) 世界=(${(wcx - cx).toFixed(2)},${(wcz - cz).toFixed(2)})`;
+        drawText(arcCenterLabel, wpx + 14, wpy, '#ff6d00', 8, 'left');
+
+        // 4. CELL_HALF 标注 (在单元格顶部)
+        const cellTop = cz - d.cellHalf * p.scale;
+        const [ctx_, cty] = w2c(cx, cellTop);
+        drawText(`CELL_HALF=${d.cellHalf.toFixed(3)}`, ctx_, cty - 16, '#bb86fc', 9);
+
+        // ========================
+        // 绘制外弧
+        // ========================
+        const arcStart = -d.rad;
+        for (let i = 0; i < p.outerSeg; i++) {
+          const aMid = arcStart + ((i + 0.5) / p.outerSeg) * d.arcSpan;
+          const bx = wcx + d.outerR * Math.cos(aMid) * p.scale;
+          const bz = wcz + d.outerR * Math.sin(aMid) * p.scale;
+          const [bpx, bpy] = w2c(bx, bz);
+          const segW = d.outerSegHalfLen * pxPerUnit;
+          const segH = p.wallHalfThick * p.scale * pxPerUnit;
           drawBox(bpx, bpy, segW, segH, -aMid, '#4fc3f7');
         }
 
         // 外弧虚线轨迹
-        ctx.strokeStyle = 'rgba(79,195,247,0.4)';
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        for (let s = 0; s <= 60; s++) {
-          const a = arcStart + (s / 60) * ARC_SPAN;
-          const wx0 = wcx + OUTER_R * Math.cos(a) * S;
-          const wz0 = wcz + OUTER_R * Math.sin(a) * S;
-          const [px0, py0] = worldToCanvas(wx0, wz0);
-          if (s === 0) ctx.moveTo(px0, py0);
-          else ctx.lineTo(px0, py0);
+        drawDashedArc(
+          wpx,
+          wpy,
+          d.outerR * p.scale * pxPerUnit,
+          arcStart,
+          arcStart + d.arcSpan,
+          'rgba(79,195,247,0.4)'
+        );
+
+        // 5. OUTER_R 标注
+        const labelAngle1 = arcStart + d.arcSpan * 0.35;
+        const outerRPx = d.outerR * p.scale * pxPerUnit;
+        const [orx, ory] = arcPoint(wpx, wpy, outerRPx * 0.55, labelAngle1);
+        // 圆心到标注点画参考线
+        const [orex, orey] = arcPoint(wpx, wpy, outerRPx, labelAngle1);
+        drawLine(wpx, wpy, orex, orey, 'rgba(79,195,247,0.3)', 1, [3, 3]);
+        drawText(`OUTER_R=${d.outerR.toFixed(2)}`, orx, ory, '#4fc3f7', 11);
+
+        // 6. 外弧分段标注
+        for (let i = 0; i < p.outerSeg; i++) {
+          const aMid = arcStart + ((i + 0.5) / p.outerSeg) * d.arcSpan;
+          const [slx, sly] = arcPoint(wpx, wpy, outerRPx + 6, aMid);
+          drawText(`${i + 1}`, slx, sly, 'rgba(79,195,247,0.5)', 8);
         }
-        ctx.stroke();
-        ctx.setLineDash([]);
 
         // 起终点标注
         for (const [angle, label] of [
           [arcStart, '起'],
-          [arcStart + ARC_SPAN, '终'],
+          [arcStart + d.arcSpan, '终'],
         ]) {
-          const wx0 = wcx + (OUTER_R + 0.5) * Math.cos(angle) * S;
-          const wz0 = wcz + (OUTER_R + 0.5) * Math.sin(angle) * S;
-          const [px0, py0] = worldToCanvas(wx0, wz0);
-          drawText(`${label} (${Math.round((angle * 180) / Math.PI)}°)`, px0, py0, '#4fc3f7', 10);
+          const wx0 = wcx + (d.outerR + 0.3) * Math.cos(angle) * p.scale;
+          const wz0 = wcz + (d.outerR + 0.3) * Math.sin(angle) * p.scale;
+          const [px0, py0] = w2c(wx0, wz0);
+          drawText(`${label} (${Math.round((angle * 180) / Math.PI)}°)`, px0, py0, '#4fc3f7', 8);
         }
 
-        // 半径标注
-        const labelAngle = arcStart + ARC_SPAN * 0.3;
-        const [rlx, rly] = arcPoint(
-          wpx,
-          wpy,
-          ((OUTER_R * S * 0.5) / MAX_EXTENT) * (canvas.width / 2),
-          labelAngle
-        );
-        drawText(`外弧 R=${OUTER_R}`, rlx, rly, '#4fc3f7', 11);
-
-        // ---- 8. 绘制内弧 ----
-        for (let i = 0; i < INNER_SEG; i++) {
-          const aMid = arcStart + ((i + 0.5) / INNER_SEG) * ARC_SPAN;
-          const bx = wcx + INNER_R * Math.cos(aMid) * S;
-          const bz = wcz + INNER_R * Math.sin(aMid) * S;
-          const [bpx, bpy] = worldToCanvas(bx, bz);
-          const segW = (INNER_SEG_HALF_LEN / MAX_EXTENT) * (canvas.width / 2);
-          const segH = ((WALL_HALF_THICK * S) / MAX_EXTENT) * (canvas.width / 2);
+        // ========================
+        // 绘制内弧
+        // ========================
+        for (let i = 0; i < p.innerSeg; i++) {
+          const aMid = arcStart + ((i + 0.5) / p.innerSeg) * d.arcSpan;
+          const bx = wcx + d.innerR * Math.cos(aMid) * p.scale;
+          const bz = wcz + d.innerR * Math.sin(aMid) * p.scale;
+          const [bpx, bpy] = w2c(bx, bz);
+          const segW = d.innerSegHalfLen * pxPerUnit;
+          const segH = p.wallHalfThick * p.scale * pxPerUnit;
           drawBox(bpx, bpy, segW, segH, -aMid, '#81c784');
         }
-        drawText(`内弧 R=${INNER_R}`, wpx + 12, wpy + 24, '#81c784', 11, 'left');
 
-        // ---- 9. 车流路径（标出入口方向）----
-        const midR = (OUTER_R + INNER_R) / 2;
-        ctx.strokeStyle = 'rgba(255,82,82,0.35)';
-        ctx.lineWidth = 3;
+        // 7. INNER_R 标注
+        const labelAngleI = arcStart + d.arcSpan * 0.2;
+        const innerRPx = d.innerR * p.scale * pxPerUnit;
+        const [irx, iry] = arcPoint(wpx, wpy, innerRPx * 0.55, labelAngleI);
+        const [irex, irey] = arcPoint(wpx, wpy, innerRPx, labelAngleI);
+        drawLine(wpx, wpy, irex, irey, 'rgba(129,199,132,0.3)', 1, [3, 3]);
+        drawText(`INNER_R=${d.innerR.toFixed(2)}`, irx, iry, '#81c784', 11);
+
+        // 8. 壁厚标注
+        const thickLabelAngle = arcStart + d.arcSpan * 0.1;
+        const [t1x, t1y] = arcPoint(wpx, wpy, innerRPx, thickLabelAngle);
+        const [t2x, t2y] = arcPoint(wpx, wpy, outerRPx, thickLabelAngle);
+        drawText(
+          `壁厚=${p.wallHalfThick}`,
+          (t1x + t2x) / 2,
+          (t1y + t2y) / 2,
+          'rgba(255,255,255,0.4)',
+          8
+        );
+
+        // ========================
+        // 车流路径
+        // ========================
+        const midR = (d.outerR + d.innerR) / 2;
+        ctx.strokeStyle = 'rgba(255,82,82,0.4)';
+        ctx.lineWidth = 2.5;
         ctx.setLineDash([8, 6]);
         ctx.beginPath();
-        const pStart = arcStart - 0.1;
-        const pEnd = arcStart + ARC_SPAN + 0.1;
+        const ps = arcStart - 0.1,
+          pe = arcStart + d.arcSpan + 0.1;
         for (let s = 0; s <= 40; s++) {
-          const a = pStart + (s / 40) * (pEnd - pStart);
-          const px = wcx + midR * Math.cos(a) * S;
-          const pz = wcz + midR * Math.sin(a) * S;
-          const [ppx, ppy] = worldToCanvas(px, pz);
+          const a = ps + (s / 40) * (pe - ps);
+          const px = wcx + midR * Math.cos(a) * p.scale;
+          const pz = wcz + midR * Math.sin(a) * p.scale;
+          const [ppx, ppy] = w2c(px, pz);
           if (s === 0) ctx.moveTo(ppx, ppy);
           else ctx.lineTo(ppx, ppy);
         }
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // 更新面板显示
-        document.getElementById('orientDisplay').innerHTML = `${code} (${deg}°)`;
+        // 入口出口标注
+        const entryAngle = arcStart - 0.12;
+        const exitAngle = arcStart + d.arcSpan + 0.12;
+        const eR = midR;
+        const [eix, eiy] = w2c(
+          wcx + eR * Math.cos(entryAngle) * p.scale,
+          wcz + eR * Math.sin(entryAngle) * p.scale
+        );
+        const [eox, eoy] = w2c(
+          wcx + eR * Math.cos(exitAngle) * p.scale,
+          wcz + eR * Math.sin(exitAngle) * p.scale
+        );
+        drawText('入口', eix, eiy - 14, '#ff5252', 10);
+        drawText('出口', eox, eoy - 14, '#ff5252', 10);
 
-        // ---- 10. 鼠标悬停 ----
+        // ---- 角度弧 ----
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        const aR = 22;
+        ctx.arc(wpx, wpy, aR, arcStart, arcStart + d.arcSpan);
+        ctx.stroke();
+        const midAngle = arcStart + d.arcSpan / 2;
+        const [aax, aay] = arcPoint(wpx, wpy, aR + 12, midAngle);
+        drawText('90°', aax, aay, 'rgba(255,255,255,0.35)', 9);
+
+        // ---- 更新右侧面板 ----
+        document.getElementById('vOuterR').textContent = d.outerR.toFixed(2);
+        document.getElementById('vInnerR').textContent = d.innerR.toFixed(2);
+        document.getElementById('vCellHalf').textContent = d.cellHalf.toFixed(3);
+
+        // ---- 鼠标悬停（使用相机坐标反算）----
         canvas.onmousemove = e => {
           const rect = canvas.getBoundingClientRect();
-          const mx = e.clientX - rect.left;
-          const my = e.clientY - rect.top;
-          const wx = ((mx - canvas.width / 2) / (canvas.width / 2)) * MAX_EXTENT;
-          const wz = ((my - canvas.height / 2) / (canvas.height / 2)) * MAX_EXTENT;
+          const mx = (e.clientX - rect.left) * (canvas.width / rect.width);
+          const my = (e.clientY - rect.top) * (canvas.height / rect.height);
+          const [wx, wz] = c2w(mx, my);
           tip.style.display = 'block';
           tip.style.left = e.clientX + 12 + 'px';
           tip.style.top = e.clientY - 10 + 'px';
-          tip.innerHTML = `世界: X=${wx.toFixed(2)}, Z=${wz.toFixed(2)}`;
+          const gxVal = wx / (p.cellRaw * p.scale) - 0.5;
+          const gzVal = wz / (p.cellRaw * p.scale) - 0.5;
+          tip.innerHTML = `世界: X=${wx.toFixed(2)}, Z=${wz.toFixed(2)}<br>网格: gx=${gxVal.toFixed(2)}, gz=${gzVal.toFixed(2)}`;
         };
         canvas.onmouseleave = () => {
           tip.style.display = 'none';
         };
       }
 
-      draw();
+      // ---- 初始绘制 ----
+      // 尺寸已在 resizeCanvas 中通过 setTimeout 触发，draw() 会在其中调用
+      // 但为了防止空白，先调一次（此时 canvas 可能还是默认尺寸，后续 resize 会覆盖）
+      setTimeout(() => {
+        if (canvas.width === 0 || canvas.height === 0) resizeCanvas();
+      }, 50);
     </script>
   </body>
 </html>
