@@ -21,7 +21,7 @@
       }
       h1 {
         font-size: 22px;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         color: #f7c948;
       }
       .subtitle {
@@ -29,22 +29,31 @@
         color: #888;
         margin-bottom: 16px;
       }
+      .section-title {
+        font-size: 16px;
+        color: #f7c948;
+        margin-bottom: 10px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+        padding-bottom: 6px;
+      }
       .container {
         display: flex;
-        gap: 24px;
+        gap: 20px;
         flex-wrap: wrap;
         justify-content: center;
       }
       .panel {
         background: #16213e;
         border-radius: 12px;
-        padding: 16px;
+        padding: 14px;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
       }
       canvas {
         display: block;
         border-radius: 8px;
       }
+      /* 控制面板 */
       .controls {
         display: flex;
         flex-direction: column;
@@ -64,10 +73,19 @@
         font-weight: bold;
         font-size: 15px;
       }
+      .controls select {
+        width: 100%;
+        padding: 6px 8px;
+        background: #0f3460;
+        color: #eee;
+        border: 1px solid #333;
+        border-radius: 6px;
+        font-size: 13px;
+      }
       .legend {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: 5px;
         font-size: 13px;
         margin-top: 4px;
       }
@@ -77,19 +95,19 @@
         gap: 10px;
       }
       .legend-item .dot {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         border-radius: 4px;
         flex-shrink: 0;
       }
       .formula-box {
         background: #0f3460;
         border-radius: 8px;
-        padding: 10px 14px;
+        padding: 8px 12px;
         font-family: 'Courier New', monospace;
-        font-size: 13px;
-        line-height: 1.6;
-        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.5;
+        margin-top: 6px;
       }
       .formula-box .highlight {
         color: #f7c948;
@@ -111,8 +129,8 @@
       .note {
         font-size: 12px;
         color: #888;
-        margin-top: 12px;
-        max-width: 860px;
+        margin-top: 10px;
+        max-width: 1020px;
         text-align: center;
         line-height: 1.7;
       }
@@ -122,12 +140,111 @@
         border-radius: 4px;
         font-size: 12px;
       }
+      .cwrap {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      /* CCW / CW 标记 */
+      .dir-tag {
+        position: absolute;
+        font-size: 13px;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 6px;
+      }
     </style>
   </head>
   <body>
     <h1>🔄 为什么用 <code>-lx</code>？</h1>
-    <p class="subtitle">Three.js XZ 平面中的顺时针旋转矩阵可视化</p>
+    <p class="subtitle">从标准 XY 到 Three.js XZ：逆时针如何变成顺时针</p>
 
+    <!-- ======================================================== -->
+    <!-- 第一行：坐标系对比（CCW → CW）                           -->
+    <!-- ======================================================== -->
+    <div class="section-title">📐 坐标系对比：标准 XY vs Three.js XZ</div>
+    <div class="container" style="margin-bottom: 14px">
+      <div class="panel" style="position: relative">
+        <div
+          style="
+            text-align: center;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #2ecc71;
+          "
+        >
+          📐 标准 XY 坐标系（Y ↑）→ CCW
+        </div>
+        <canvas id="cXY" width="380" height="380"></canvas>
+      </div>
+      <div class="panel" style="position: relative">
+        <div
+          style="
+            text-align: center;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #f7c948;
+          "
+        >
+          🔄 翻转 Y 轴 → Y 向下（镜像）
+        </div>
+        <canvas id="cMirror" width="380" height="380"></canvas>
+      </div>
+      <div class="panel" style="position: relative">
+        <div
+          style="
+            text-align: center;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #e74c3c;
+          "
+        >
+          📐 Three.js XZ 平面（Z ↓）→ CW
+        </div>
+        <canvas id="cXZ" width="380" height="380"></canvas>
+      </div>
+
+      <!-- 右侧对比公式 -->
+      <div class="panel" style="min-width: 240px">
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #f7c948">
+          旋转矩阵推导
+        </div>
+        <div class="formula-box" style="font-size: 13px">
+          <div style="color: #aaa">标准 CCW (XY 坐标系):</div>
+          <div style="margin: 4px 0 6px">
+            x' = x·cosθ <span style="color: #e74c3c">-</span> y·sinθ<br />
+            y' = x·sinθ <span style="color: #2ecc71">+</span> y·cosθ
+          </div>
+          <div style="color: #aaa">📌 Y 取反 (y' = -y) 代入:</div>
+          <div style="margin: 4px 0 6px">
+            x' = x·cosθ <span class="correct">+</span> y·sinθ<br />
+            z' = <span class="correct">-x·sinθ</span> + y·cosθ &nbsp;
+            <span style="color: #888">(z = -y)</span>
+          </div>
+          <div style="color: #aaa">代入 (lx, 0):</div>
+          <div style="margin: 4px 0">
+            wx = cx + lx·cosθ<br />
+            wz = cz <span class="correct">+ (-lx)·sinθ</span>
+          </div>
+          <div style="border-top: 1px solid #333; padding-top: 6px">
+            <span style="color: #f7c948">✅ 关键:</span> Y 取反后,<br />
+            <span style="color: #e74c3c">"- y·sinθ"</span> →
+            <span class="correct">"+ y·sinθ"</span> (X分量)<br />
+            <span class="correct">"- x·sinθ"</span> 出现在 Z 分量!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 第二行：墙壁旋转对比                                      -->
+    <!-- ======================================================== -->
+    <div class="section-title">🏎️ 墙壁旋转对比</div>
     <div class="container">
       <!-- 左侧：正确版本 -->
       <div class="panel">
@@ -136,12 +253,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
           "
         >
           <span class="tag-correct">✅ 用了 -lx（正确）</span>
           <span style="color: #888; font-size: 12px"
-            >wx = cx + lx·cosθ &nbsp; | &nbsp; wz = cz <span class="correct">- lx·sinθ</span></span
+            >wz = cz <span class="correct">- lx·sinθ</span></span
           >
         </div>
         <canvas id="cCorrect" width="500" height="500"></canvas>
@@ -154,12 +271,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
           "
         >
           <span class="tag-wrong">❌ 没加负号（错误）</span>
           <span style="color: #888; font-size: 12px"
-            >wx = cx + lx·cosθ &nbsp; | &nbsp; wz = cz <span class="wrong">+ lx·sinθ</span></span
+            >wz = cz <span class="wrong">+ lx·sinθ</span></span
           >
         </div>
         <canvas id="cWrong" width="500" height="500"></canvas>
@@ -168,35 +285,22 @@
       <!-- 控制面板 -->
       <div class="panel controls">
         <div>
-          <label>旋转角度 <span style="color: #f7c948; font-weight: bold">θ</span></label>
+          <label>旋转角度 θ</label>
           <input type="range" id="angleSlider" min="0" max="360" value="45" step="1" />
           <div style="display: flex; justify-content: space-between">
             <span class="val" id="angleDisplay">45°</span>
             <span style="color: #888; font-size: 12px">(0° ~ 360°)</span>
           </div>
         </div>
-
         <div>
-          <label>赛道单元格朝向编码</label>
-          <select
-            id="orientSelect"
-            style="
-              width: 100%;
-              padding: 6px 8px;
-              background: #0f3460;
-              color: #eee;
-              border: 1px solid #333;
-              border-radius: 6px;
-              font-size: 13px;
-            "
-          >
+          <label>赛道朝向编码</label>
+          <select id="orientSelect">
             <option value="0">0 → 0° (朝右)</option>
             <option value="16">16 → 90° (朝下)</option>
             <option value="10">10 → 180° (朝左)</option>
             <option value="22">22 → 270° (朝上)</option>
           </select>
         </div>
-
         <div class="legend">
           <div class="legend-item">
             <div class="dot" style="background: #2ecc71"></div>
@@ -209,7 +313,7 @@
           <div class="legend-item">
             <div
               class="dot"
-              style="background: #555; border: 2px dashed #888; width: 12px; height: 12px"
+              style="background: transparent; border: 2px dashed #888; width: 12px; height: 12px"
             ></div>
             单元格范围
           </div>
@@ -218,90 +322,308 @@
               class="dot"
               style="background: #f7c948; border-radius: 50%; width: 12px; height: 12px"
             ></div>
-            单元格中心 (cx, cz)
+            单元格中心
           </div>
         </div>
-
         <div class="formula-box">
-          <div>旋转矩阵（顺时针）:</div>
+          <div>顺时针旋转矩阵:</div>
           <div style="margin-top: 4px">
-            x' = x·cosθ <span class="correct">+</span> z·sinθ<br />
+            x' = x·cosθ + z·sinθ<br />
             z' = <span class="correct">-x·sinθ</span> + z·cosθ
           </div>
           <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
             代入 (lx, 0):<br />
             wx = cx + lx·cosθ<br />
-            wz = cz <span class="correct">+ (-lx)·sinθ</span><br />
-            <span style="color: #888; font-size: 12px"
-              >→ 所以 wz 中要用 <span class="highlight">-lx</span></span
-            >
+            wz = cz + <span class="highlight">(-lx)</span>·sinθ
           </div>
         </div>
       </div>
     </div>
 
     <div class="note">
-      <strong>为什么？</strong>
-      Three.js 的 XZ 平面俯视图下，Z 轴指向屏幕下方，导致标准的「逆时针旋转矩阵」变成了
-      <strong>顺时针</strong>形式： X 分量中 <code>+ z·sinθ</code>，Z 分量中 <code>- x·sinθ</code>。
-      墙壁只在 X 方向有偏移 lx（Z 方向为 0），代入后 Z 分量变为
-      <code>-lx·sinθ</code>，所以代码里写的是 <code>+ -lx * sr * S</code>。<br />
-      <strong>对比两边的右墙方向：</strong
-      >正确版本随单元格一起旋转（朝向赛道外侧），错误版本旋转方向反了（朝向赛道内侧）。
+      <strong>核心原理：</strong> 标准 2D 旋转矩阵使用 Y ↑ 坐标系（逆时针 CCW）。 Three.js 俯视图用
+      XZ 平面（Z ↓），相当于把 Y 轴取反。 对 Y 取反后代入 CCW
+      矩阵，<strong>自然</strong>就得到了顺时针 (CW) 形式的矩阵： X 分量的
+      <code>- y·sinθ</code> 变号成 <code>+ z·sinθ</code>， Y 分量的 <code>+ x·sinθ</code> 变号成
+      <code>- x·sinθ</code> 移到 Z 分量。 所以墙壁的 Z 坐标要用 <code>-lx·sinθ</code>，代码写的是
+      <code>+ -lx * sr * S</code>。
     </div>
 
     <script>
       // ============================================================
-      // 绘图参数
+      // 参数
       // ============================================================
-      const WALL_X = 4.75; // 墙壁偏移量（同 Physics.ts）
-      const CELL_HALF = 9.99 / 2; // 单元格半边长（同 CELL_RAW/2）
-      const SCALE = 18; // 像素/单位缩放
+      const WALL_X = 4.75;
+      const CELL_HALF = 9.99 / 2;
+      const SCALE = 18;
 
       // ============================================================
-      // 获取 DOM
+      // DOM
       // ============================================================
-      const cCorrect = document.getElementById('cCorrect');
-      const cWrong = document.getElementById('cWrong');
-      const ctxRight = cCorrect.getContext('2d');
-      const ctxWrong = cWrong.getContext('2d');
+      const ctxXY = document.getElementById('cXY').getContext('2d');
+      const ctxMir = document.getElementById('cMirror').getContext('2d');
+      const ctxXZ = document.getElementById('cXZ').getContext('2d');
+      const ctxRight = document.getElementById('cCorrect').getContext('2d');
+      const ctxWrong = document.getElementById('cWrong').getContext('2d');
       const slider = document.getElementById('angleSlider');
       const angleDisp = document.getElementById('angleDisplay');
       const orientSel = document.getElementById('orientSelect');
 
       // ============================================================
-      // 将网格坐标 (gx,gz) 映射到 canvas 像素 (px,py)
-      // canvas 原点在中心，X 向右，Z 向下（与 Three.js 一致）
+      // 坐标工具
       // ============================================================
-      function toPixel(x, z) {
-        return [250 + x * SCALE, 250 + z * SCALE];
+      function toPixel(x, z, cx, cy, sc) {
+        return [cx + x * sc, cy + z * sc];
       }
 
       // ============================================================
-      // 绘制一个 canvas 的内容
+      // 画箭头
       // ============================================================
-      function draw(ctx, useNegativeLx, angleDeg) {
-        const W = 500,
-          H = 500;
-        ctx.clearRect(0, 0, W, H);
+      function drawArrow(ctx, fromX, fromY, toX, toY, color, lw) {
+        const a = Math.atan2(toY - fromY, toX - fromX);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = lw || 2;
+        ctx.beginPath();
+        ctx.moveTo(fromX, fromY);
+        ctx.lineTo(toX, toY);
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(toX, toY);
+        ctx.lineTo(toX - 8 * Math.cos(a - 0.4), toY - 8 * Math.sin(a - 0.4));
+        ctx.lineTo(toX - 8 * Math.cos(a + 0.4), toY - 8 * Math.sin(a + 0.4));
+        ctx.closePath();
+        ctx.fill();
+      }
 
-        // ---- 背景网格 ----
+      // ============================================================
+      // 画坐标系背景
+      // ============================================================
+      function drawCoordBackground(ctx, W, H, sc, cx, cy, xLabel, yLabel, yUp) {
+        // 网格
         ctx.strokeStyle = '#2a2a4a';
         ctx.lineWidth = 0.5;
         for (let i = -12; i <= 12; i++) {
-          const [px] = toPixel(i, 0);
+          const [px] = toPixel(i, 0, cx, cy, sc);
           ctx.beginPath();
           ctx.moveTo(px, 0);
           ctx.lineTo(px, H);
           ctx.stroke();
-          const [, pz] = toPixel(0, i);
+          const [, pz] = toPixel(0, i, cx, cy, sc);
           ctx.beginPath();
           ctx.moveTo(0, pz);
           ctx.lineTo(W, pz);
           ctx.stroke();
         }
+        // 坐标轴
+        ctx.strokeStyle = '#777';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(0, cy);
+        ctx.lineTo(W, cy);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(cx, 0);
+        ctx.lineTo(cx, H);
+        ctx.stroke();
+        // 轴标签
+        ctx.fillStyle = '#aaa';
+        ctx.font = '13px sans-serif';
+        ctx.fillText(xLabel + ' →', W - 35, cy - 6);
+        ctx.fillText(yLabel + (yUp ? ' ↑' : ' ↓'), cx + 6, yUp ? 16 : H - 6);
+      }
 
-        // ---- 坐标轴 ----
+      // ============================================================
+      // 绘制坐标系对比的三个画布
+      // ============================================================
+      function drawCoords(angleDeg) {
+        const rad = (angleDeg * Math.PI) / 180;
+        const cr = Math.cos(rad),
+          sr = Math.sin(rad);
+        const R = 4; // 单位向量长度（格子数）
+
+        // ---- 辅助：在某个坐标系中画旋转点 ----
+        function plotRotation(ctx, label, W, H, sc, cx, cy, yUp, mat) {
+          drawCoordBackground(ctx, W, H, sc, cx, cy, 'X', yUp ? 'Y' : 'Z', yUp);
+          const unit = R * sc;
+
+          // 原始点 (R, 0)
+          let [ox, oy] = toPixel(R, 0, cx, cy, sc);
+          ctx.beginPath();
+          ctx.arc(ox, oy, 5, 0, Math.PI * 2);
+          ctx.fillStyle = '#555';
+          ctx.fill();
+
+          // 旋转后的点
+          let rx, ry;
+          if (mat === 'ccw') {
+            // 标准 CCW: x' = x·cosθ - y·sinθ,  y' = x·sinθ + y·cosθ
+            // 代入 (R, 0): x'=R·cosθ, y'=R·sinθ
+            rx = cx + R * cr * sc;
+            // Y 向上，所以减去
+            ry = cy - R * sr * sc;
+          } else if (mat === 'mirror') {
+            // 镜像：先 CCW 旋转，再把 Y 取反
+            const wx = R * cr; // CCW x'
+            const wy = R * sr; // CCW y'
+            rx = cx + wx * sc;
+            ry = cy + wy * sc; // Y 取反 → 减变加
+          } else {
+            // CW: x' = x·cosθ + z·sinθ,  z' = -x·sinθ + z·cosθ
+            // 代入 (R, 0): x'=R·cosθ, z'=-R·sinθ
+            rx = cx + R * cr * sc;
+            ry = cy + R * sr * sc; // 注意这里的 sr 在 CW 公式中是负的
+          }
+
+          // 从原点到旋转点的连线
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = '#f7c948';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(rx, ry);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 旋转点
+          ctx.beginPath();
+          ctx.arc(rx, ry, 6, 0, Math.PI * 2);
+          ctx.fillStyle = '#f7c948';
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText("P'", rx, ry - 14);
+
+          // 原始点标签
+          ctx.fillStyle = '#888';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('(R,0)', ox, oy + 18);
+
+          // 旋转弧线
+          ctx.strokeStyle = '#f7c94840';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          const steps = 40;
+          for (let i = 0; i <= steps; i++) {
+            const t = (i / steps) * rad;
+            let px, py;
+            if (mat === 'ccw') {
+              px = cx + R * Math.cos(t) * sc;
+              py = cy - R * Math.sin(t) * sc;
+            } else if (mat === 'mirror') {
+              px = cx + R * Math.cos(t) * sc;
+              py = cy + R * Math.sin(t) * sc;
+            } else {
+              px = cx + R * Math.cos(t) * sc;
+              py = cy + R * Math.sin(t) * sc; // sin(t) 因为 z = -y, 在标准 CCW 中 y 是 R·sin(t)，取反变负后 +R·sin(t) 实际是 -R·sin(t)
+            }
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+
+          // 角度标记
+          ctx.fillStyle = '#f7c94880';
+          ctx.font = '12px sans-serif';
+          const mid = rad / 2;
+          let lx, ly;
+          if (mat === 'ccw') {
+            lx = cx + R * 0.6 * Math.cos(mid) * sc;
+            ly = cy - R * 0.6 * Math.sin(mid) * sc;
+          } else if (mat === 'mirror') {
+            lx = cx + R * 0.6 * Math.cos(mid) * sc;
+            ly = cy + R * 0.6 * Math.sin(mid) * sc;
+          } else {
+            lx = cx + R * 0.6 * Math.cos(mid) * sc;
+            ly = cy + R * 0.6 * Math.sin(mid) * sc;
+          }
+          ctx.fillText('θ=' + angleDeg + '°', lx - 8, ly - 6);
+
+          // 画完旋转方向箭头
+          const arrowR = R * 0.8 * sc;
+          const aStart = 0.2,
+            aEnd = rad - 0.2;
+          const stepCount = 20;
+          for (let i = 0; i < stepCount; i++) {
+            const t = aStart + (i / stepCount) * (aEnd - aStart);
+            const dt = (aEnd - aStart) / stepCount;
+            let x1, y1, x2, y2;
+            if (mat === 'ccw') {
+              x1 = cx + ((arrowR * Math.cos(t)) / R) * 4;
+              y1 = cy - ((arrowR * Math.sin(t)) / R) * 4;
+              x2 = cx + ((arrowR * Math.cos(t + dt)) / R) * 4;
+              y2 = cy - ((arrowR * Math.sin(t + dt)) / R) * 4;
+            } else {
+              x1 = cx + ((arrowR * Math.cos(t)) / R) * 4;
+              y1 = cy + ((arrowR * Math.sin(t)) / R) * 4;
+              x2 = cx + ((arrowR * Math.cos(t + dt)) / R) * 4;
+              y2 = cy + ((arrowR * Math.sin(t + dt)) / R) * 4;
+            }
+            if (i % 4 === 0) {
+              ctx.fillStyle = mat === 'ccw' ? '#2ecc71' : '#e74c3c';
+              ctx.beginPath();
+              ctx.arc(x2, y2, 2.5, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+
+          // 旋转方向标签
+          ctx.fillStyle = mat === 'ccw' ? '#2ecc71' : '#e74c3c';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          if (mat === 'ccw') ctx.fillText('⟲ CCW 逆时针', cx, 22);
+          else if (mat === 'mirror') ctx.fillText('🪞 Y 翻转 → 方向反转', cx, 22);
+          else ctx.fillText('⟳ CW 顺时针', cx, 22);
+
+          // 公式
+          ctx.fillStyle = '#888';
+          ctx.font = '11px "Courier New", monospace';
+          ctx.textAlign = 'left';
+          let f;
+          if (mat === 'ccw') f = "x'=x·cos-y·sin,  y'=x·sin+y·cos";
+          else if (mat === 'mirror') f = "Y取反: y→-z,  x'=x·cos+z·sin,  z'= -x·sin+z·cos";
+          else f = "x'=x·cos+z·sin,  z'= -x·sin+z·cos";
+          ctx.fillText(f, 8, H - 8);
+        }
+
+        const W = 380,
+          H = 380,
+          sc = 36,
+          cx = 190,
+          cy = 190;
+        // 1) 标准 XY (CCW)
+        plotRotation(ctxXY, 'XY', W, H, sc, cx, cy, true, 'ccw');
+        // 2) Y 取反（镜像）
+        plotRotation(ctxMir, 'Mirror', W, H, sc, cx, cy, false, 'mirror');
+        // 3) Three.js XZ (CW)
+        plotRotation(ctxXZ, 'XZ', W, H, sc, cx, cy, false, 'cw');
+      }
+
+      // ============================================================
+      // 绘制墙壁画布（原有逻辑增强）
+      // ============================================================
+      function drawWalls(ctx, useNegativeLx, angleDeg) {
+        const W = 500,
+          H = 500;
+        ctx.clearRect(0, 0, W, H);
+
+        // 网格
+        ctx.strokeStyle = '#2a2a4a';
+        ctx.lineWidth = 0.5;
+        for (let i = -12; i <= 12; i++) {
+          const [px] = toPixel(i, 0, 250, 250, SCALE);
+          ctx.beginPath();
+          ctx.moveTo(px, 0);
+          ctx.lineTo(px, H);
+          ctx.stroke();
+          const [, pz] = toPixel(0, i, 250, 250, SCALE);
+          ctx.beginPath();
+          ctx.moveTo(0, pz);
+          ctx.lineTo(W, pz);
+          ctx.stroke();
+        }
+        // 坐标轴
         ctx.strokeStyle = '#555';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
@@ -314,24 +636,19 @@
         ctx.lineTo(250, H);
         ctx.stroke();
         ctx.setLineDash([]);
-
-        // ---- 轴标签 ----
         ctx.fillStyle = '#888';
         ctx.font = '12px sans-serif';
         ctx.fillText('X →', W - 30, 244);
         ctx.fillText('Z ↓', 256, 16);
 
-        // ============================================================
-        // 单元格在世界坐标中的中心
-        // ============================================================
         const cx = 0,
-          cz = 0; // 让单元格居中在原点，方便观察旋转
-        const rad = (angleDeg * Math.PI) / 180;
-        const cr = Math.cos(rad),
+          cz = 0,
+          rad = (angleDeg * Math.PI) / 180,
+          cr = Math.cos(rad),
           sr = Math.sin(rad);
-
-        // ---- 绘制单元格范围（虚线框） ----
         const half = CELL_HALF;
+
+        // 单元格虚线框（也按 CW 旋转）
         const corners = [
           [-half, -half],
           [half, -half],
@@ -343,95 +660,63 @@
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
         for (let i = 0; i <= 4; i++) {
-          const idx = i % 4;
-          // 把单元格四个角也按相同角度旋转，显示单元格朝向
-          let [lx, lz] = corners[idx];
-          let wx = cx + lx * cr + lz * sr;
-          let wz = cz - lx * sr + lz * cr;
-          let [px, py] = toPixel(wx, wz);
+          const [lx, lz] = corners[i % 4];
+          const wx = cx + lx * cr + lz * sr;
+          const wz = cz - lx * sr + lz * cr;
+          const [px, py] = toPixel(wx, wz, 250, 250, SCALE);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         }
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // ---- 画出方向箭头（表示单元格朝向） ----
+        // 朝向箭头
         {
-          const arrowLen = half * 0.7;
-          let tipX = cx + arrowLen * cr;
-          let tipZ = cz - arrowLen * sr; // 注意负号：顺时针旋转
-          let [sx, sy] = toPixel(cx, cz);
-          let [ex, ey] = toPixel(tipX, tipZ);
-          ctx.strokeStyle = '#f7c948';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(sx, sy);
-          ctx.lineTo(ex, ey);
-          ctx.stroke();
-          // 箭头三角形
-          let angle = Math.atan2(ey - sy, ex - sx);
-          ctx.beginPath();
-          ctx.moveTo(ex, ey);
-          ctx.lineTo(ex - 10 * Math.cos(angle - 0.4), ey - 10 * Math.sin(angle - 0.4));
-          ctx.lineTo(ex - 10 * Math.cos(angle + 0.4), ey - 10 * Math.sin(angle + 0.4));
-          ctx.closePath();
-          ctx.fillStyle = '#f7c948';
-          ctx.fill();
+          const al = half * 0.7;
+          const tx = cx + al * cr,
+            tz = cz - al * sr;
+          const [sx, sy] = toPixel(cx, cz, 250, 250, SCALE);
+          const [ex, ey] = toPixel(tx, tz, 250, 250, SCALE);
+          drawArrow(ctx, sx, sy, ex, ey, '#f7c948', 2);
         }
 
-        // ---- 中心点 ----
-        let [pcx, pcy] = toPixel(cx, cz);
+        // 中心点
+        const [pcx, pcy] = toPixel(cx, cz, 250, 250, SCALE);
         ctx.beginPath();
         ctx.arc(pcx, pcy, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#f7c948';
         ctx.fill();
 
-        // ============================================================
-        // 绘制左右墙壁
-        // ============================================================
+        // 左右墙壁
         const wallColor = ['#2ecc71', '#3498db'];
         const wallLabel = ['左墙 (lx=-WALL_X)', '右墙 (lx=+WALL_X)'];
-
         for (const side of [-1, 1]) {
           const lx = side * WALL_X;
           let wx, wz;
-
           if (useNegativeLx) {
-            // 正确版本（带 -lx）
             wx = cx + lx * cr;
-            wz = cz + -lx * sr; // ← 这里就是 -lx 的来源
+            wz = cz + -lx * sr;
           } else {
-            // 错误版本（没有负号）
             wx = cx + lx * cr;
-            wz = cz + lx * sr; // ← 没有负号，旋转方向相反
+            wz = cz + lx * sr;
           }
 
-          let [px, py] = toPixel(wx, wz);
+          const [px, py] = toPixel(wx, wz, 250, 250, SCALE);
           const idx = side === -1 ? 0 : 1;
-
-          // ---- 墙壁矩形（旋转后） ----
-          const wallHalfLen = CELL_HALF;
-          const wallHalfThick = 3; // 像素厚度
-
-          // 墙壁的局部四个角：沿 X 方向延伸，Z 方向为厚度
-          const localCorners = [
-            [side * wallHalfThick, -wallHalfLen],
-            [side * wallHalfThick, wallHalfLen],
-            [-side * wallHalfThick, wallHalfLen],
-            [-side * wallHalfThick, -wallHalfLen],
+          const hThick = 3,
+            hLen = CELL_HALF;
+          const lc = [
+            [side * hThick, -hLen],
+            [side * hThick, hLen],
+            [-side * hThick, hLen],
+            [-side * hThick, -hLen],
           ];
-
           ctx.beginPath();
           for (let i = 0; i <= 4; i++) {
-            const [lcx, lcz] = localCorners[i % 4];
-            // 用相同的顺时针旋转矩阵旋转墙壁的每个顶点
-            // 注意：墙壁本身的旋转也要和单元格保持一致
-            let wwx = lcx * cr + lcz * sr;
-            let wwz = -lcx * sr + lcz * cr;
-            // 加上墙壁中心位置（已经旋转过的）
-            const finalX = wx + wwx;
-            const finalZ = wz + wwz;
-            let [pwx, pwy] = toPixel(finalX, finalZ);
+            const [lcx, lcz] = lc[i % 4];
+            const wwx = lcx * cr + lcz * sr,
+              wwz = -lcx * sr + lcz * cr;
+            const [pwx, pwy] = toPixel(wx + wwx, wz + wwz, 250, 250, SCALE);
             if (i === 0) ctx.moveTo(pwx, pwy);
             else ctx.lineTo(pwx, pwy);
           }
@@ -442,13 +727,11 @@
           ctx.lineWidth = 2;
           ctx.stroke();
 
-          // ---- 标签 ----
           ctx.fillStyle = wallColor[idx];
           ctx.font = 'bold 13px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(wallLabel[idx], px, py - 18);
 
-          // ---- 从中心到墙壁的连线 ----
           ctx.strokeStyle = wallColor[idx] + '40';
           ctx.lineWidth = 1;
           ctx.setLineDash([3, 4]);
@@ -457,53 +740,46 @@
           ctx.lineTo(px, py);
           ctx.stroke();
           ctx.setLineDash([]);
-
-          // ---- 墙壁中心点 ----
           ctx.beginPath();
           ctx.arc(px, py, 4, 0, Math.PI * 2);
           ctx.fillStyle = wallColor[idx];
           ctx.fill();
         }
 
-        // ============================================================
-        // 显示公式文本
-        // ============================================================
+        // 公式文本
         ctx.fillStyle = '#888';
         ctx.font = '13px "Courier New", monospace';
         ctx.textAlign = 'left';
-        let formula;
-        if (useNegativeLx) {
-          formula = 'wz = cz + (-lx)·sinθ  ✓';
-        } else {
-          formula = 'wz = cz + (+lx)·sinθ  ✗';
-        }
-        ctx.fillText('公式: ' + formula, 12, 22);
+        ctx.fillText(
+          useNegativeLx ? '公式: wz = cz + (-lx)·sinθ  ✓' : '公式: wz = cz + (+lx)·sinθ  ✗',
+          12,
+          22
+        );
         ctx.fillText('θ = ' + angleDeg + '°', 12, 42);
+        // CW / CCW 标记
+        ctx.fillStyle = useNegativeLx ? '#2ecc71' : '#e74c3c';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(useNegativeLx ? '⟳ CW 正确' : '⟲ 错误方向', W - 12, 42);
       }
 
       // ============================================================
-      // 更新绘制
+      // 更新
       // ============================================================
       function update() {
         const angleDeg = parseFloat(slider.value);
         angleDisp.textContent = angleDeg + '°';
-        draw(ctxRight, true, angleDeg); // 正确：用了 -lx
-        draw(ctxWrong, false, angleDeg); // 错误：没用 -lx
+        drawCoords(angleDeg);
+        drawWalls(ctxRight, true, angleDeg);
+        drawWalls(ctxWrong, false, angleDeg);
       }
 
-      // ============================================================
-      // 事件绑定
-      // ============================================================
       slider.addEventListener('input', update);
-
       orientSel.addEventListener('change', () => {
-        const val = parseInt(orientSel.value);
         const degMap = { 0: 0, 16: 90, 10: 180, 22: 270 };
-        slider.value = degMap[val] || 0;
+        slider.value = degMap[parseInt(orientSel.value)] || 0;
         update();
       });
-
-      // 初始绘制
       update();
     </script>
   </body>
