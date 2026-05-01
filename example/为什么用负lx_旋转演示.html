@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>为什么用 -lx？—— 顺时针旋转矩阵可视化</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #1a1a2e;
+        color: #eee;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+      }
+      h1 {
+        font-size: 22px;
+        margin-bottom: 6px;
+        color: #f7c948;
+      }
+      .subtitle {
+        font-size: 14px;
+        color: #888;
+        margin-bottom: 16px;
+      }
+      .container {
+        display: flex;
+        gap: 24px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .panel {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+      }
+      canvas {
+        display: block;
+        border-radius: 8px;
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 200px;
+      }
+      .controls label {
+        font-size: 13px;
+        color: #aaa;
+      }
+      .controls input[type='range'] {
+        width: 100%;
+        accent-color: #f7c948;
+      }
+      .controls .val {
+        color: #f7c948;
+        font-weight: bold;
+        font-size: 15px;
+      }
+      .legend {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .legend-item .dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+      .formula-box {
+        background: #0f3460;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 8px;
+      }
+      .formula-box .highlight {
+        color: #f7c948;
+      }
+      .formula-box .wrong {
+        color: #e74c3c;
+      }
+      .formula-box .correct {
+        color: #2ecc71;
+      }
+      .tag-correct {
+        color: #2ecc71;
+        font-weight: bold;
+      }
+      .tag-wrong {
+        color: #e74c3c;
+        font-weight: bold;
+      }
+      .note {
+        font-size: 12px;
+        color: #888;
+        margin-top: 12px;
+        max-width: 860px;
+        text-align: center;
+        line-height: 1.7;
+      }
+      .note code {
+        background: #0f3460;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔄 为什么用 <code>-lx</code>？</h1>
+    <p class="subtitle">Three.js XZ 平面中的顺时针旋转矩阵可视化</p>
+
+    <div class="container">
+      <!-- 左侧：正确版本 -->
+      <div class="panel">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        >
+          <span class="tag-correct">✅ 用了 -lx（正确）</span>
+          <span style="color: #888; font-size: 12px"
+            >wx = cx + lx·cosθ &nbsp; | &nbsp; wz = cz <span class="correct">- lx·sinθ</span></span
+          >
+        </div>
+        <canvas id="cCorrect" width="500" height="500"></canvas>
+      </div>
+
+      <!-- 右侧：错误版本 -->
+      <div class="panel">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+          "
+        >
+          <span class="tag-wrong">❌ 没加负号（错误）</span>
+          <span style="color: #888; font-size: 12px"
+            >wx = cx + lx·cosθ &nbsp; | &nbsp; wz = cz <span class="wrong">+ lx·sinθ</span></span
+          >
+        </div>
+        <canvas id="cWrong" width="500" height="500"></canvas>
+      </div>
+
+      <!-- 控制面板 -->
+      <div class="panel controls">
+        <div>
+          <label>旋转角度 <span style="color: #f7c948; font-weight: bold">θ</span></label>
+          <input type="range" id="angleSlider" min="0" max="360" value="45" step="1" />
+          <div style="display: flex; justify-content: space-between">
+            <span class="val" id="angleDisplay">45°</span>
+            <span style="color: #888; font-size: 12px">(0° ~ 360°)</span>
+          </div>
+        </div>
+
+        <div>
+          <label>赛道单元格朝向编码</label>
+          <select
+            id="orientSelect"
+            style="
+              width: 100%;
+              padding: 6px 8px;
+              background: #0f3460;
+              color: #eee;
+              border: 1px solid #333;
+              border-radius: 6px;
+              font-size: 13px;
+            "
+          >
+            <option value="0">0 → 0° (朝右)</option>
+            <option value="16">16 → 90° (朝下)</option>
+            <option value="10">10 → 180° (朝左)</option>
+            <option value="22">22 → 270° (朝上)</option>
+          </select>
+        </div>
+
+        <div class="legend">
+          <div class="legend-item">
+            <div class="dot" style="background: #2ecc71"></div>
+            左墙 (lx = -WALL_X)
+          </div>
+          <div class="legend-item">
+            <div class="dot" style="background: #3498db"></div>
+            右墙 (lx = +WALL_X)
+          </div>
+          <div class="legend-item">
+            <div
+              class="dot"
+              style="background: #555; border: 2px dashed #888; width: 12px; height: 12px"
+            ></div>
+            单元格范围
+          </div>
+          <div class="legend-item">
+            <div
+              class="dot"
+              style="background: #f7c948; border-radius: 50%; width: 12px; height: 12px"
+            ></div>
+            单元格中心 (cx, cz)
+          </div>
+        </div>
+
+        <div class="formula-box">
+          <div>旋转矩阵（顺时针）:</div>
+          <div style="margin-top: 4px">
+            x' = x·cosθ <span class="correct">+</span> z·sinθ<br />
+            z' = <span class="correct">-x·sinθ</span> + z·cosθ
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            代入 (lx, 0):<br />
+            wx = cx + lx·cosθ<br />
+            wz = cz <span class="correct">+ (-lx)·sinθ</span><br />
+            <span style="color: #888; font-size: 12px"
+              >→ 所以 wz 中要用 <span class="highlight">-lx</span></span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>为什么？</strong>
+      Three.js 的 XZ 平面俯视图下，Z 轴指向屏幕下方，导致标准的「逆时针旋转矩阵」变成了
+      <strong>顺时针</strong>形式： X 分量中 <code>+ z·sinθ</code>，Z 分量中 <code>- x·sinθ</code>。
+      墙壁只在 X 方向有偏移 lx（Z 方向为 0），代入后 Z 分量变为
+      <code>-lx·sinθ</code>，所以代码里写的是 <code>+ -lx * sr * S</code>。<br />
+      <strong>对比两边的右墙方向：</strong
+      >正确版本随单元格一起旋转（朝向赛道外侧），错误版本旋转方向反了（朝向赛道内侧）。
+    </div>
+
+    <script>
+      // ============================================================
+      // 绘图参数
+      // ============================================================
+      const WALL_X = 4.75; // 墙壁偏移量（同 Physics.ts）
+      const CELL_HALF = 9.99 / 2; // 单元格半边长（同 CELL_RAW/2）
+      const SCALE = 18; // 像素/单位缩放
+
+      // ============================================================
+      // 获取 DOM
+      // ============================================================
+      const cCorrect = document.getElementById('cCorrect');
+      const cWrong = document.getElementById('cWrong');
+      const ctxRight = cCorrect.getContext('2d');
+      const ctxWrong = cWrong.getContext('2d');
+      const slider = document.getElementById('angleSlider');
+      const angleDisp = document.getElementById('angleDisplay');
+      const orientSel = document.getElementById('orientSelect');
+
+      // ============================================================
+      // 将网格坐标 (gx,gz) 映射到 canvas 像素 (px,py)
+      // canvas 原点在中心，X 向右，Z 向下（与 Three.js 一致）
+      // ============================================================
+      function toPixel(x, z) {
+        return [250 + x * SCALE, 250 + z * SCALE];
+      }
+
+      // ============================================================
+      // 绘制一个 canvas 的内容
+      // ============================================================
+      function draw(ctx, useNegativeLx, angleDeg) {
+        const W = 500,
+          H = 500;
+        ctx.clearRect(0, 0, W, H);
+
+        // ---- 背景网格 ----
+        ctx.strokeStyle = '#2a2a4a';
+        ctx.lineWidth = 0.5;
+        for (let i = -12; i <= 12; i++) {
+          const [px] = toPixel(i, 0);
+          ctx.beginPath();
+          ctx.moveTo(px, 0);
+          ctx.lineTo(px, H);
+          ctx.stroke();
+          const [, pz] = toPixel(0, i);
+          ctx.beginPath();
+          ctx.moveTo(0, pz);
+          ctx.lineTo(W, pz);
+          ctx.stroke();
+        }
+
+        // ---- 坐标轴 ----
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, 250);
+        ctx.lineTo(W, 250);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(250, 0);
+        ctx.lineTo(250, H);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ---- 轴标签 ----
+        ctx.fillStyle = '#888';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('X →', W - 30, 244);
+        ctx.fillText('Z ↓', 256, 16);
+
+        // ============================================================
+        // 单元格在世界坐标中的中心
+        // ============================================================
+        const cx = 0,
+          cz = 0; // 让单元格居中在原点，方便观察旋转
+        const rad = (angleDeg * Math.PI) / 180;
+        const cr = Math.cos(rad),
+          sr = Math.sin(rad);
+
+        // ---- 绘制单元格范围（虚线框） ----
+        const half = CELL_HALF;
+        const corners = [
+          [-half, -half],
+          [half, -half],
+          [half, half],
+          [-half, half],
+        ];
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const idx = i % 4;
+          // 把单元格四个角也按相同角度旋转，显示单元格朝向
+          let [lx, lz] = corners[idx];
+          let wx = cx + lx * cr + lz * sr;
+          let wz = cz - lx * sr + lz * cr;
+          let [px, py] = toPixel(wx, wz);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // ---- 画出方向箭头（表示单元格朝向） ----
+        {
+          const arrowLen = half * 0.7;
+          let tipX = cx + arrowLen * cr;
+          let tipZ = cz - arrowLen * sr; // 注意负号：顺时针旋转
+          let [sx, sy] = toPixel(cx, cz);
+          let [ex, ey] = toPixel(tipX, tipZ);
+          ctx.strokeStyle = '#f7c948';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(ex, ey);
+          ctx.stroke();
+          // 箭头三角形
+          let angle = Math.atan2(ey - sy, ex - sx);
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - 10 * Math.cos(angle - 0.4), ey - 10 * Math.sin(angle - 0.4));
+          ctx.lineTo(ex - 10 * Math.cos(angle + 0.4), ey - 10 * Math.sin(angle + 0.4));
+          ctx.closePath();
+          ctx.fillStyle = '#f7c948';
+          ctx.fill();
+        }
+
+        // ---- 中心点 ----
+        let [pcx, pcy] = toPixel(cx, cz);
+        ctx.beginPath();
+        ctx.arc(pcx, pcy, 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#f7c948';
+        ctx.fill();
+
+        // ============================================================
+        // 绘制左右墙壁
+        // ============================================================
+        const wallColor = ['#2ecc71', '#3498db'];
+        const wallLabel = ['左墙 (lx=-WALL_X)', '右墙 (lx=+WALL_X)'];
+
+        for (const side of [-1, 1]) {
+          const lx = side * WALL_X;
+          let wx, wz;
+
+          if (useNegativeLx) {
+            // 正确版本（带 -lx）
+            wx = cx + lx * cr;
+            wz = cz + -lx * sr; // ← 这里就是 -lx 的来源
+          } else {
+            // 错误版本（没有负号）
+            wx = cx + lx * cr;
+            wz = cz + lx * sr; // ← 没有负号，旋转方向相反
+          }
+
+          let [px, py] = toPixel(wx, wz);
+          const idx = side === -1 ? 0 : 1;
+
+          // ---- 墙壁矩形（旋转后） ----
+          const wallHalfLen = CELL_HALF;
+          const wallHalfThick = 3; // 像素厚度
+
+          // 墙壁的局部四个角：沿 X 方向延伸，Z 方向为厚度
+          const localCorners = [
+            [side * wallHalfThick, -wallHalfLen],
+            [side * wallHalfThick, wallHalfLen],
+            [-side * wallHalfThick, wallHalfLen],
+            [-side * wallHalfThick, -wallHalfLen],
+          ];
+
+          ctx.beginPath();
+          for (let i = 0; i <= 4; i++) {
+            const [lcx, lcz] = localCorners[i % 4];
+            // 用相同的顺时针旋转矩阵旋转墙壁的每个顶点
+            // 注意：墙壁本身的旋转也要和单元格保持一致
+            let wwx = lcx * cr + lcz * sr;
+            let wwz = -lcx * sr + lcz * cr;
+            // 加上墙壁中心位置（已经旋转过的）
+            const finalX = wx + wwx;
+            const finalZ = wz + wwz;
+            let [pwx, pwy] = toPixel(finalX, finalZ);
+            if (i === 0) ctx.moveTo(pwx, pwy);
+            else ctx.lineTo(pwx, pwy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = wallColor[idx] + '60';
+          ctx.fill();
+          ctx.strokeStyle = wallColor[idx];
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          // ---- 标签 ----
+          ctx.fillStyle = wallColor[idx];
+          ctx.font = 'bold 13px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(wallLabel[idx], px, py - 18);
+
+          // ---- 从中心到墙壁的连线 ----
+          ctx.strokeStyle = wallColor[idx] + '40';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 4]);
+          ctx.beginPath();
+          ctx.moveTo(pcx, pcy);
+          ctx.lineTo(px, py);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // ---- 墙壁中心点 ----
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fillStyle = wallColor[idx];
+          ctx.fill();
+        }
+
+        // ============================================================
+        // 显示公式文本
+        // ============================================================
+        ctx.fillStyle = '#888';
+        ctx.font = '13px "Courier New", monospace';
+        ctx.textAlign = 'left';
+        let formula;
+        if (useNegativeLx) {
+          formula = 'wz = cz + (-lx)·sinθ  ✓';
+        } else {
+          formula = 'wz = cz + (+lx)·sinθ  ✗';
+        }
+        ctx.fillText('公式: ' + formula, 12, 22);
+        ctx.fillText('θ = ' + angleDeg + '°', 12, 42);
+      }
+
+      // ============================================================
+      // 更新绘制
+      // ============================================================
+      function update() {
+        const angleDeg = parseFloat(slider.value);
+        angleDisp.textContent = angleDeg + '°';
+        draw(ctxRight, true, angleDeg); // 正确：用了 -lx
+        draw(ctxWrong, false, angleDeg); // 错误：没用 -lx
+      }
+
+      // ============================================================
+      // 事件绑定
+      // ============================================================
+      slider.addEventListener('input', update);
+
+      orientSel.addEventListener('change', () => {
+        const val = parseInt(orientSel.value);
+        const degMap = { 0: 0, 16: 90, 10: 180, 22: 270 };
+        slider.value = degMap[val] || 0;
+        update();
+      });
+
+      // 初始绘制
+      update();
+    </script>
+  </body>
+</html>

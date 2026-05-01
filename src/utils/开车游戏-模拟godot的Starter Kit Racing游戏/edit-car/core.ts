@@ -346,7 +346,8 @@ function screenToGrid(threeRef, clientX, clientY) {
   raycaster.ray.intersectPlane(plane, hit);
   if (!hit) return null;
 
-  const gx = Math.floor(hit.x / threeRef.value.cellWorld);
+  // 转到网格坐标系下
+  const gx = Math.floor(hit.x / threeRef.value.cellWorld /*单个格子的宽度*/);
   const gz = Math.floor(hit.z / threeRef.value.cellWorld);
   return { gx: gx, gz: gz };
 }

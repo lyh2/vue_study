@@ -84,13 +84,13 @@ export function buildWallColliders(world, debugGroup, customCells) {
   const ARC_CENTER_X = -CELL_HALF;
   const ARC_CENTER_Z = CELL_HALF;
   // 外弧半径 = 从圆心到赛道外侧边缘的距离
-  const OUTER_R = 2 * CELL_HALF - WALL_HALF_THICK;
+  const OUTER_R = 2 * CELL_HALF - WALL_HALF_THICK; // 外圆半径不能超过当前赛道块外侧边缘，因此，需要减少一点值
   // 外弧分段数 = 8 —— 8 段 90 度弧，每段约 11.25 度，足够平滑
   const OUTER_SEG = 8;
-  // 每段弧的弦长的一半，用于设置碰撞体长度
+  // 每段弧的弦长的一半，用于设置碰撞体长度：数学原理=圆的周长=2*PI*R
   const OUTER_SEG_HALF_LEN = ((OUTER_R * (Math.PI / 2)) / OUTER_SEG / 2) * S;
   // 内弧半径 = 从圆心到赛道内侧边缘（基本就是墙厚）
-  const INNER_R = WALL_HALF_THICK;
+  const INNER_R = WALL_HALF_THICK; //
   // 内弧分段数 = 3 —— 内弧半径小，曲率大，但分段少了也看不出来
   const INNER_SEG = 3;
   const INNER_SEG_HALF_LEN = ((INNER_R * (Math.PI / 2)) / INNER_SEG / 2) * S;
@@ -175,7 +175,7 @@ export function buildWallColliders(world, debugGroup, customCells) {
   // 主循环：单层遍历所有赛道单元格，生成碰撞体
   // ════════════════════════════════════════════════════
   //
-  // 原来此处有两层嵌套循环，外层处理直道墙壁，内层在同一次迭代中又
+  // 原来此处有两层嵌套循环，外层处理直道墙壁，内层再同一次迭代中又
   // 完整遍历所有 cells 一遍（包含直道+弯道），导致每个碰撞体被重复创建
   // N 次。在 60fps 下物理引擎虽然撑得住，但赛道如果有 100 个单元格，
   // 就会产生 10000 次碰撞体创建调用 —— 完全是浪费。
@@ -186,7 +186,7 @@ export function buildWallColliders(world, debugGroup, customCells) {
   //   track-bump                   → 跳过
 
   const cells = customCells || TRACK_CELLS;
-
+  // 1.遍历所有赛道单元格
   for (const [gx, gz, name, orient] of cells) {
     // 起伏路段由地形/悬挂系统处理碰撞，跳过
     if (name === 'track-bump') continue;
@@ -198,11 +198,11 @@ export function buildWallColliders(world, debugGroup, customCells) {
     // ── 朝向：编码 → 弧度 → 三角函数（一次计算，多次复用） ──
     const deg = ORIENT_DEG[orient] ?? 0;
     const rad = (deg * Math.PI) / 180;
-    const cr = Math.cos(rad),
-      sr = Math.sin(rad);
+    const cr = Math.cos(rad), // x
+      sr = Math.sin(rad); // z
 
     if (name === 'track-straight' || name === 'track-finish') {
-      // ── 直道/终点：左右两侧各一堵长条形墙壁 ──
+      // ── 1.1 直道/终点：左右两侧各一堵长条形墙壁 ──
       // side = -1 左墙，side = 1 右墙，用 [-1, 1] 循环比写两遍代码更简洁
       for (const side of [-1, 1]) {
         // 墙壁在单元格局部坐标系中偏移 WALL_X，旋转到世界坐标
