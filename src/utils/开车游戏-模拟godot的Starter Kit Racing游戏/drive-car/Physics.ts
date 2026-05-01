@@ -208,7 +208,7 @@ export function buildWallColliders(world, debugGroup, customCells) {
         // 墙壁在单元格局部坐标系中偏移 WALL_X，旋转到世界坐标
         const lx = side * WALL_X;
         const wx = cx + lx * cr * S;
-        const wz = cz + -lx * sr * S;
+        const wz = cz + -lx * sr * S; // 类似XY平面的Y轴的值，使用旋转矩阵计算，因此就有“负值”
         const halfExtents = [hThick, hHeight, hLen];
         const position = [wx, wallY, wz];
         // 四元数：绕 Y 轴旋转 rad

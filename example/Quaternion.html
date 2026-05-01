@@ -1,0 +1,1548 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>四元数 (Quaternion) 完全指南 — 平移·旋转·缩放</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #1a1a2e;
+        color: #eee;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        padding: 20px 30px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 26px;
+        color: #f7c948;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      nav {
+        background: #16213e;
+        border-radius: 10px;
+        padding: 10px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-size: 13px;
+      }
+      nav a {
+        color: #888;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      nav a:hover {
+        color: #f7c948;
+      }
+      nav .sec {
+        color: #f7c948;
+        font-weight: bold;
+      }
+      .section-title {
+        font-size: 18px;
+        color: #f7c948;
+        margin: 28px 0 12px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .section-title .num {
+        background: #f7c948;
+        color: #000;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .panel {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        flex: 1;
+        min-width: 340px;
+      }
+      .panel-wide {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        flex: 2;
+        min-width: 500px;
+      }
+      canvas {
+        display: block;
+        border-radius: 8px;
+        margin: 0 auto;
+        background: #0a0a1a;
+      }
+      .formula-box {
+        background: #0f3460;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 8px;
+      }
+      .formula-box .hl {
+        color: #f7c948;
+      }
+      .formula-box .green {
+        color: #2ecc71;
+      }
+      .formula-box .red {
+        color: #e74c3c;
+      }
+      .formula-box .blue {
+        color: #3498db;
+      }
+      .formula-box .note {
+        color: #888;
+        font-size: 11px;
+      }
+      .controls-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 4px 0;
+      }
+      .controls-row label {
+        font-size: 12px;
+        color: #aaa;
+        min-width: 40px;
+      }
+      .controls-row input[type='range'] {
+        flex: 1;
+        accent-color: #f7c948;
+        height: 4px;
+      }
+      .controls-row .val {
+        color: #f7c948;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+        font-size: 12px;
+      }
+      .tip-box {
+        background: #1a1a3e;
+        border-left: 3px solid #f7c948;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin: 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .tip-box .label {
+        color: #f7c948;
+        font-weight: bold;
+      }
+      .code-block {
+        background: #0a0a1a;
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow-x: auto;
+        margin: 6px 0;
+        white-space: pre-wrap;
+      }
+      .value-display {
+        background: #0a0a1a;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        color: #2ecc71;
+        margin: 2px 0;
+      }
+      .btn {
+        background: #0f3460;
+        border: 1px solid #333;
+        color: #ddd;
+        padding: 5px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: #1a4a80;
+        border-color: #f7c948;
+        color: #f7c948;
+      }
+      .btn.active {
+        background: #f7c948;
+        color: #000;
+      }
+      .grid-2col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .col-label {
+        font-size: 12px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .col-label .dot-x {
+        color: #e74c3c;
+      }
+      .col-label .dot-y {
+        color: #2ecc71;
+      }
+      .col-label .dot-z {
+        color: #3498db;
+      }
+      .col-label .dot-w {
+        color: #f7c948;
+      }
+      table.matrix {
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        border-collapse: collapse;
+        margin: 6px auto;
+      }
+      table.matrix td {
+        padding: 2px 8px;
+        border: 1px solid #333;
+        text-align: center;
+        min-width: 50px;
+      }
+      table.matrix td.label {
+        color: #888;
+        border: none;
+        font-size: 10px;
+      }
+      .anim-box {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .axis-legend {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        margin: 6px 0;
+        font-size: 12px;
+      }
+      .axis-legend span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .axis-legend .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🌀 四元数 (Quaternion) 完全指南</h1>
+    <p class="subtitle">平移 · 旋转 · 缩放 — Three.js 交互式 3D 可视化</p>
+
+    <nav id="topNav">
+      <span class="sec">📖</span><a href="#sec1">四元数基础</a> <span class="sec">🔧</span
+      ><a href="#sec2">变换三兄弟</a> <span class="sec">🎮</span><a href="#sec3">3D 交互控制</a>
+      <span class="sec">🎯</span><a href="#sec4">综合示例</a>
+    </nav>
+
+    <!-- ================================================================ -->
+    <!-- PART 1: QUATERNION BASICS -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec1"><span class="num">1</span> 📖 四元数基础 — 旋转专用</div>
+
+    <div class="tip-box">
+      <span class="label">⚠️ 核心概念：</span>
+      四元数 <strong>只能表示旋转</strong>，不能表示平移和缩放。<br />
+      平移 → <span style="color: #2ecc71">Vector3</span>  旋转 →
+      <span style="color: #3498db">Quaternion</span>  缩放 →
+      <span style="color: #f7c948">Vector3</span>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          四元数公式
+        </div>
+        <div class="formula-box">
+          <div class="hl">
+            q = (x, y, z, w) = (sin(θ/2)·a<sub>x</sub>, sin(θ/2)·a<sub>y</sub>,
+            sin(θ/2)·a<sub>z</sub>, cos(θ/2))
+          </div>
+          <div style="margin: 6px 0">
+            <span class="green">θ</span> = 旋转角度 
+            <span class="blue">(a<sub>x</sub>, a<sub>y</sub>, a<sub>z</sub>)</span> = 单位旋转轴向量
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note">📌 四个数的含义：</span><br />
+            <span class="red">x</span> = sin(θ/2)·轴X  <span class="green">y</span> = sin(θ/2)·轴Y 
+            <span class="blue">z</span> = sin(θ/2)·轴Z  <span class="hl">w</span> = cos(θ/2)
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          Three.js 中如何设置
+        </div>
+        <div class="code-block">
+          // 1️⃣ 直接设置 (x,y,z,w) const q = new THREE.Quaternion(); q.set(sx, sy, sz, cw); // 2️⃣
+          绕轴旋转 q.setFromAxisAngle(axis, angle); // axis = new THREE.Vector3(ax, ay,
+          az).normalize() // 3️⃣ 欧拉角 → 四元数 q.setFromEuler(new THREE.Euler(rx, ry, rz)); // 4️⃣
+          设置到物体 mesh.quaternion.copy(q); // 或 mesh.quaternion.set(x, y, z, w);
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          绕 X 轴旋转 θ 度
+        </div>
+        <div class="formula-box">
+          <div class="green">q = (sin(θ/2), 0, 0, cos(θ/2))</div>
+          <div class="code-block" style="margin-top: 4px">
+            mesh.quaternion.set( Math.sin(θ/2), // x 0, // y 0, // z Math.cos(θ/2) // w );
+          </div>
+          <div class="note" style="margin-top: 4px">
+            <span class="red">x = sin(θ/2)</span>  y = 0  z = 0 
+            <span class="hl">w = cos(θ/2)</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          绕 Y 轴旋转 θ 度
+        </div>
+        <div class="formula-box">
+          <div class="green">q = (0, sin(θ/2), 0, cos(θ/2))</div>
+          <div class="code-block" style="margin-top: 4px">
+            mesh.quaternion.set( 0, // x Math.sin(θ/2), // y 0, // z Math.cos(θ/2) // w );
+          </div>
+          <div class="note" style="margin-top: 4px">
+            x = 0 
+            <span class="green">y = sin(θ/2)</span>  z = 0 
+            <span class="hl">w = cos(θ/2)</span>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          绕 Z 轴旋转 θ 度
+        </div>
+        <div class="formula-box">
+          <div class="green">q = (0, 0, sin(θ/2), cos(θ/2))</div>
+          <div class="code-block" style="margin-top: 4px">
+            mesh.quaternion.set( 0, // x 0, // y Math.sin(θ/2), // z Math.cos(θ/2) // w );
+          </div>
+          <div class="note" style="margin-top: 4px">
+            x = 0  y = 0 
+            <span class="blue">z = sin(θ/2)</span> 
+            <span class="hl">w = cos(θ/2)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="panel-wide" style="min-width: 600px">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          🧪 绕任意轴旋转 — 交互演示 (Three.js 3D)
+        </div>
+        <div id="part1-container" style="position: relative">
+          <canvas id="cQuatBasic" width="700" height="400"></canvas>
+          <div class="axis-legend">
+            <span><span class="dot" style="background: #e74c3c"></span> X 轴</span>
+            <span><span class="dot" style="background: #2ecc71"></span> Y 轴</span>
+            <span><span class="dot" style="background: #3498db"></span> Z 轴</span>
+            <span><span class="dot" style="background: #f7c948"></span> 旋转轴</span>
+          </div>
+        </div>
+        <div class="controls-row">
+          <label>绕 X</label>
+          <input type="range" id="q1Rx" min="-180" max="180" value="45" />
+          <span class="val" id="q1RxVal">45°</span>
+        </div>
+        <div class="controls-row">
+          <label>绕 Y</label>
+          <input type="range" id="q1Ry" min="-180" max="180" value="30" />
+          <span class="val" id="q1RyVal">30°</span>
+        </div>
+        <div class="controls-row">
+          <label>绕 Z</label>
+          <input type="range" id="q1Rz" min="-180" max="180" value="0" />
+          <span class="val" id="q1RzVal">0°</span>
+        </div>
+        <div
+          class="controls-row"
+          style="border-top: 1px solid #333; padding-top: 6px; margin-top: 4px"
+        >
+          <span class="col-label" style="min-width: auto">当前四元数：</span>
+          <span class="value-display" id="q1Display" style="flex: 1; text-align: center"
+            >(0.383, 0.000, 0.000, 0.924)</span
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- PART 2: TRANSFORM THREE BROTHERS -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec2">
+      <span class="num">2</span> 🔧 变换三兄弟 — Position + Quaternion + Scale
+    </div>
+
+    <div class="tip-box">
+      <span class="label">🎯 完整变换 = 平移 × 旋转 × 缩放：</span>
+      Three.js 中 <span style="color: #3498db">Object3D</span> 的
+      <span style="color: #2ecc71">matrix</span> 由三者自动合成：<br />
+      <code style="background: #0a0a1a; padding: 2px 6px; border-radius: 3px">
+        matrix = position × quaternion × scale
+      </code>
+    </div>
+
+    <div class="row">
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          📍 Position — 平移
+        </div>
+        <div class="formula-box">
+          <div class="green">mesh.position = new THREE.Vector3(x, y, z)</div>
+          <div style="margin: 6px 0">
+            <span class="note"
+              >平移 = 沿 X/Y/Z 轴移动物体位置<br />
+              对应矩阵的最后一列 (tx, ty, tz)</span
+            >
+          </div>
+          <div class="code-block">
+            // 平移设置 mesh.position.set(tx, ty, tz); // 或 mesh.position.x = tx; mesh.position.y =
+            ty; mesh.position.z = tz; // 等价矩阵操作： // [1 0 0 tx] // [0 1 0 ty] // [0 0 1 tz] //
+            [0 0 0 1 ]
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          🔄 Quaternion — 旋转
+        </div>
+        <div class="formula-box">
+          <div class="blue">mesh.quaternion = new THREE.Quaternion(x, y, z, w)</div>
+          <div style="margin: 6px 0">
+            <span class="note"
+              >四元数不能表示平移和缩放！<br />
+              只能表示绕任意轴的旋转</span
+            >
+          </div>
+          <div class="code-block">
+            // 旋转设置 mesh.quaternion.set(x, y, z, w); // 或 mesh.quaternion.setFromAxisAngle(
+            axis, angle ); // 或 mesh.quaternion.setFromEuler(euler); // ⚠️ 必须满足：x²+y²+z²+w² =
+            1
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          🔍 Scale — 缩放
+        </div>
+        <div class="formula-box">
+          <div class="hl">mesh.scale = new THREE.Vector3(sx, sy, sz)</div>
+          <div style="margin: 6px 0">
+            <span class="note"
+              >缩放 = 沿 X/Y/Z 轴拉伸/压缩物体<br />
+              sx = sy = sz → 等比缩放（各向同性）<br />
+              sx ≠ sy ≠ sz → 不等比缩放（各向异性）</span
+            >
+          </div>
+          <div class="code-block">
+            // 缩放设置 mesh.scale.set(sx, sy, sz); // 或 mesh.scale.x = sx; mesh.scale.y = sy;
+            mesh.scale.z = sz; // 等价矩阵： // [sx 0 0 0] // [0 sy 0 0] // [0 0 sz 0] // [0 0 0 1]
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- PART 3: 3D INTERACTIVE CONTROL -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec3">
+      <span class="num">3</span> 🎮 3D 交互控制 — 完整变换实时操控
+    </div>
+
+    <div class="row">
+      <div class="panel-wide" style="min-width: 600px">
+        <canvas id="cInteractive" width="700" height="450"></canvas>
+        <div class="axis-legend">
+          <span><span class="dot" style="background: #e74c3c"></span> X 轴</span>
+          <span><span class="dot" style="background: #2ecc71"></span> Y 轴</span>
+          <span><span class="dot" style="background: #3498db"></span> Z 轴</span>
+        </div>
+      </div>
+      <div class="panel" style="min-width: 300px; max-width: 380px">
+        <div
+          class="section-title"
+          style="font-size: 14px; border-bottom: 1px solid #444; margin: 0 0 6px"
+        >
+          📐 位置 (Position)
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-x">●</span> X</label>
+          <input type="range" id="p3X" min="-3" max="3" value="0" step="0.05" />
+          <span class="val" id="p3XVal" style="min-width: 36px">0.00</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-y">●</span> Y</label>
+          <input type="range" id="p3Y" min="-3" max="3" value="0" step="0.05" />
+          <span class="val" id="p3YVal" style="min-width: 36px">0.00</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-z">●</span> Z</label>
+          <input type="range" id="p3Z" min="-3" max="3" value="0" step="0.05" />
+          <span class="val" id="p3ZVal" style="min-width: 36px">0.00</span>
+        </div>
+
+        <div
+          class="section-title"
+          style="font-size: 14px; border-bottom: 1px solid #444; margin: 8px 0 6px"
+        >
+          🔄 旋转 (Quaternion)
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-x">●</span> 绕 X</label>
+          <input type="range" id="p3Rx" min="-180" max="180" value="0" />
+          <span class="val" id="p3RxVal" style="min-width: 40px">0°</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-y">●</span> 绕 Y</label>
+          <input type="range" id="p3Ry" min="-180" max="180" value="30" />
+          <span class="val" id="p3RyVal" style="min-width: 40px">30°</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-z">●</span> 绕 Z</label>
+          <input type="range" id="p3Rz" min="-180" max="180" value="0" />
+          <span class="val" id="p3RzVal" style="min-width: 40px">0°</span>
+        </div>
+
+        <div
+          class="section-title"
+          style="font-size: 14px; border-bottom: 1px solid #444; margin: 8px 0 6px"
+        >
+          🔍 缩放 (Scale)
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-x">●</span> SX</label>
+          <input type="range" id="p3Sx" min="0.2" max="2.0" value="1.0" step="0.05" />
+          <span class="val" id="p3SxVal" style="min-width: 36px">1.00</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-y">●</span> SY</label>
+          <input type="range" id="p3Sy" min="0.2" max="2.0" value="1.0" step="0.05" />
+          <span class="val" id="p3SyVal" style="min-width: 36px">1.00</span>
+        </div>
+        <div class="controls-row">
+          <label class="col-label"><span class="dot-z">●</span> SZ</label>
+          <input type="range" id="p3Sz" min="0.2" max="2.0" value="1.0" step="0.05" />
+          <span class="val" id="p3SzVal" style="min-width: 36px">1.00</span>
+        </div>
+
+        <div class="btn-row" style="display: flex; gap: 6px; margin-top: 6px">
+          <button class="btn" onclick="resetInteractive()">🔄 重置</button>
+          <button class="btn" onclick="autoSpin()">⏯ 自动旋转</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transformation Matrix Display -->
+    <div class="row">
+      <div class="panel" style="flex: 1">
+        <div
+          class="section-title"
+          style="font-size: 14px; border-bottom: 1px solid #444; margin: 0 0 6px"
+        >
+          当前四元数值
+        </div>
+        <div class="value-display" id="p3QuatDisplay" style="font-size: 14px; text-align: center">
+          (0.000, 0.259, 0.000, 0.966)
+        </div>
+        <div class="code-block" style="margin-top: 4px; font-size: 11px">
+          公式：q = (sin(θ/2)·ax, sin(θ/2)·ay, sin(θ/2)·az, cos(θ/2))
+        </div>
+      </div>
+      <div class="panel" style="flex: 2">
+        <div
+          class="section-title"
+          style="font-size: 14px; border-bottom: 1px solid #444; margin: 0 0 6px"
+        >
+          4×4 变换矩阵 (Matrix4)
+        </div>
+        <div
+          id="p3MatrixDisplay"
+          style="font-family: 'Courier New', monospace; font-size: 12px; text-align: center"
+        >
+          <table class="matrix">
+            <tr>
+              <td id="m00">1.000</td>
+              <td id="m01">0.000</td>
+              <td id="m02">0.000</td>
+              <td id="m03">0.000</td>
+              <td class="label">→X</td>
+            </tr>
+            <tr>
+              <td id="m10">0.000</td>
+              <td id="m11">1.000</td>
+              <td id="m12">0.000</td>
+              <td id="m13">0.000</td>
+              <td class="label">→Y</td>
+            </tr>
+            <tr>
+              <td id="m20">0.000</td>
+              <td id="m21">0.000</td>
+              <td id="m22">1.000</td>
+              <td id="m23">0.000</td>
+              <td class="label">→Z</td>
+            </tr>
+            <tr>
+              <td id="m30">0.000</td>
+              <td id="m31">0.000</td>
+              <td id="m32">0.000</td>
+              <td id="m33">1.000</td>
+              <td class="label">→W</td>
+            </tr>
+          </table>
+        </div>
+        <div class="code-block" style="font-size: 10px; margin-top: 4px">
+          左上 3×3 = 旋转 + 缩放 &nbsp;|&nbsp; 第4列 = 平移 &nbsp;|&nbsp; 底行 = [0,0,0,1]
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- PART 4: COMPREHENSIVE EXAMPLES -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec4"><span class="num">4</span> 🎯 综合示例</div>
+
+    <!-- 4.1 Slerp -->
+    <div class="row">
+      <div class="panel-wide">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          4.1 四元数插值 — Slerp（球面线性插值）
+        </div>
+        <div class="grid-2col">
+          <div>
+            <canvas id="cSlerp" width="340" height="340"></canvas>
+          </div>
+          <div>
+            <div class="tip-box" style="margin-top: 0">
+              <span class="label">🌟 Slerp 公式：</span>
+              <code
+                style="
+                  display: block;
+                  background: #0a0a1a;
+                  padding: 4px 8px;
+                  border-radius: 4px;
+                  margin: 4px 0;
+                "
+              >
+                slerp(q₁, q₂, t) = q₁·(q₁⁻¹·q₂)^t
+              </code>
+              <div style="margin-top: 4px; font-size: 12px">
+                t = 0 → 完全 q₁<br />
+                t = 0.5 → 中间姿态<br />
+                t = 1 → 完全 q₂
+              </div>
+            </div>
+            <div class="controls-row">
+              <label>插值 t</label>
+              <input type="range" id="slerpT" min="0" max="100" value="0" />
+              <span class="val" id="slerpTVal" style="min-width: 36px">0.00</span>
+            </div>
+            <div class="controls-row">
+              <button class="btn" onclick="playSlerpAnim()">▶ 播放动画</button>
+              <button class="btn" onclick="resetSlerp()">🔄 重置</button>
+            </div>
+            <div class="code-block" style="font-size: 11px">
+              // Three.js 中的 slerp<br />
+              const q = new THREE.Quaternion();<br />
+              q.slerpQuaternions(q1, q2, t);
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.2 Multi-object -->
+    <div class="row">
+      <div class="panel-wide">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          4.2 多物体组合变换
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap">
+          <canvas id="cMulti" width="450" height="400"></canvas>
+          <div style="flex: 1; min-width: 250px">
+            <div class="formula-box" style="margin-top: 0">
+              <div class="hl">🌳 层级变换（父子关系）</div>
+              <div style="margin: 6px 0; font-size: 12px">
+                父物体变换 → 子物体<br />
+                子物体 <span class="green">继承</span> 父物体变换<br />
+                子物体 <span class="blue">叠加</span> 自己的变换
+              </div>
+              <div class="code-block">
+                // 父子关系 parent.add(child); // child.matrix = parent.matrix × child.localMatrix
+              </div>
+            </div>
+            <div class="controls-row">
+              <label>父旋转</label>
+              <input type="range" id="multiParentR" min="0" max="360" value="0" />
+              <span class="val" id="multiParentRVal">0°</span>
+            </div>
+            <div class="controls-row">
+              <label>子旋转</label>
+              <input type="range" id="multiChildR" min="0" max="360" value="45" />
+              <span class="val" id="multiChildRVal">45°</span>
+            </div>
+            <div class="controls-row">
+              <label>子缩放</label>
+              <input type="range" id="multiChildS" min="0.2" max="2.0" value="0.8" step="0.05" />
+              <span class="val" id="multiChildSVal">0.80</span>
+            </div>
+            <div class="code-block" style="font-size: 11px">
+              // 本例演示： // 父物体绕 Y 轴旋转 // 子物体绕自身轴旋转 + 缩放 //
+              子物体继承了父物体的旋转
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4.3 Quaternion to Matrix -->
+    <div class="row">
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          4.3 四元数 ↔ 矩阵 相互转换
+        </div>
+        <div class="grid-2col">
+          <div>
+            <div class="formula-box" style="font-size: 12px">
+              <div class="green">四元数 → 旋转矩阵</div>
+              <div class="code-block" style="font-size: 10px">
+                // Three.js const matrix = new THREE.Matrix4();
+                matrix.makeRotationFromQuaternion(q); // 手动公式 (3×3 旋转部分): // [1-2y²-2z²
+                2xy-2zw 2xz+2yw ] // [2xy+2zw 1-2x²-2z² 2yz-2xw ] // [2xz-2yw 2yz+2xw 1-2x²-2y²]
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="formula-box" style="font-size: 12px">
+              <div class="blue">旋转矩阵 → 四元数</div>
+              <div class="code-block" style="font-size: 10px">
+                // Three.js const q = new THREE.Quaternion(); q.setFromRotationMatrix(matrix); // 从
+                matrix.elements 中提取 // 需要确保 matrix 是纯旋转矩阵 // （无平移/缩放）
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div
+          class="section-title"
+          style="font-size: 15px; border-bottom: 1px solid #444; margin: 0 0 8px"
+        >
+          4.4 完整变换合成公式
+        </div>
+        <div class="formula-box" style="font-size: 12px">
+          <div class="hl">M = T · R · S</div>
+          <div style="margin: 6px 0">
+            <span class="green">T</span> = 平移矩阵（position）<br />
+            <span class="blue">R</span> = 旋转矩阵（quaternion）<br />
+            <span class="hl">S</span> = 缩放矩阵（scale）
+          </div>
+          <div class="code-block" style="font-size: 11px">
+            // Three.js 内部实现 // mesh.matrix.compose(position, quaternion, scale) // // 等价于：
+            const T = new THREE.Matrix4().makeTranslation(tx, ty, tz); const R = new
+            THREE.Matrix4().makeRotationFromQuaternion(q); const S = new
+            THREE.Matrix4().makeScale(sx, sy, sz); const M = T.clone().multiply(R).multiply(S);
+            mesh.matrix.copy(M); mesh.matrix.decompose(position, quaternion, scale);
+          </div>
+          <div style="margin-top: 4px; border-top: 1px solid #333; padding-top: 4px">
+            <span class="note"
+              >⚠️ 注意顺序：先缩放 → 再旋转 → 最后平移<br />
+              Three.js 默认是 S → R → T（物体局部缩放 → 旋转 → 平移到世界位置）</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+      // ================================================================
+      // PART 1: Quaternion Basic Demo
+      // ================================================================
+      const canvas1 = document.getElementById('cQuatBasic');
+      const w1 = 700,
+        h1 = 400;
+
+      const renderer1 = new THREE.WebGLRenderer({
+        canvas: canvas1,
+        antialias: true,
+        alpha: true,
+      });
+      renderer1.setSize(w1, h1);
+      renderer1.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer1.setClearColor(0x0a0a1a);
+
+      const scene1 = new THREE.Scene();
+      const camera1 = new THREE.PerspectiveCamera(45, w1 / h1, 0.1, 100);
+      camera1.position.set(4, 3, 6);
+      camera1.lookAt(0, 0, 0);
+
+      // Lights
+      const dirLight1 = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight1.position.set(5, 10, 7);
+      scene1.add(dirLight1);
+      const ambLight1 = new THREE.AmbientLight(0x404060, 0.5);
+      scene1.add(ambLight1);
+
+      // Grid
+      const grid1 = new THREE.GridHelper(8, 8, 0x444466, 0x333355);
+      scene1.add(grid1);
+
+      // Axes helper
+      const axes1 = new THREE.AxesHelper(3);
+      scene1.add(axes1);
+
+      // A 3D object - Box with wireframe edges
+      const geo1 = new THREE.BoxGeometry(1.5, 0.8, 1.2);
+      const mat1 = new THREE.MeshPhongMaterial({
+        color: 0x4488ff,
+        transparent: true,
+        opacity: 0.7,
+        emissive: 0x2244aa,
+        emissiveIntensity: 0.15,
+      });
+      const mesh1 = new THREE.Mesh(geo1, mat1);
+      scene1.add(mesh1);
+
+      // Edges
+      const edges1 = new THREE.EdgesGeometry(geo1);
+      const lineMat1 = new THREE.LineBasicMaterial({ color: 0x88ccff });
+      const wireframe1 = new THREE.LineSegments(edges1, lineMat1);
+      mesh1.add(wireframe1);
+
+      // Axis indicator lines on mesh
+      const axisLen = 1.8;
+      const arrowMat = c => new THREE.LineBasicMaterial({ color: c, linewidth: 2 });
+      const makeAxisLine = (dir, color) => {
+        const pts = [
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(dir[0] * axisLen, dir[1] * axisLen, dir[2] * axisLen),
+        ];
+        const g = new THREE.BufferGeometry().setFromPoints(pts);
+        return new THREE.Line(g, arrowMat(color));
+      };
+      // Local axes on object
+      mesh1.add(makeAxisLine([1, 0, 0], 0xe74c3c));
+      mesh1.add(makeAxisLine([0, 1, 0], 0x2ecc71));
+      mesh1.add(makeAxisLine([0, 0, 1], 0x3498db));
+
+      // Orbit controls
+      const controls1 = new OrbitControls(camera1, canvas1);
+      controls1.enableDamping = true;
+      controls1.dampingFactor = 0.05;
+      controls1.target.set(0, 0, 0);
+      controls1.update();
+
+      function updateQuatBasic() {
+        const rx = (parseInt(document.getElementById('q1Rx').value) * Math.PI) / 180;
+        const ry = (parseInt(document.getElementById('q1Ry').value) * Math.PI) / 180;
+        const rz = (parseInt(document.getElementById('q1Rz').value) * Math.PI) / 180;
+
+        document.getElementById('q1RxVal').textContent =
+          document.getElementById('q1Rx').value + '°';
+        document.getElementById('q1RyVal').textContent =
+          document.getElementById('q1Ry').value + '°';
+        document.getElementById('q1RzVal').textContent =
+          document.getElementById('q1Rz').value + '°';
+
+        const q = new THREE.Quaternion();
+        q.setFromEuler(new THREE.Euler(rx, ry, rz));
+        mesh1.quaternion.copy(q);
+
+        document.getElementById('q1Display').textContent =
+          `(${q.x.toFixed(3)}, ${q.y.toFixed(3)}, ${q.z.toFixed(3)}, ${q.w.toFixed(3)})`;
+      }
+
+      document.getElementById('q1Rx').addEventListener('input', updateQuatBasic);
+      document.getElementById('q1Ry').addEventListener('input', updateQuatBasic);
+      document.getElementById('q1Rz').addEventListener('input', updateQuatBasic);
+
+      function animate1() {
+        requestAnimationFrame(animate1);
+        controls1.update();
+        renderer1.render(scene1, camera1);
+      }
+      animate1();
+      updateQuatBasic();
+
+      // ================================================================
+      // PART 3: Interactive Control (using CSS2DRenderer for labels)
+      // ================================================================
+      const canvas3 = document.getElementById('cInteractive');
+      const w3 = 700,
+        h3 = 450;
+
+      const renderer3 = new THREE.WebGLRenderer({
+        canvas: canvas3,
+        antialias: true,
+        alpha: true,
+      });
+      renderer3.setSize(w3, h3);
+      renderer3.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer3.setClearColor(0x0a0a1a);
+      renderer3.shadowMap.enabled = true;
+      renderer3.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      // CSS2 renderer for labels
+      const labelRenderer3 = new CSS2DRenderer();
+      labelRenderer3.setSize(w3, h3);
+      labelRenderer3.domElement.style.position = 'absolute';
+      labelRenderer3.domElement.style.top = '0';
+      labelRenderer3.domElement.style.left = '0';
+      labelRenderer3.domElement.style.pointerEvents = 'none';
+      canvas3.parentElement.appendChild(labelRenderer3.domElement);
+      labelRenderer3.domElement.style.width = w3 + 'px';
+      labelRenderer3.domElement.style.height = h3 + 'px';
+
+      const scene3 = new THREE.Scene();
+      const camera3 = new THREE.PerspectiveCamera(40, w3 / h3, 0.1, 100);
+      camera3.position.set(5, 4, 7);
+      camera3.lookAt(0, 0, 0);
+
+      // Lights
+      const dLight3 = new THREE.DirectionalLight(0xffffff, 1);
+      dLight3.position.set(5, 10, 7);
+      dLight3.castShadow = true;
+      scene3.add(dLight3);
+      const aLight3 = new THREE.AmbientLight(0x404060, 0.4);
+      scene3.add(aLight3);
+      const fillLight3 = new THREE.DirectionalLight(0x4488ff, 0.3);
+      fillLight3.position.set(-3, 2, -4);
+      scene3.add(fillLight3);
+
+      // Ground
+      const groundGeo3 = new THREE.PlaneGeometry(12, 12);
+      const groundMat3 = new THREE.MeshStandardMaterial({
+        color: 0x1a1a2e,
+        transparent: true,
+        opacity: 0.5,
+        roughness: 0.8,
+        metalness: 0.2,
+      });
+      const ground3 = new THREE.Mesh(groundGeo3, groundMat3);
+      ground3.rotation.x = -Math.PI / 2;
+      ground3.position.y = -0.5;
+      ground3.receiveShadow = true;
+      scene3.add(ground3);
+
+      // Grid
+      const grid3 = new THREE.GridHelper(10, 10, 0x444466, 0x333355);
+      grid3.position.y = -0.49;
+      scene3.add(grid3);
+
+      // Axes
+      const axes3 = new THREE.AxesHelper(4);
+      scene3.add(axes3);
+
+      // The interactive object
+      const geo3 = new THREE.BoxGeometry(1.2, 0.8, 0.6);
+      const mat3 = new THREE.MeshStandardMaterial({
+        color: 0x44aaff,
+        roughness: 0.3,
+        metalness: 0.6,
+        emissive: 0x2244aa,
+        emissiveIntensity: 0.1,
+      });
+      const mesh3 = new THREE.Mesh(geo3, mat3);
+      mesh3.castShadow = true;
+      mesh3.position.set(0, 0, 0);
+      scene3.add(mesh3);
+
+      // Edges
+      const edges3 = new THREE.EdgesGeometry(geo3);
+      const lineMat3 = new THREE.LineBasicMaterial({ color: 0x88ddff });
+      const wireframe3 = new THREE.LineSegments(edges3, lineMat3);
+      mesh3.add(wireframe3);
+
+      // Local axes
+      const axisLen3 = 1.5;
+      const makeAxisLine3 = (dir, color) => {
+        const pts = [
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(dir[0] * axisLen3, dir[1] * axisLen3, dir[2] * axisLen3),
+        ];
+        const g = new THREE.BufferGeometry().setFromPoints(pts);
+        return new THREE.Line(g, new THREE.LineBasicMaterial({ color }));
+      };
+      mesh3.add(makeAxisLine3([1, 0, 0], 0xe74c3c));
+      mesh3.add(makeAxisLine3([0, 1, 0], 0x2ecc71));
+      mesh3.add(makeAxisLine3([0, 0, 1], 0x3498db));
+
+      // Label for mesh position
+      const labelDiv3 = document.createElement('div');
+      labelDiv3.textContent = '物体';
+      labelDiv3.style.color = '#88ddff';
+      labelDiv3.style.fontSize = '12px';
+      labelDiv3.style.fontWeight = 'bold';
+      labelDiv3.style.background = 'rgba(0,0,0,0.5)';
+      labelDiv3.style.padding = '2px 6px';
+      labelDiv3.style.borderRadius = '4px';
+      labelDiv3.style.border = '1px solid #88ddff';
+      const label3 = new CSS2DObject(labelDiv3);
+      mesh3.add(label3);
+      label3.position.set(0, 1.2, 0);
+
+      // Controls
+      const controls3 = new OrbitControls(camera3, canvas3);
+      controls3.enableDamping = true;
+      controls3.dampingFactor = 0.05;
+      controls3.target.set(0, 0, 0);
+      controls3.update();
+
+      // Helper sphere indicators for position
+      const sphereMat = new THREE.MeshBasicMaterial({
+        color: 0xf7c948,
+        transparent: true,
+        opacity: 0.3,
+      });
+      const posSphere = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), sphereMat);
+      scene3.add(posSphere);
+
+      let isAutoSpin = false;
+      let autoSpinAngle = 0;
+
+      function updateInteractive() {
+        const tx = parseFloat(document.getElementById('p3X').value);
+        const ty = parseFloat(document.getElementById('p3Y').value);
+        const tz = parseFloat(document.getElementById('p3Z').value);
+        const rx = (parseFloat(document.getElementById('p3Rx').value) * Math.PI) / 180;
+        const ry = (parseFloat(document.getElementById('p3Ry').value) * Math.PI) / 180;
+        const rz = (parseFloat(document.getElementById('p3Rz').value) * Math.PI) / 180;
+        const sx = parseFloat(document.getElementById('p3Sx').value);
+        const sy = parseFloat(document.getElementById('p3Sy').value);
+        const sz = parseFloat(document.getElementById('p3Sz').value);
+
+        document.getElementById('p3XVal').textContent = tx.toFixed(2);
+        document.getElementById('p3YVal').textContent = ty.toFixed(2);
+        document.getElementById('p3ZVal').textContent = tz.toFixed(2);
+        document.getElementById('p3RxVal').textContent =
+          document.getElementById('p3Rx').value + '°';
+        document.getElementById('p3RyVal').textContent =
+          document.getElementById('p3Ry').value + '°';
+        document.getElementById('p3RzVal').textContent =
+          document.getElementById('p3Rz').value + '°';
+        document.getElementById('p3SxVal').textContent = sx.toFixed(2);
+        document.getElementById('p3SyVal').textContent = sy.toFixed(2);
+        document.getElementById('p3SzVal').textContent = sz.toFixed(2);
+
+        mesh3.position.set(tx, ty, tz);
+        const q = new THREE.Quaternion();
+        q.setFromEuler(new THREE.Euler(rx, ry, rz));
+        mesh3.quaternion.copy(q);
+        mesh3.scale.set(sx, sy, sz);
+
+        // Update quaternion display
+        document.getElementById('p3QuatDisplay').textContent =
+          `(${q.x.toFixed(4)}, ${q.y.toFixed(4)}, ${q.z.toFixed(4)}, ${q.w.toFixed(4)})`;
+
+        // Update matrix display
+        mesh3.updateMatrix();
+        const m = mesh3.matrix.elements;
+        document.getElementById('m00').textContent = m[0].toFixed(3);
+        document.getElementById('m01').textContent = m[1].toFixed(3);
+        document.getElementById('m02').textContent = m[2].toFixed(3);
+        document.getElementById('m03').textContent = m[3].toFixed(3);
+        document.getElementById('m10').textContent = m[4].toFixed(3);
+        document.getElementById('m11').textContent = m[5].toFixed(3);
+        document.getElementById('m12').textContent = m[6].toFixed(3);
+        document.getElementById('m13').textContent = m[7].toFixed(3);
+        document.getElementById('m20').textContent = m[8].toFixed(3);
+        document.getElementById('m21').textContent = m[9].toFixed(3);
+        document.getElementById('m22').textContent = m[10].toFixed(3);
+        document.getElementById('m23').textContent = m[11].toFixed(3);
+        document.getElementById('m30').textContent = m[12].toFixed(3);
+        document.getElementById('m31').textContent = m[13].toFixed(3);
+        document.getElementById('m32').textContent = m[14].toFixed(3);
+        document.getElementById('m33').textContent = m[15].toFixed(3);
+
+        // Update position indicator sphere
+        posSphere.position.set(tx, -0.45, tz);
+      }
+
+      // Bind all part3 controls
+      ['p3X', 'p3Y', 'p3Z', 'p3Rx', 'p3Ry', 'p3Rz', 'p3Sx', 'p3Sy', 'p3Sz'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateInteractive);
+      });
+
+      window.resetInteractive = function () {
+        document.getElementById('p3X').value = 0;
+        document.getElementById('p3Y').value = 0;
+        document.getElementById('p3Z').value = 0;
+        document.getElementById('p3Rx').value = 0;
+        document.getElementById('p3Ry').value = 30;
+        document.getElementById('p3Rz').value = 0;
+        document.getElementById('p3Sx').value = 1.0;
+        document.getElementById('p3Sy').value = 1.0;
+        document.getElementById('p3Sz').value = 1.0;
+        isAutoSpin = false;
+        updateInteractive();
+      };
+
+      window.autoSpin = function () {
+        isAutoSpin = !isAutoSpin;
+        if (isAutoSpin) {
+          autoSpinAngle = 0;
+        }
+      };
+
+      function animate3() {
+        requestAnimationFrame(animate3);
+        if (isAutoSpin) {
+          autoSpinAngle += 0.01;
+          document.getElementById('p3Ry').value = (((autoSpinAngle * 180) / Math.PI) % 360) - 180;
+          updateInteractive();
+        }
+        controls3.update();
+        renderer3.render(scene3, camera3);
+        labelRenderer3.render(scene3, camera3);
+      }
+      animate3();
+      updateInteractive();
+
+      // ================================================================
+      // PART 4.1: Slerp Demo
+      // ================================================================
+      const canvasS = document.getElementById('cSlerp');
+      const wS = 340,
+        hS = 340;
+
+      const rendererS = new THREE.WebGLRenderer({
+        canvas: canvasS,
+        antialias: true,
+        alpha: true,
+      });
+      rendererS.setSize(wS, hS);
+      rendererS.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      rendererS.setClearColor(0x0a0a1a);
+
+      const sceneS = new THREE.Scene();
+      const cameraS = new THREE.PerspectiveCamera(40, wS / hS, 0.1, 100);
+      cameraS.position.set(3, 2.5, 4);
+      cameraS.lookAt(0, 0, 0);
+
+      const dLightS = new THREE.DirectionalLight(0xffffff, 1);
+      dLightS.position.set(4, 6, 5);
+      sceneS.add(dLightS);
+      const aLightS = new THREE.AmbientLight(0x404060, 0.5);
+      sceneS.add(aLightS);
+
+      const gridS = new THREE.GridHelper(6, 6, 0x444466, 0x333355);
+      sceneS.add(gridS);
+      const axesS = new THREE.AxesHelper(2);
+      sceneS.add(axesS);
+
+      // Object A (q1) - wireframe
+      const geoSA = new THREE.BoxGeometry(0.8, 0.6, 0.5);
+      const matSA = new THREE.MeshPhongMaterial({
+        color: 0xe74c3c,
+        transparent: true,
+        opacity: 0.3,
+        wireframe: false,
+      });
+      const meshSA = new THREE.Mesh(geoSA, matSA);
+      meshSA.position.set(-1.5, 0, 0);
+      sceneS.add(meshSA);
+      const edgesSA = new THREE.EdgesGeometry(geoSA);
+      const wireSA = new THREE.LineSegments(
+        edgesSA,
+        new THREE.LineBasicMaterial({ color: 0xe74c3c })
+      );
+      meshSA.add(wireSA);
+
+      // Object B (q2) - wireframe
+      const geoSB = new THREE.BoxGeometry(0.8, 0.6, 0.5);
+      const matSB = new THREE.MeshPhongMaterial({
+        color: 0x3498db,
+        transparent: true,
+        opacity: 0.3,
+      });
+      const meshSB = new THREE.Mesh(geoSB, matSB);
+      meshSB.position.set(1.5, 0, 0);
+      sceneS.add(meshSB);
+      const edgesSB = new THREE.EdgesGeometry(geoSB);
+      const wireSB = new THREE.LineSegments(
+        edgesSB,
+        new THREE.LineBasicMaterial({ color: 0x3498db })
+      );
+      meshSB.add(wireSB);
+
+      // Object interpolated - in center, solid
+      const geoSlerp = new THREE.BoxGeometry(0.8, 0.6, 0.5);
+      const matSlerp = new THREE.MeshPhongMaterial({
+        color: 0xf7c948,
+        emissive: 0xf7c948,
+        emissiveIntensity: 0.15,
+        roughness: 0.3,
+        metalness: 0.6,
+      });
+      const meshSlerp = new THREE.Mesh(geoSlerp, matSlerp);
+      meshSlerp.position.set(0, 0, 0);
+      sceneS.add(meshSlerp);
+      const edgesSlerp = new THREE.EdgesGeometry(geoSlerp);
+      const wireSlerp = new THREE.LineSegments(
+        edgesSlerp,
+        new THREE.LineBasicMaterial({ color: 0xf7c948 })
+      );
+      meshSlerp.add(wireSlerp);
+
+      // Local axes on slerp object
+      meshSlerp.add(makeAxisLine3([0.8, 0, 0], 0xe74c3c));
+      meshSlerp.add(makeAxisLine3([0, 0.8, 0], 0x2ecc71));
+      meshSlerp.add(makeAxisLine3([0, 0, 0.8], 0x3498db));
+
+      const controlsS = new OrbitControls(cameraS, canvasS);
+      controlsS.enableDamping = true;
+      controlsS.dampingFactor = 0.05;
+      controlsS.update();
+
+      // Initial quaternions
+      const q1 = new THREE.Quaternion();
+      q1.setFromEuler(new THREE.Euler(0.5, 0.2, 0.3));
+      const q2 = new THREE.Quaternion();
+      q2.setFromEuler(new THREE.Euler(-0.3, 1.2, -0.4));
+
+      meshSA.quaternion.copy(q1);
+      meshSB.quaternion.copy(q2);
+
+      // Labels via CSS2D
+      const labelRenderS = new CSS2DRenderer();
+      labelRenderS.setSize(wS, hS);
+      labelRenderS.domElement.style.position = 'absolute';
+      labelRenderS.domElement.style.top = '0';
+      labelRenderS.domElement.style.left = '0';
+      labelRenderS.domElement.style.pointerEvents = 'none';
+      canvasS.parentElement.appendChild(labelRenderS.domElement);
+      labelRenderS.domElement.style.width = wS + 'px';
+      labelRenderS.domElement.style.height = hS + 'px';
+
+      function makeLabel(text, color) {
+        const d = document.createElement('div');
+        d.textContent = text;
+        d.style.color = color;
+        d.style.fontSize = '11px';
+        d.style.fontWeight = 'bold';
+        d.style.background = 'rgba(0,0,0,0.5)';
+        d.style.padding = '1px 4px';
+        d.style.borderRadius = '3px';
+        return new CSS2DObject(d);
+      }
+
+      const labelA = makeLabel('q₁ 起始', '#e74c3c');
+      labelA.position.set(0, 0.6, 0);
+      meshSA.add(labelA);
+      const labelB = makeLabel('q₂ 目标', '#3498db');
+      labelB.position.set(0, 0.6, 0);
+      meshSB.add(labelB);
+      const labelSlerp = makeLabel('插值', '#f7c948');
+      labelSlerp.position.set(0, 0.6, 0);
+      meshSlerp.add(labelSlerp);
+
+      function updateSlerp() {
+        const t = parseInt(document.getElementById('slerpT').value) / 100;
+        document.getElementById('slerpTVal').textContent = t.toFixed(2);
+        const q = new THREE.Quaternion();
+        q.slerpQuaternions(q1, q2, t);
+        meshSlerp.quaternion.copy(q);
+      }
+
+      document.getElementById('slerpT').addEventListener('input', updateSlerp);
+
+      window.playSlerpAnim = function () {
+        const slider = document.getElementById('slerpT');
+        let t = 0;
+        function step() {
+          t += 0.02;
+          if (t > 1) t = 1;
+          slider.value = t * 100;
+          updateSlerp();
+          if (t < 1) requestAnimationFrame(step);
+        }
+        step();
+      };
+
+      window.resetSlerp = function () {
+        document.getElementById('slerpT').value = 0;
+        updateSlerp();
+      };
+
+      function animateS() {
+        requestAnimationFrame(animateS);
+        controlsS.update();
+        rendererS.render(sceneS, cameraS);
+        labelRenderS.render(sceneS, cameraS);
+      }
+      animateS();
+      updateSlerp();
+
+      // ================================================================
+      // PART 4.2: Multi-object Hierarchy Demo
+      // ================================================================
+      const canvasM = document.getElementById('cMulti');
+      const wM = 450,
+        hM = 400;
+
+      const rendererM = new THREE.WebGLRenderer({
+        canvas: canvasM,
+        antialias: true,
+        alpha: true,
+      });
+      rendererM.setSize(wM, hM);
+      rendererM.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      rendererM.setClearColor(0x0a0a1a);
+
+      const sceneM = new THREE.Scene();
+      const cameraM = new THREE.PerspectiveCamera(45, wM / hM, 0.1, 100);
+      cameraM.position.set(4, 3, 5);
+      cameraM.lookAt(0, 0, 0);
+
+      const dLightM = new THREE.DirectionalLight(0xffffff, 1);
+      dLightM.position.set(5, 8, 6);
+      sceneM.add(dLightM);
+      const aLightM = new THREE.AmbientLight(0x404060, 0.5);
+      sceneM.add(aLightM);
+
+      const gridM = new THREE.GridHelper(8, 8, 0x444466, 0x333355);
+      sceneM.add(gridM);
+      const axesM = new THREE.AxesHelper(3);
+      sceneM.add(axesM);
+
+      // Parent object
+      const geoParent = new THREE.BoxGeometry(1.5, 0.2, 1.5);
+      const matParent = new THREE.MeshPhongMaterial({
+        color: 0x44aaff,
+        transparent: true,
+        opacity: 0.5,
+        wireframe: false,
+      });
+      const parentMesh = new THREE.Mesh(geoParent, matParent);
+      parentMesh.position.set(0, 0, 0);
+      sceneM.add(parentMesh);
+
+      // Parent edges
+      const edgesParent = new THREE.EdgesGeometry(geoParent);
+      const wireParent = new THREE.LineSegments(
+        edgesParent,
+        new THREE.LineBasicMaterial({ color: 0x44aaff })
+      );
+      parentMesh.add(wireParent);
+
+      // Child object (positioned relative to parent)
+      const geoChild = new THREE.BoxGeometry(0.8, 0.8, 0.3);
+      const matChild = new THREE.MeshPhongMaterial({
+        color: 0xf7c948,
+        emissive: 0xf7c948,
+        emissiveIntensity: 0.1,
+        roughness: 0.4,
+        metalness: 0.5,
+      });
+      const childMesh = new THREE.Mesh(geoChild, matChild);
+      childMesh.position.set(0.8, 0.4, 0.6);
+      parentMesh.add(childMesh);
+
+      const edgesChild = new THREE.EdgesGeometry(geoChild);
+      const wireChild = new THREE.LineSegments(
+        edgesChild,
+        new THREE.LineBasicMaterial({ color: 0xf7c948 })
+      );
+      childMesh.add(wireChild);
+
+      // Child local axes
+      childMesh.add(makeAxisLine3([0.6, 0, 0], 0xe74c3c));
+      childMesh.add(makeAxisLine3([0, 0.6, 0], 0x2ecc71));
+      childMesh.add(makeAxisLine3([0, 0, 0.6], 0x3498db));
+
+      // Child label
+      const labelChildDiv = document.createElement('div');
+      labelChildDiv.textContent = '子物体';
+      labelChildDiv.style.color = '#f7c948';
+      labelChildDiv.style.fontSize = '11px';
+      labelChildDiv.style.fontWeight = 'bold';
+      labelChildDiv.style.background = 'rgba(0,0,0,0.5)';
+      labelChildDiv.style.padding = '1px 4px';
+      labelChildDiv.style.borderRadius = '3px';
+      const labelChild = new CSS2DObject(labelChildDiv);
+      labelChild.position.set(0, 0.8, 0);
+      childMesh.add(labelChild);
+
+      // Parent label
+      const labelParentDiv = document.createElement('div');
+      labelParentDiv.textContent = '父物体';
+      labelParentDiv.style.color = '#44aaff';
+      labelParentDiv.style.fontSize = '11px';
+      labelParentDiv.style.fontWeight = 'bold';
+      labelParentDiv.style.background = 'rgba(0,0,0,0.5)';
+      labelParentDiv.style.padding = '1px 4px';
+      labelParentDiv.style.borderRadius = '3px';
+      const labelParent = new CSS2DObject(labelParentDiv);
+      labelParent.position.set(0, 0.4, 0);
+      parentMesh.add(labelParent);
+
+      // CSS2 Renderer for multi
+      const labelRenderM = new CSS2DRenderer();
+      labelRenderM.setSize(wM, hM);
+      labelRenderM.domElement.style.position = 'absolute';
+      labelRenderM.domElement.style.top = '0';
+      labelRenderM.domElement.style.left = '0';
+      labelRenderM.domElement.style.pointerEvents = 'none';
+      canvasM.parentElement.appendChild(labelRenderM.domElement);
+      labelRenderM.domElement.style.width = wM + 'px';
+      labelRenderM.domElement.style.height = hM + 'px';
+
+      const controlsM = new OrbitControls(cameraM, canvasM);
+      controlsM.enableDamping = true;
+      controlsM.dampingFactor = 0.05;
+      controlsM.update();
+
+      function updateMulti() {
+        const pR = (parseInt(document.getElementById('multiParentR').value) * Math.PI) / 180;
+        const cR = (parseInt(document.getElementById('multiChildR').value) * Math.PI) / 180;
+        const cS = parseFloat(document.getElementById('multiChildS').value);
+        document.getElementById('multiParentRVal').textContent =
+          document.getElementById('multiParentR').value + '°';
+        document.getElementById('multiChildRVal').textContent =
+          document.getElementById('multiChildR').value + '°';
+        document.getElementById('multiChildSVal').textContent = cS.toFixed(2);
+
+        const qP = new THREE.Quaternion();
+        qP.setFromEuler(new THREE.Euler(0, pR, 0));
+        parentMesh.quaternion.copy(qP);
+
+        const qC = new THREE.Quaternion();
+        qC.setFromEuler(new THREE.Euler(cR * 0.3, cR, cR * 0.2));
+        childMesh.quaternion.copy(qC);
+        childMesh.scale.set(cS, cS, cS);
+      }
+
+      document.getElementById('multiParentR').addEventListener('input', updateMulti);
+      document.getElementById('multiChildR').addEventListener('input', updateMulti);
+      document.getElementById('multiChildS').addEventListener('input', updateMulti);
+
+      function animateM() {
+        requestAnimationFrame(animateM);
+        controlsM.update();
+        rendererM.render(sceneM, cameraM);
+        labelRenderM.render(sceneM, cameraM);
+      }
+      animateM();
+      updateMulti();
+
+      // ================================================================
+      // Init ALL
+      // ================================================================
+      updateQuatBasic();
+      updateInteractive();
+      updateSlerp();
+      updateMulti();
+
+      // Smooth scroll nav
+      document.querySelectorAll('nav a').forEach(a => {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          const id = this.getAttribute('href').substring(1);
+          document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+
+      console.log('✅ Quaternion 演示页面加载完成！');
+    </script>
+  </body>
+</html>
