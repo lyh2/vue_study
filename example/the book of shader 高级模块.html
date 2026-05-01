@@ -1,0 +1,2848 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>The Book of Shaders 高级模块完全指南</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0d0d1a;
+        color: #ddd;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+        padding: 20px 30px;
+        max-width: 1500px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 26px;
+        color: #f7c948;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        text-align: center;
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 16px;
+      }
+      nav {
+        background: #16213e;
+        border-radius: 10px;
+        padding: 10px 16px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 12px;
+        font-size: 13px;
+      }
+      nav a {
+        color: #888;
+        text-decoration: none;
+        transition: color 0.2s;
+        cursor: pointer;
+      }
+      nav a:hover {
+        color: #f7c948;
+      }
+      nav .sec {
+        color: #f7c948;
+        font-weight: bold;
+        margin-right: 4px;
+      }
+      .section-title {
+        font-size: 18px;
+        color: #f7c948;
+        margin: 28px 0 12px;
+        border-bottom: 2px solid #333;
+        padding-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .section-title .num {
+        background: #f7c948;
+        color: #000;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+      }
+      .row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .panel {
+        background: #16213e;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        flex: 1;
+        min-width: 340px;
+      }
+      canvas {
+        display: block;
+        border-radius: 8px;
+        margin: 0 auto;
+        background: #0a0a1a;
+      }
+      .formula-box {
+        background: #0f3460;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-family: 'Courier New', monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        margin-top: 8px;
+      }
+      .formula-box .hl {
+        color: #f7c948;
+      }
+      .formula-box .green {
+        color: #2ecc71;
+      }
+      .formula-box .red {
+        color: #e74c3c;
+      }
+      .formula-box .note {
+        color: #888;
+        font-size: 11px;
+      }
+      .controls-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin: 6px 0;
+      }
+      .controls-row label {
+        font-size: 13px;
+        color: #aaa;
+        min-width: 50px;
+      }
+      .controls-row input[type='range'] {
+        flex: 1;
+        accent-color: #f7c948;
+        height: 4px;
+      }
+      .controls-row .val {
+        color: #f7c948;
+        font-weight: bold;
+        min-width: 36px;
+        text-align: center;
+        font-size: 13px;
+      }
+      .tip-box {
+        background: #1a1a3e;
+        border-left: 3px solid #f7c948;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin: 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .tip-box .label {
+        color: #f7c948;
+        font-weight: bold;
+      }
+      .key-point {
+        background: #0f3460;
+        border-left: 3px solid #2ecc71;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin: 8px 0;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .code-block {
+        background: #0a0a1a;
+        border-radius: 4px;
+        padding: 6px 10px;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        overflow-x: auto;
+        margin: 6px 0;
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 6px 0;
+      }
+      .btn {
+        background: #0f3460;
+        border: 1px solid #333;
+        color: #ddd;
+        padding: 5px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: #1a4a80;
+        border-color: #f7c948;
+        color: #f7c948;
+      }
+      .btn.active {
+        background: #f7c948;
+        color: #000;
+        border-color: #f7c948;
+      }
+      select {
+        background: #0f3460;
+        color: #ddd;
+        border: 1px solid #333;
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 12px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📐 The Book of Shaders 高级模块完全指南</h1>
+    <p class="subtitle">图像处理 · 模拟仿真 · 3D 图形学 — 交互式可视化学习</p>
+
+    <nav id="topNav">
+      <span class="sec">📷</span><a href="#sec1">图像处理</a> <span class="sec">🔬</span
+      ><a href="#sec2">模拟仿真</a> <span class="sec">🎮</span><a href="#sec3">3D 图形学</a>
+    </nav>
+
+    <!-- ================================================================ -->
+    <!-- PART 1: IMAGE PROCESSING -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec1">
+      <span class="num">1</span> 📷 Image Processing 图像处理
+    </div>
+
+    <!-- 1.1 Textures -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      1.1 Textures（纹理）— 纹理坐标与采样
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cTexture" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>重复</label>
+          <input type="range" id="texRepeat" min="1" max="6" value="2" step="1" />
+          <span class="val" id="texRepeatVal">2</span>
+        </div>
+        <div class="controls-row">
+          <label>偏移 X</label>
+          <input type="range" id="texOffX" min="0" max="100" value="0" />
+          <span class="val" id="texOffXVal">0.00</span>
+        </div>
+        <div class="controls-row">
+          <label>偏移 Y</label>
+          <input type="range" id="texOffY" min="0" max="100" value="0" />
+          <span class="val" id="texOffYVal">0.00</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">📐 纹理采样公式</div>
+          <div style="margin: 6px 0">
+            uv = <span class="green">fract(uv * repeat + offset)</span><br />
+            <span style="color: #888">// fract 使纹理平铺重复</span>
+          </div>
+          <div class="code-block">
+            // GLSL 纹理采样<br />
+            vec2 uv = vUv * uRepeat + uOffset;<br />
+            vec4 color = texture2D(uTexture, fract(uv));
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note"
+              >🎯 纹理坐标 (0,0) 左下 → (1,1) 右上<br />
+              fract() 让纹理在 [0,1] 区间无限重复</span
+            >
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">💡 纹理贴图原理：</span>
+          每个片元（像素）根据其 UV 坐标从纹理图中采样颜色。<br />
+          纹理本质 = 一个 2D 颜色数组，通过坐标映射到 3D 表面。
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.2 Image Operations -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      1.2 Image Operations（图像操作）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cImgOps" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>亮度</label>
+          <input type="range" id="imgBright" min="-80" max="80" value="0" />
+          <span class="val" id="imgBrightVal">0</span>
+        </div>
+        <div class="controls-row">
+          <label>对比度</label>
+          <input type="range" id="imgContrast" min="0" max="200" value="100" />
+          <span class="val" id="imgContrastVal">1.0</span>
+        </div>
+        <div class="controls-row">
+          <label>饱和度</label>
+          <input type="range" id="imgSatur" min="0" max="200" value="100" />
+          <span class="val" id="imgSaturVal">1.0</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="document.getElementById('imgHue').value=0;drawImgOps();">
+            重置
+          </button>
+          <button
+            class="btn"
+            onclick="document.getElementById('imgInvert').checked=!document.getElementById('imgInvert').checked;drawImgOps();"
+          >
+            反转
+          </button>
+        </div>
+        <div class="controls-row">
+          <label>色相旋转</label>
+          <input type="range" id="imgHue" min="0" max="360" value="0" />
+          <span class="val" id="imgHueVal">0°</span>
+        </div>
+        <div class="controls-row">
+          <label
+            ><input type="checkbox" id="imgInvert" style="accent-color: #f7c948" /> 反转颜色</label
+          >
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🎨 像素操作公式</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">亮度调整：</span> rgb = rgb + brightness<br />
+            <span class="green">对比度调整：</span> rgb = (rgb - 0.5) * contrast + 0.5<br />
+            <span class="green">饱和度调整：</span> gray = dot(rgb, vec3(0.299,0.587,0.114))<br />
+            &nbsp;&nbsp; rgb = mix(gray, rgb, saturation)<br />
+            <span class="green">色相旋转：</span> 在 RGB 空间旋转色相角度<br />
+            <span class="green">反转：</span> rgb = 1.0 - rgb
+          </div>
+          <div class="code-block" style="margin-top: 4px">
+            // GLSL 亮度/对比度矩阵<br />
+            mat3 brightnessContrast(float b, float c) {<br />
+            &nbsp;&nbsp;return mat3(c,0,0, 0,c,0, 0,0,c) + b;<br />
+            }
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🔬 色相旋转矩阵：</span>
+          色相旋转实际上是在 YIQ 颜色空间对 I/Q 通道做旋转！<br />
+          公式：先转 YIQ → 旋转 I/Q → 转回 RGB
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.3 Kernel Convolutions -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      1.3 Kernel Convolutions（卷积核）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cKernel" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>卷积核</label>
+          <select id="kernelSelect" onchange="drawKernel()">
+            <option value="edge">边缘检测 (Sobel)</option>
+            <option value="blur">高斯模糊</option>
+            <option value="sharpen">锐化</option>
+            <option value="emboss">浮雕</option>
+            <option value="outline">轮廓</option>
+          </select>
+        </div>
+        <div class="controls-row">
+          <label>强度</label>
+          <input type="range" id="kernelStrength" min="10" max="200" value="100" />
+          <span class="val" id="kernelStrengthVal">1.0</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🧮 3×3 卷积核矩阵</div>
+          <div style="text-align: center; font-size: 15px; line-height: 1.8; margin: 6px 0">
+            <span style="color: #888">⎡</span> a &nbsp; b &nbsp; c <span style="color: #888">⎤</span
+            ><br />
+            <span style="color: #888">⎢</span> d &nbsp; e &nbsp; f <span style="color: #888">⎥</span
+            ><br />
+            <span style="color: #888">⎣</span> g &nbsp; h &nbsp; i
+            <span style="color: #888">⎦</span>
+          </div>
+          <div style="margin: 6px 0; border-top: 1px solid #333; padding-top: 6px">
+            <span class="green">输出像素 = sum(核 * 邻域像素) / 归一化</span><br />
+            <span class="note">每个输出像素是其 3×3 邻域的加权平均</span>
+          </div>
+          <div id="kernelMatrixDisplay" class="code-block" style="margin: 4px 0">
+            Sobel X: [-1,0,1; -2,0,2; -1,0,1] 水平边缘<br />
+            Sobel Y: [-1,-2,-1; 0,0,0; 1,2,1] 垂直边缘
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🎯 卷积本质：</span>
+          卷积核 = 一个"滑动窗口"，对每个像素及其邻居做加权求和。<br />
+          不同的核 = 不同的特征提取器（边缘/模糊/锐化…）
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.4 Filters -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      1.4 Filters（滤镜效果）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cFilters" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>滤镜</label>
+          <select id="filterSelect" onchange="drawFilters()">
+            <option value="pixelate">像素化 (Pixelate)</option>
+            <option value="mosaic">马赛克</option>
+            <option value="vignette">暗角 (Vignette)</option>
+            <option value="kaleidoscope">万花筒</option>
+            <option value="fishEye">鱼眼</option>
+          </select>
+        </div>
+        <div class="controls-row">
+          <label>强度</label>
+          <input type="range" id="filterStrength" min="1" max="50" value="20" />
+          <span class="val" id="filterStrengthVal">20</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🌈 滤镜原理</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">像素化：</span> uv = floor(uv * grid) / grid<br />
+            <span class="green">暗角：</span> factor = 1.0 - length(uv - 0.5)<br />
+            <span class="green">万花筒：</span> uv = reflect(uv, angle) 的多重镜像<br />
+            <span class="green">鱼眼：</span> 将 UV 映射到球面坐标再反投影
+          </div>
+          <div class="code-block">
+            // 像素化 GLSL<br />
+            vec2 pixelate(vec2 uv, float n) {<br />
+            &nbsp;&nbsp;return floor(uv * n) / n;<br />
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1.5 Other Effects -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      1.5 Other Effects（其他效果）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cOtherEffects" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>效果</label>
+          <select id="otherSelect" onchange="drawOther()">
+            <option value="lens">镜头畸变</option>
+            <option value="swirl">漩涡 (Swirl)</option>
+            <option value="oil">油画效果</option>
+            <option value="glitch">故障艺术 (Glitch)</option>
+          </select>
+        </div>
+        <div class="controls-row">
+          <label>强度</label>
+          <input type="range" id="otherStrength" min="0" max="100" value="40" />
+          <span class="val" id="otherStrengthVal">0.40</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🎭 特殊效果原理</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">漩涡：</span> uv 绕中心旋转，旋转量与半径成反比<br />
+            <span class="green">镜头畸变：</span> uv *= 1.0 + k * length(uv)^2<br />
+            <span class="green">油画效果：</span> 在邻域统计颜色直方图，取出现最多的颜色<br />
+            <span class="green">Glitch：</span> 随机偏移水平条带 + RGB 通道分离
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- PART 2: SIMULATION -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec2"><span class="num">2</span> 🔬 Simulation 模拟仿真</div>
+
+    <!-- 2.1 Pingpong -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      2.1 Pingpong（双缓冲乒乓）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cPingpong" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>速度</label>
+          <input type="range" id="ppSpeed" min="1" max="20" value="5" />
+          <span class="val" id="ppSpeedVal">5</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="ppRunning=!ppRunning">▶️ ⏸ 播放/暂停</button>
+          <button class="btn" onclick="ppReset()">🔄 重置</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🔄 Pingpong 双缓冲原理</div>
+          <div style="margin: 6px 0">
+            <span class="green">核心思想：</span>使用两个纹理/缓冲区交替读写<br />
+            <span class="note">避免在同一缓冲区读写造成的竞争</span>
+          </div>
+          <div class="code-block">
+            // 双缓冲伪代码<br />
+            for (int i = 0; i < iter; i++) {<br />
+            &nbsp;&nbsp;read = ping[i % 2];&nbsp;&nbsp;// 读缓冲区 A<br />
+            &nbsp;&nbsp;write = ping[1 - i % 2]; // 写缓冲区 B<br />
+            &nbsp;&nbsp;process(read → write);&nbsp;&nbsp;// A → B<br />
+            }&nbsp;&nbsp;&nbsp;&nbsp;// 下一帧交换角色
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note"
+              >🎯 左上是"读缓冲区"显示的内容，右上是"写缓冲区"<br />
+              下方是乒乓球在两者间来回弹跳的可视化</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.2 Conway -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      2.2 Conway's Game of Life（康威生命游戏）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cConway" width="500" height="420"></canvas>
+        <div class="btn-row">
+          <button class="btn" id="conwayPlayBtn" onclick="toggleConway()">⏸ 暂停</button>
+          <button class="btn" onclick="conwayRandom()">🎲 随机</button>
+          <button class="btn" onclick="conwayClear()">🗑 清空</button>
+          <button class="btn" onclick="conwayGlider()">✈️ 滑翔机</button>
+        </div>
+        <div class="controls-row">
+          <label>速度</label>
+          <input type="range" id="conwaySpeed" min="50" max="500" value="200" step="10" />
+          <span class="val" id="conwaySpeedVal">200ms</span>
+        </div>
+        <div style="color: #888; font-size: 11px; margin-top: 4px">
+          💡 点击画布上的格子可切换生死
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🧬 生命游戏规则</div>
+          <div style="margin: 6px 0">
+            <span class="green">每个细胞有 8 个邻居：</span><br />
+            <span style="color: #2ecc71">• 活细胞：</span> 2-3 个活邻居 → 存活；否则 → 死亡<br />
+            <span style="color: #e74c3c">• 死细胞：</span> 恰好 3 个活邻居 → 变为活细胞
+          </div>
+          <div class="code-block">
+            // GLSL 生命游戏核心<br />
+            int neighbors = sum3x3(grid);<br />
+            float alive = grid[0][0];<br />
+            float state = 0.0;<br />
+            if (alive > 0.5) {<br />
+            &nbsp;&nbsp;state = (neighbors>=2 && neighbors<=3) ? 1.0 : 0.0;<br />
+            } else {<br />
+            &nbsp;&nbsp;state = (neighbors == 3) ? 1.0 : 0.0;<br />
+            }
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🔬 生命游戏是图灵完备的：</span>
+          可以模拟任意计算机！滑翔机 = "数据包"，碰撞 = "运算"
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.3 Ripples -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      2.3 Ripples（水面波纹）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cRipples" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>阻尼</label>
+          <input type="range" id="ripDamp" min="95" max="99" value="98" step="0.5" />
+          <span class="val" id="ripDampVal">0.98</span>
+        </div>
+        <div class="controls-row">
+          <label>传播速度</label>
+          <input type="range" id="ripSpeed" min="1" max="10" value="5" step="0.5" />
+          <span class="val" id="ripSpeedVal">5.0</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="ripRunning=!ripRunning">▶️ ⏸ 播放/暂停</button>
+          <button class="btn" onclick="ripReset()">🔄 清空</button>
+        </div>
+        <div style="color: #888; font-size: 11px; margin-top: 4px">💡 点击水面产生波纹</div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🌊 波动方程</div>
+          <div style="margin: 6px 0">
+            <span class="green">离散形式（2D）：</span><br />
+            buf2[y][x] = (buf[y-1][x] + buf[y+1][x] +<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;buf[y][x-1] +
+            buf[y][x+1]) * 0.5<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- buf_prev[y][x] * damping<br />
+            <span class="note">每个像素 = 上下左右邻居平均值 - 前一帧 * 阻尼</span>
+          </div>
+          <div class="code-block">
+            // 简化版波动更新<br />
+            float wave = (top + bottom + left + right) * 0.5<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- prev * damping;
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🎯 物理原理：</span>
+          波动方程 ∂²u/∂t² = c² · ∇²u<br />
+          每个点的加速度 = 周围点的平均曲率 × 波速²<br />
+          阻尼让波逐渐衰减到零。
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.4 Water Color -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      2.4 Water Color（水彩效果）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cWaterColor" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>扩散速度</label>
+          <input type="range" id="wcDiff" min="1" max="20" value="8" step="0.5" />
+          <span class="val" id="wcDiffVal">8.0</span>
+        </div>
+        <div class="controls-row">
+          <label>蒸发率</label>
+          <input type="range" id="wcEvap" min="1" max="20" value="6" step="0.5" />
+          <span class="val" id="wcEvapVal">6.0</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="wcRunning=!wcRunning">▶️ ⏸ 播放/暂停</button>
+          <button class="btn" onclick="wcReset()">🔄 清空</button>
+        </div>
+        <div style="color: #888; font-size: 11px; margin-top: 4px">
+          💡 点击涂抹颜色，观察颜料在水中扩散
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🎨 水彩扩散模拟</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">颜料浓度 + 水量 双场模拟：</span><br />
+            • 水量场 <span class="hl">W</span>：控制颜料扩散速度<br />
+            • 颜料场 <span class="hl">C</span>：RGB 浓度
+          </div>
+          <div class="code-block">
+            // 每步更新<br />
+            // 颜料扩散：向水量高的区域流动<br />
+            color += diffuse(color, water) * dt;<br />
+            // 水量蒸发<br />
+            water *= (1.0 - evaporation * dt);
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note"
+              >🎯 水量高的地方颜料扩散快，蒸发后颜料固定<br />
+              这就是水彩"湿画法"的数学模拟！</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2.5 Reaction Diffusion -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      2.5 Reaction-Diffusion（反应扩散系统）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cRD" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>Feed (f)</label>
+          <input type="range" id="rdFeed" min="1" max="10" value="4" step="0.1" />
+          <span class="val" id="rdFeedVal">0.040</span>
+        </div>
+        <div class="controls-row">
+          <label>Kill (k)</label>
+          <input type="range" id="rdKill" min="1" max="10" value="6" step="0.1" />
+          <span class="val" id="rdKillVal">0.060</span>
+        </div>
+        <div class="controls-row">
+          <label>DA</label>
+          <input type="range" id="rdDA" min="0.5" max="5" value="1.0" step="0.1" />
+          <span class="val" id="rdDAVal">1.0</span>
+        </div>
+        <div class="controls-row">
+          <label>DB</label>
+          <input type="range" id="rdDB" min="1" max="10" value="5.0" step="0.1" />
+          <span class="val" id="rdDBVal">5.0</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="rdRunning=!rdRunning">▶️ ⏸ 播放/暂停</button>
+          <button class="btn" onclick="rdReset()">🔄 重置</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🧪 Gray-Scott 反应扩散方程</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">两种化学物质 A 和 B：</span><br />
+            ∂A/∂t = D_A·∇²A - A·B² + f·(1-A)<br />
+            ∂B/∂t = D_B·∇²B + A·B² - (f+k)·B
+          </div>
+          <div style="margin: 6px 0">
+            <span class="hl">f</span> = feed rate（供应率）<br />
+            <span class="hl">k</span> = kill rate（消耗率）<br />
+            <span class="hl">D_A, D_B</span> = 扩散速率
+          </div>
+          <div class="code-block">
+            // 离散更新<br />
+            float reaction = A * B * B;<br />
+            float newA = A + (DA * laplaceA - reaction<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ feed * (1.0 -
+            A)) * dt;<br />
+            float newB = B + (DB * laplaceB + reaction<br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- (feed + kill)
+            * B) * dt;
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🔬 参数对图样的影响：</span>
+          不同的 (f,k) 组合产生不同的斑图：斑点、条纹、迷宫、螺旋…<br />
+          <span class="note">这就是 Turing 图灵斑图的起源！</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <!-- PART 3: 3D GRAPHICS -->
+    <!-- ================================================================ -->
+    <div class="section-title" id="sec3"><span class="num">3</span> 🎮 3D Graphics 3D 图形学</div>
+
+    <!-- 3.1 Lights -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.1 Lights（光照模型 — Phong）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cLights" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>环境光</label>
+          <input type="range" id="lightAmbient" min="0" max="100" value="15" />
+          <span class="val" id="lightAmbientVal">0.15</span>
+        </div>
+        <div class="controls-row">
+          <label>漫反射</label>
+          <input type="range" id="lightDiffuse" min="0" max="100" value="60" />
+          <span class="val" id="lightDiffuseVal">0.60</span>
+        </div>
+        <div class="controls-row">
+          <label>高光</label>
+          <input type="range" id="lightSpecular" min="0" max="100" value="40" />
+          <span class="val" id="lightSpecularVal">0.40</span>
+        </div>
+        <div class="controls-row">
+          <label>高光指数</label>
+          <input type="range" id="lightShiny" min="1" max="100" value="32" />
+          <span class="val" id="lightShinyVal">32</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">💡 Phong 光照模型</div>
+          <div style="margin: 6px 0">
+            <span class="green">I = I_ambient + I_diffuse + I_specular</span>
+          </div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="hl">环境光：</span> k_a · I_a &nbsp;(全局背景光)<br />
+            <span class="hl">漫反射：</span> k_d · I_d · (N·L) &nbsp;(Lambert 定律)<br />
+            <span class="hl">高光：</span> k_s · I_s · (R·V)^α &nbsp;(Blinn-Phong)
+          </div>
+          <div class="code-block">
+            // GLSL Phong 着色<br />
+            vec3 N = normalize(normal);<br />
+            vec3 L = normalize(lightPos);<br />
+            vec3 V = normalize(viewDir);<br />
+            vec3 R = reflect(-L, N);<br />
+            float diff = max(dot(N, L), 0.0);<br />
+            float spec = pow(max(dot(R, V), 0.0), shininess);
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🎯 光照三要素：</span>
+          环境光 → 避免全黑<br />
+          漫反射 → 表现物体立体感（Lambert 定律）<br />
+          高光 → 表现材质光泽度
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.2 Normal-maps -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.2 Normal-maps（法线贴图）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cNormalMap" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>光照角度 X</label>
+          <input type="range" id="nmLightX" min="-100" max="100" value="50" />
+          <span class="val" id="nmLightXVal">0.50</span>
+        </div>
+        <div class="controls-row">
+          <label>光照角度 Y</label>
+          <input type="range" id="nmLightY" min="-100" max="100" value="30" />
+          <span class="val" id="nmLightYVal">0.30</span>
+        </div>
+        <div class="controls-row">
+          <label
+            ><input type="checkbox" id="nmShowNormal" checked style="accent-color: #f7c948" />
+            显示法线颜色</label
+          >
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🗺️ 法线贴图原理</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">法线贴图 = 将法线编码为 RGB 颜色：</span><br />
+            R = (Nx + 1) / 2 &nbsp;→ 红色分量 = X 方向<br />
+            G = (Ny + 1) / 2 &nbsp;→ 绿色分量 = Y 方向<br />
+            B = (Nz + 1) / 2 &nbsp;→ 蓝色分量 = Z 方向
+          </div>
+          <div style="margin: 6px 0">
+            <span class="note">💡 偏蓝 = 法线朝上（Z+）← 大多数表面默认朝上</span>
+          </div>
+          <div class="code-block">
+            // 从纹理解码法线<br />
+            vec3 normal = texture2D(normalMap, uv).rgb;<br />
+            normal = normal * 2.0 - 1.0; // [0,1] → [-1,1]<br />
+            // 然后用这个法线计算光照
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="hl">👆 左侧演示：</span>砖墙法线贴图效果<br />
+            移动光源角度观察法线如何影响光照
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.3 Bump-maps -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.3 Bump-maps（凹凸贴图）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cBumpMap" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>凹凸高度</label>
+          <input type="range" id="bumpHeight" min="1" max="50" value="15" />
+          <span class="val" id="bumpHeightVal">15</span>
+        </div>
+        <div class="controls-row">
+          <label>光照角度</label>
+          <input type="range" id="bumpAngle" min="0" max="360" value="45" />
+          <span class="val" id="bumpAngleVal">45°</span>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">⛰️ 凹凸贴图 vs 法线贴图</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">Bump Map（高度图）：</span>灰度图，亮度 = 高度<br />
+            <span class="green">法线贴图：</span>直接编码法线方向（RGB）<br /><br />
+            <span class="hl">高度图 → 法线的计算：</span><br />
+            dhdx = height(x+dx) - height(x-dx)<br />
+            dhdy = height(y+dy) - height(y-dy)<br />
+            normal = normalize(vec3(-dhdx, -dhdy, 1.0))
+          </div>
+          <div class="code-block">
+            // 高度图求梯度得法线<br />
+            float hL = texture(height, uv - dx).r;<br />
+            float hR = texture(height, uv + dx).r;<br />
+            float hD = texture(height, uv - dy).r;<br />
+            float hU = texture(height, uv + dy).r;<br />
+            vec3 normal = normalize(<br />
+            &nbsp;&nbsp;vec3(hL - hR, hD - hU, 0.05));
+          </div>
+        </div>
+        <div class="tip-box">
+          <span class="label">🎯 区别：</span>
+          凹凸贴图 = 高度图（灰度），法线需计算<br />
+          法线贴图 = 直接存储法线（彩色），省去计算
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.4 Ray Marching -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.4 Ray Marching（光线步进）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cRayMarch" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>最大步数</label>
+          <input type="range" id="rmSteps" min="5" max="60" value="20" />
+          <span class="val" id="rmStepsVal">20</span>
+        </div>
+        <div class="btn-row">
+          <button class="btn" onclick="rmAnimating=!rmAnimating">▶️ ⏸ 动画/暂停</button>
+          <button class="btn" onclick="rmReset()">🔄 重置</button>
+        </div>
+        <div style="color: #888; font-size: 11px; margin-top: 4px">
+          💡 红色点 = 每一步的采样位置
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🎯 Ray Marching 核心原理</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">SDF（有符号距离函数）：</span><br />
+            每个点到场景中最近表面的距离<br /><br />
+            <span class="hl">步进过程：</span><br />
+            for (int i = 0; i < maxSteps; i++) {<br />
+            &nbsp;&nbsp;float d = sdf(rayPos);<br />
+            &nbsp;&nbsp;if (d < epsilon) → 命中！<br />
+            &nbsp;&nbsp;rayPos += rayDir * d;&nbsp;&nbsp;// 安全步进 d<br />
+            }
+          </div>
+          <div class="code-block">
+            // 2D 圆形 SDF<br />
+            float circleSDF(vec2 p, float r) {<br />
+            &nbsp;&nbsp;return length(p) - r;<br />
+            }
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note">🎯 每次步进距离 = SDF 值 → 保证不会"穿过"物体</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.5 Env-maps -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.5 Environmental-maps（环境贴图）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cEnvMap" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>反射角度</label>
+          <input type="range" id="envAngle" min="0" max="360" value="0" />
+          <span class="val" id="envAngleVal">0°</span>
+        </div>
+        <div class="controls-row">
+          <label
+            ><input type="checkbox" id="envShowRay" checked style="accent-color: #f7c948" />
+            显示反射光线</label
+          >
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🌍 环境贴图原理</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">球面贴图 (Spherical)：</span><br />
+            用法线方向的球形坐标采样环境纹理<br /><br />
+            <span class="green">立方体贴图 (Cube Map)：</span><br />
+            从反射方向发射射线，与立方体贴图6个面相交
+          </div>
+          <div class="code-block">
+            // 球面反射采样<br />
+            vec2 uv = vec2(<br />
+            &nbsp;&nbsp;atan(normal.z, normal.x) / PI * 0.5 + 0.5,<br />
+            &nbsp;&nbsp;asin(normal.y) / PI + 0.5<br />
+            );<br />
+            vec4 envColor = texture(envMap, uv);
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note">🎯 左图：球面上的法线方向映射到 2D 平面纹理</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3.6 Reflect & Refract -->
+    <div class="section-title" style="font-size: 15px; border-bottom-color: #444; margin-top: 8px">
+      3.6 Reflect & Refract（反射与折射）
+    </div>
+    <div class="row">
+      <div class="panel">
+        <canvas id="cReflect" width="500" height="420"></canvas>
+        <div class="controls-row">
+          <label>入射角</label>
+          <input type="range" id="refAngle" min="5" max="85" value="45" />
+          <span class="val" id="refAngleVal">45°</span>
+        </div>
+        <div class="controls-row">
+          <label>折射率 (n1/n2)</label>
+          <input type="range" id="refIor" min="10" max="50" value="15" />
+          <span class="val" id="refIorVal">1.50</span>
+        </div>
+        <div class="controls-row">
+          <label
+            ><input type="checkbox" id="refShowBoth" checked style="accent-color: #f7c948" />
+            同时显示反射+折射</label
+          >
+        </div>
+      </div>
+      <div class="panel">
+        <div class="formula-box">
+          <div class="hl">🔦 Snell 定律 & Fresnel 效应</div>
+          <div style="margin: 6px 0; font-size: 12px">
+            <span class="green">Snell 定律：</span><br />
+            n₁·sin(θ₁) = n₂·sin(θ₂)<br /><br />
+            <span class="green">反射方向 (GLSL)：</span><br />
+            vec3 R = reflect(I, N);<br /><br />
+            <span class="green">折射方向 (GLSL)：</span><br />
+            vec3 T = refract(I, N, eta);<br />
+            &nbsp;&nbsp;// eta = n1/n2
+          </div>
+          <div class="code-block">
+            // Fresnel 近似 (Schlick)<br />
+            float fresnel = pow(1.0 - cosTheta, 5.0);<br />
+            fresnel = mix(fresnel, 1.0, f0);<br />
+            vec3 color = mix(refractColor, <br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reflectColor, fresnel);
+          </div>
+          <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
+            <span class="note"
+              >🎯 光滑表面同时发生反射和折射，<br />
+              Fresnel 效应 = 掠射角时反射增强（如水面）</span
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================ -->
+    <script>
+      // ================================================================
+      // TEXTURES
+      // ================================================================
+      function genCheckerBoard(w, h, cells) {
+        const d = new Uint8Array(w * h * 4);
+        for (let y = 0; y < h; y++) {
+          for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            const col = Math.floor((x / w) * cells) % 2 ^ Math.floor((y / h) * cells) % 2;
+            const c = col ? [200, 180, 120] : [60, 50, 40];
+            d[i] = c[0];
+            d[i + 1] = c[1];
+            d[i + 2] = c[2];
+            d[i + 3] = 255;
+          }
+        }
+        return d;
+      }
+
+      function drawTexture() {
+        const c = document.getElementById('cTexture'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        ctx.clearRect(0, 0, W, H);
+        const repeat = parseInt(document.getElementById('texRepeat').value);
+        const offX = parseInt(document.getElementById('texOffX').value) / 100;
+        const offY = parseInt(document.getElementById('texOffY').value) / 100;
+        document.getElementById('texRepeatVal').textContent = repeat;
+        document.getElementById('texOffXVal').textContent = offX.toFixed(2);
+        document.getElementById('texOffYVal').textContent = offY.toFixed(2);
+
+        const res = 200;
+        const texData = genCheckerBoard(res, res, 8);
+
+        // 绘制纹理
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let u = x / W,
+              v = y / H;
+            u = u * repeat + offX;
+            v = v * repeat + offY;
+            u = u - Math.floor(u);
+            v = v - Math.floor(v);
+            if (u < 0) u += 1;
+            if (v < 0) v += 1;
+            const tx = Math.floor(u * res);
+            const ty = Math.floor(v * res);
+            const idx = ((H - 1 - y) * W + x) * 4; // flip
+            const tidx = (ty * res + tx) * 4;
+            ctx.fillStyle = `rgb(${texData[tidx]},${texData[tidx + 1]},${texData[tidx + 2]})`;
+            ctx.fillRect(x, y, 1, 1);
+          }
+        }
+
+        // 纹理坐标标注
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('(0,0)', 4, H - 6);
+        ctx.fillText('(1,1)', W - 36, 14);
+        ctx.fillStyle = '#f7c948';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`重复: ${repeat}x  偏移: (${offX.toFixed(2)}, ${offY.toFixed(2)})`, W / 2, 18);
+      }
+
+      document.getElementById('texRepeat').addEventListener('input', drawTexture);
+      document.getElementById('texOffX').addEventListener('input', drawTexture);
+      document.getElementById('texOffY').addEventListener('input', drawTexture);
+
+      // ================================================================
+      // IMAGE OPERATIONS
+      // ================================================================
+      function drawImgOps() {
+        const c = document.getElementById('cImgOps'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const brightness = parseInt(document.getElementById('imgBright').value);
+        const contrast = parseInt(document.getElementById('imgContrast').value) / 100;
+        const satur = parseInt(document.getElementById('imgSatur').value) / 100;
+        const hue = parseInt(document.getElementById('imgHue').value);
+        const invert = document.getElementById('imgInvert').checked;
+        document.getElementById('imgBrightVal').textContent = brightness;
+        document.getElementById('imgContrastVal').textContent = contrast.toFixed(1);
+        document.getElementById('imgSaturVal').textContent = satur.toFixed(1);
+        document.getElementById('imgHueVal').textContent = hue + '°';
+
+        // 生成渐变彩条+图案测试图
+        const imgData = ctx.createImageData(W, H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let r, g, b;
+            const u = x / W,
+              v = y / H;
+            // 生成彩虹+条纹测试图
+            r = 0.5 + 0.5 * Math.sin(u * 6.28 + v * 3.14);
+            g = 0.5 + 0.5 * Math.sin(u * 6.28 + 2.09 + v * 3.14);
+            b = 0.5 + 0.5 * Math.sin(u * 6.28 + 4.19 + v * 3.14);
+            // 加一些条纹
+            if (Math.sin(u * 30) * Math.sin(v * 30) > 0.3) {
+              r = Math.max(0, r - 0.2);
+              g = Math.max(0, g - 0.2);
+              b = Math.max(0, b - 0.2);
+            }
+
+            // 应用操作
+            // Brightness
+            r += brightness / 100;
+            g += brightness / 100;
+            b += brightness / 100;
+
+            // Contrast
+            r = (r - 0.5) * contrast + 0.5;
+            g = (g - 0.5) * contrast + 0.5;
+            b = (b - 0.5) * contrast + 0.5;
+
+            // Saturation
+            const gray = r * 0.299 + g * 0.587 + b * 0.114;
+            r = gray + (r - gray) * satur;
+            g = gray + (g - gray) * satur;
+            b = gray + (b - gray) * satur;
+
+            // Hue rotate (simplified)
+            if (hue !== 0) {
+              const cosH = Math.cos((hue * Math.PI) / 180);
+              const sinH = Math.sin((hue * Math.PI) / 180);
+              // Simplified hue rotation in RGB
+              const nr =
+                r * (0.213 + cosH * 0.787 - sinH * 0.213) +
+                g * (0.715 - cosH * 0.715 - sinH * 0.715) +
+                b * (0.072 - cosH * 0.072 + sinH * 0.928);
+              const ng =
+                r * (0.213 - cosH * 0.213 + sinH * 0.143) +
+                g * (0.715 + cosH * 0.285 + sinH * 0.14) +
+                b * (0.072 - cosH * 0.072 - sinH * 0.283);
+              const nb =
+                r * (0.213 - cosH * 0.213 - sinH * 0.787) +
+                g * (0.715 - cosH * 0.715 + sinH * 0.715) +
+                b * (0.072 + cosH * 0.928 + sinH * 0.072);
+              r = nr;
+              g = ng;
+              b = nb;
+            }
+
+            // Invert
+            if (invert) {
+              r = 1 - r;
+              g = 1 - g;
+              b = 1 - b;
+            }
+
+            // Clamp
+            r = Math.max(0, Math.min(1, r));
+            g = Math.max(0, Math.min(1, g));
+            b = Math.max(0, Math.min(1, b));
+
+            const i = (y * W + x) * 4;
+            imgData.data[i] = r * 255;
+            imgData.data[i + 1] = g * 255;
+            imgData.data[i + 2] = b * 255;
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('imgBright').addEventListener('input', drawImgOps);
+      document.getElementById('imgContrast').addEventListener('input', drawImgOps);
+      document.getElementById('imgSatur').addEventListener('input', drawImgOps);
+      document.getElementById('imgHue').addEventListener('input', drawImgOps);
+      document.getElementById('imgInvert').addEventListener('change', drawImgOps);
+
+      // ================================================================
+      // KERNEL CONVOLUTIONS
+      // ================================================================
+      const kernels = {
+        edge: {
+          name: 'Sobel 边缘',
+          matrix: [-1, 0, 1, -2, 0, 2, -1, 0, 1],
+          norm: 1,
+          desc: 'Sobel X: [-1,0,1; -2,0,2; -1,0,1]',
+        },
+        blur: {
+          name: '高斯模糊',
+          matrix: [1, 2, 1, 2, 4, 2, 1, 2, 1],
+          norm: 16,
+          desc: '[1,2,1; 2,4,2; 1,2,1] ÷ 16',
+        },
+        sharpen: {
+          name: '锐化',
+          matrix: [0, -1, 0, -1, 5, -1, 0, -1, 0],
+          norm: 1,
+          desc: '[0,-1,0; -1,5,-1; 0,-1,0]',
+        },
+        emboss: {
+          name: '浮雕',
+          matrix: [-2, -1, 0, -1, 1, 1, 0, 1, 2],
+          norm: 1,
+          desc: '[-2,-1,0; -1,1,1; 0,1,2]',
+        },
+        outline: {
+          name: '轮廓',
+          matrix: [-1, -1, -1, -1, 8, -1, -1, -1, -1],
+          norm: 1,
+          desc: '[-1,-1,-1; -1,8,-1; -1,-1,-1]',
+        },
+      };
+
+      function drawKernel() {
+        const c = document.getElementById('cKernel'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const strength = parseInt(document.getElementById('kernelStrength').value) / 100;
+        document.getElementById('kernelStrengthVal').textContent = strength.toFixed(1);
+        const key = document.getElementById('kernelSelect').value;
+        const k = kernels[key];
+        document.getElementById('kernelMatrixDisplay').innerHTML = k.desc;
+
+        // 生成测试图（圆形+方块+条纹）
+        const imgData = ctx.createImageData(W, H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const u = x / W,
+              v = y / H;
+            let r = 0.5,
+              g = 0.5,
+              b = 0.5;
+            const cx = 0.5,
+              cy = 0.45;
+            const d = Math.sqrt((u - cx) ** 2 + (v - cy) ** 2);
+            if (d < 0.18) {
+              r = 0.9;
+              g = 0.3;
+              b = 0.2;
+            } else if (Math.abs(u - 0.3) < 0.12 && Math.abs(v - 0.7) < 0.12) {
+              r = 0.2;
+              g = 0.6;
+              b = 0.9;
+            } else if (Math.abs(u - 0.7) < 0.1 && Math.abs(v - 0.7) < 0.1) {
+              r = 0.9;
+              g = 0.8;
+              b = 0.1;
+            }
+            if (Math.sin(u * 40) * Math.sin(v * 40) > 0.7) {
+              r = 0.8;
+              g = 0.8;
+              b = 0.8;
+            }
+            const i = (y * W + x) * 4;
+            imgData.data[i] = r * 255;
+            imgData.data[i + 1] = g * 255;
+            imgData.data[i + 2] = b * 255;
+            imgData.data[i + 3] = 255;
+          }
+        }
+
+        // Apply kernel convolution
+        if (strength > 0.01) {
+          const src = new Float32Array(W * H * 3);
+          for (let i = 0; i < W * H; i++) {
+            src[i * 3] = imgData.data[i * 4] / 255;
+            src[i * 3 + 1] = imgData.data[i * 4 + 1] / 255;
+            src[i * 3 + 2] = imgData.data[i * 4 + 2] / 255;
+          }
+          const dst = new Float32Array(W * H * 3);
+          const m = k.matrix,
+            norm = k.norm;
+          for (let y = 1; y < H - 1; y++) {
+            for (let x = 1; x < W - 1; x++) {
+              let sumR = 0,
+                sumG = 0,
+                sumB = 0;
+              for (let ky = -1; ky <= 1; ky++) {
+                for (let kx = -1; kx <= 1; kx++) {
+                  const idx = ((y + ky) * W + (x + kx)) * 3;
+                  const kv = m[(ky + 1) * 3 + (kx + 1)];
+                  sumR += src[idx] * kv;
+                  sumG += src[idx + 1] * kv;
+                  sumB += src[idx + 2] * kv;
+                }
+              }
+              const i = (y * W + x) * 3;
+              dst[i] = (sumR / norm) * strength + (1 - strength) * src[y * W * 3 + x * 3];
+              dst[i + 1] = (sumG / norm) * strength + (1 - strength) * src[y * W * 3 + x * 3 + 1];
+              dst[i + 2] = (sumB / norm) * strength + (1 - strength) * src[y * W * 3 + x * 3 + 2];
+            }
+          }
+          for (let i = 0; i < W * H; i++) {
+            imgData.data[i * 4] = Math.max(0, Math.min(255, Math.abs(dst[i * 3]) * 255 * 2));
+            imgData.data[i * 4 + 1] = Math.max(
+              0,
+              Math.min(255, Math.abs(dst[i * 3 + 1]) * 255 * 2)
+            );
+            imgData.data[i * 4 + 2] = Math.max(
+              0,
+              Math.min(255, Math.abs(dst[i * 3 + 2]) * 255 * 2)
+            );
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('kernelSelect').addEventListener('change', drawKernel);
+      document.getElementById('kernelStrength').addEventListener('input', drawKernel);
+
+      // ================================================================
+      // FILTERS
+      // ================================================================
+      function drawFilters() {
+        const c = document.getElementById('cFilters'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const strength = parseInt(document.getElementById('filterStrength').value);
+        document.getElementById('filterStrengthVal').textContent = strength;
+        const key = document.getElementById('filterSelect').value;
+
+        const imgData = ctx.createImageData(W, H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let u = x / W,
+              v = y / H;
+            let r, g, b;
+
+            if (key === 'pixelate') {
+              const grid = strength;
+              u = Math.floor(u * grid) / grid;
+              v = Math.floor(v * grid) / grid;
+              // 然后从原始图采样
+            } else if (key === 'mosaic') {
+              const size = Math.max(1, strength / 2);
+              u = (Math.floor((u * W) / size) * size) / W;
+              v = (Math.floor((v * H) / size) * size) / H;
+            } else if (key === 'vignette') {
+              // 保留原色，后面叠加暗角
+            } else if (key === 'kaleidoscope') {
+              const seg = Math.max(2, Math.floor(strength / 3));
+              let angle = Math.atan2(v - 0.5, u - 0.5);
+              let rad = Math.sqrt((u - 0.5) ** 2 + (v - 0.5) ** 2);
+              angle = ((angle % ((Math.PI * 2) / seg)) + Math.PI * 2) % ((Math.PI * 2) / seg);
+              if (rad > 0.5) rad = 0.5;
+              u = 0.5 + rad * Math.cos(angle);
+              v = 0.5 + rad * Math.sin(angle);
+              // 镜像边界
+              u = Math.abs(u - Math.floor(u + 0.5));
+              v = Math.abs(v - Math.floor(v + 0.5));
+            } else if (key === 'fishEye') {
+              const f = strength / 30;
+              const dx = u - 0.5,
+                dy = v - 0.5;
+              const d = Math.sqrt(dx * dx + dy * dy);
+              const r = Math.atan(d * f * 3) / (f * 3) / Math.max(d, 0.001);
+              u = 0.5 + dx * r;
+              v = 0.5 + dy * r;
+            }
+
+            // 生成彩虹色
+            r = 0.5 + 0.5 * Math.sin(u * 6.28 + v * 3.14);
+            g = 0.5 + 0.5 * Math.sin(u * 6.28 + 2.09 + v * 3.14);
+            b = 0.5 + 0.5 * Math.sin(u * 6.28 + 4.19 + v * 3.14);
+            // 加一些细节
+            if (Math.sin(u * 25) * Math.sin(v * 25) > 0.5) {
+              r *= 0.7;
+              g *= 0.7;
+            }
+
+            if (key === 'vignette') {
+              const d = Math.sqrt((x / W - 0.5) ** 2 + (y / H - 0.5) ** 2) * 2;
+              const factor = 1 - Math.pow(d, 2) * (strength / 15);
+              r *= factor;
+              g *= factor;
+              b *= factor;
+            }
+
+            r = Math.max(0, Math.min(1, r));
+            g = Math.max(0, Math.min(1, g));
+            b = Math.max(0, Math.min(1, b));
+            const i = (y * W + x) * 4;
+            imgData.data[i] = r * 255;
+            imgData.data[i + 1] = g * 255;
+            imgData.data[i + 2] = b * 255;
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('filterSelect').addEventListener('change', drawFilters);
+      document.getElementById('filterStrength').addEventListener('input', drawFilters);
+
+      // ================================================================
+      // OTHER EFFECTS
+      // ================================================================
+      function drawOther() {
+        const c = document.getElementById('cOtherEffects'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const strength = parseInt(document.getElementById('otherStrength').value) / 100;
+        document.getElementById('otherStrengthVal').textContent = strength.toFixed(2);
+        const key = document.getElementById('otherSelect').value;
+
+        const imgData = ctx.createImageData(W, H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            let u = x / W,
+              v = y / H;
+            let ou = u,
+              ov = v;
+
+            if (key === 'swirl') {
+              const dx = u - 0.5,
+                dy = v - 0.5;
+              const d = Math.sqrt(dx * dx + dy * dy);
+              const angle = strength * 6.28 * (1 - d);
+              const cosA = Math.cos(angle),
+                sinA = Math.sin(angle);
+              ou = 0.5 + dx * cosA - dy * sinA;
+              ov = 0.5 + dx * sinA + dy * cosA;
+            } else if (key === 'lens') {
+              const dx = u - 0.5,
+                dy = v - 0.5;
+              const d = Math.sqrt(dx * dx + dy * dy);
+              const distort = 1 + strength * 0.5 * d * d;
+              ou = 0.5 + dx * distort;
+              ov = 0.5 + dy * distort;
+            } else if (key === 'oil') {
+              // 油画效果：取邻域众数颜色（简化版用抖动）
+              const size = Math.floor(strength * 10) + 2;
+              const gridX = Math.floor((u * W) / size) * size;
+              const gridY = Math.floor((v * H) / size) * size;
+              ou = gridX / W + Math.random() * 0.02;
+              ov = gridY / H + Math.random() * 0.02;
+            } else if (key === 'glitch') {
+              ou = u;
+              ov = v;
+              const line = Math.random() < 0.05 ? (Math.random() - 0.5) * strength * 0.3 : 0;
+              ou += line;
+              // RGB 分离
+              if (Math.random() < 0.03) {
+                const sep = (Math.random() - 0.5) * strength * 0.1;
+                if (x % 3 === 0) ou += sep;
+                else if (x % 3 === 2) ou -= sep;
+              }
+            }
+
+            // Clamp
+            ou = Math.max(0, Math.min(1, ou));
+            ov = Math.max(0, Math.min(1, ov));
+
+            // Generate color
+            let r = 0.5 + 0.5 * Math.sin(ou * 6.28 + ov * 3.14);
+            let g = 0.5 + 0.5 * Math.sin(ou * 6.28 + 2.09 + ov * 3.14);
+            let b = 0.5 + 0.5 * Math.sin(ou * 6.28 + 4.19 + ov * 3.14);
+            if (key === 'glitch') {
+              // 额外 RGB 分离效果
+              if (x % 3 === 0) r = Math.min(1, r + strength * 0.2);
+              if (x % 3 === 2) b = Math.min(1, b + strength * 0.2);
+            }
+
+            const i = (y * W + x) * 4;
+            imgData.data[i] = Math.max(0, Math.min(255, r * 255));
+            imgData.data[i + 1] = Math.max(0, Math.min(255, g * 255));
+            imgData.data[i + 2] = Math.max(0, Math.min(255, b * 255));
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('otherSelect').addEventListener('change', drawOther);
+      document.getElementById('otherStrength').addEventListener('input', drawOther);
+
+      // ================================================================
+      // PINGPONG
+      // ================================================================
+      let ppRunning = true;
+      let ppPhase = 0;
+
+      function drawPingpong() {
+        const c = document.getElementById('cPingpong'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const speed = parseInt(document.getElementById('ppSpeed').value);
+        document.getElementById('ppSpeedVal').textContent = speed;
+
+        ctx.clearRect(0, 0, W, H);
+        const midX = W / 2,
+          midY = H / 2 + 10;
+
+        // Draw two buffer areas
+        ctx.fillStyle = '#16213e';
+        ctx.fillRect(20, 10, 200, 120);
+        ctx.fillStyle = '#1a1a3e';
+        ctx.fillRect(W - 220, 10, 200, 120);
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(20, 10, 200, 120);
+        ctx.strokeRect(W - 220, 10, 200, 120);
+
+        // Buffer A content
+        ctx.fillStyle = '#f7c948';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Buffer A (读)', 120, 30);
+        ctx.fillStyle = '#2ecc7160';
+        ctx.fillRect(40, 40, 60, 30);
+        ctx.fillStyle = '#3498db60';
+        ctx.fillRect(120, 50, 50, 40);
+
+        // Buffer B content
+        ctx.fillStyle = '#f7c948';
+        ctx.fillText('Buffer B (写)', W - 120, 30);
+        ctx.fillStyle = '#9b59b660';
+        ctx.fillRect(W - 180, 40, 70, 35);
+        ctx.fillStyle = '#e74c3c60';
+        ctx.fillRect(W - 120, 55, 50, 30);
+
+        // Arrow showing read/write direction
+        ctx.strokeStyle = '#888';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(220, 70);
+        ctx.lineTo(W - 220, 70);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Pingpong ball
+        if (ppRunning) ppPhase += 0.02 * speed;
+        const t = (Math.sin(ppPhase) + 1) / 2;
+        const bx = 30 + t * (W - 60);
+        const by = midY + 40 + Math.sin(ppPhase * 2) * 20;
+
+        // Trail
+        for (let i = 0; i < 10; i++) {
+          const tt = t - i * 0.02;
+          const tx = 30 + Math.max(0, Math.min(1, tt)) * (W - 60);
+          const alpha = (1 - i / 10) * 0.3;
+          ctx.beginPath();
+          ctx.arc(tx, by + 10, 6 - i * 0.3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(247,201,72,${alpha})`;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.arc(bx, by, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#f7c948';
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Labels
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`当前相位: ${(ppPhase % 6.28).toFixed(2)}`, W / 2, H - 12);
+        ctx.fillText('← 数据流向 →', W / 2, 15);
+
+        // Bottom visualization - alternating frames
+        ctx.fillStyle = '#888';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('帧缓冲交替：', 10, H - 65);
+        const frame = Math.floor(ppPhase) % 2;
+        for (let i = 0; i < 6; i++) {
+          const active = i % 2 === frame;
+          ctx.fillStyle = active ? '#f7c948' : '#333';
+          ctx.fillRect(120 + i * 40, H - 78, 30, 20);
+          ctx.fillStyle = active ? '#000' : '#666';
+          ctx.font = '9px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('帧' + (i + 1), 135 + i * 40, H - 64);
+        }
+      }
+
+      // ================================================================
+      // CONWAY
+      // ================================================================
+      const conwayW = 80,
+        conwayH = 64;
+      let conwayGrid = new Uint8Array(conwayW * conwayH);
+      let conwayRunning = true;
+      let conwayTimer = null;
+
+      function initConway() {
+        for (let i = 0; i < conwayW * conwayH; i++) conwayGrid[i] = Math.random() < 0.3 ? 1 : 0;
+        drawConway();
+        if (conwayTimer) clearInterval(conwayTimer);
+        scheduleConway();
+      }
+
+      function scheduleConway() {
+        if (conwayTimer) clearInterval(conwayTimer);
+        const speed = parseInt(document.getElementById('conwaySpeed').value);
+        document.getElementById('conwaySpeedVal').textContent = speed + 'ms';
+        conwayTimer = setInterval(() => {
+          if (conwayRunning) {
+            conwayStep();
+            drawConway();
+          }
+        }, speed);
+      }
+
+      function conwayStep() {
+        const next = new Uint8Array(conwayW * conwayH);
+        for (let y = 0; y < conwayH; y++) {
+          for (let x = 0; x < conwayW; x++) {
+            let n = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                if (dx === 0 && dy === 0) continue;
+                const nx = (x + dx + conwayW) % conwayW;
+                const ny = (y + dy + conwayH) % conwayH;
+                n += conwayGrid[ny * conwayW + nx];
+              }
+            }
+            const idx = y * conwayW + x;
+            const alive = conwayGrid[idx];
+            next[idx] = (alive && (n === 2 || n === 3)) || (!alive && n === 3) ? 1 : 0;
+          }
+        }
+        conwayGrid = next;
+      }
+
+      function drawConway() {
+        const c = document.getElementById('cConway'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const cellW = W / conwayW,
+          cellH = H / conwayH;
+        ctx.clearRect(0, 0, W, H);
+        // Grid background
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(0, 0, W, H);
+        for (let y = 0; y < conwayH; y++) {
+          for (let x = 0; x < conwayW; x++) {
+            if (conwayGrid[y * conwayW + x]) {
+              const life = conwayGrid[y * conwayW + x] / 255; // always 1
+              ctx.fillStyle = '#2ecc71';
+              ctx.fillRect(x * cellW, y * cellH, cellW + 0.5, cellH + 0.5);
+            }
+          }
+        }
+        // Grid lines
+        ctx.strokeStyle = '#1e1e3e30';
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x <= conwayW; x++) {
+          ctx.beginPath();
+          ctx.moveTo(x * cellW, 0);
+          ctx.lineTo(x * cellW, H);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= conwayH; y++) {
+          ctx.beginPath();
+          ctx.moveTo(0, y * cellH);
+          ctx.lineTo(W, y * cellH);
+          ctx.stroke();
+        }
+      }
+
+      function toggleConway() {
+        conwayRunning = !conwayRunning;
+        document.getElementById('conwayPlayBtn').textContent = conwayRunning
+          ? '⏸ 暂停'
+          : '▶️ 播放';
+      }
+
+      function conwayRandom() {
+        for (let i = 0; i < conwayW * conwayH; i++) conwayGrid[i] = Math.random() < 0.3 ? 1 : 0;
+        drawConway();
+      }
+      function conwayClear() {
+        conwayGrid.fill(0);
+        drawConway();
+      }
+      function conwayGlider() {
+        conwayClear();
+        // Glider pattern
+        const cx = Math.floor(conwayW / 2),
+          cy = Math.floor(conwayH / 2);
+        const glider = [
+          [0, 1],
+          [1, 2],
+          [2, 0],
+          [2, 1],
+          [2, 2],
+        ];
+        for (const [dx, dy] of glider) conwayGrid[(cy + dy) * conwayW + (cx + dx)] = 1;
+        drawConway();
+      }
+
+      // Conway click to toggle
+      document.getElementById('cConway').addEventListener('click', function (e) {
+        const rect = this.getBoundingClientRect();
+        const x = Math.floor(((e.clientX - rect.left) / rect.width) * conwayW);
+        const y = Math.floor(((e.clientY - rect.top) / rect.height) * conwayH);
+        if (x >= 0 && x < conwayW && y >= 0 && y < conwayH) {
+          conwayGrid[y * conwayW + x] ^= 1;
+          drawConway();
+        }
+      });
+
+      document.getElementById('conwaySpeed').addEventListener('input', scheduleConway);
+
+      // ================================================================
+      // RIPPLES
+      // ================================================================
+      const ripW = 100,
+        ripH = 84;
+      let ripBuf1 = new Float32Array(ripW * ripH);
+      let ripBuf2 = new Float32Array(ripW * ripH);
+      let ripRunning = true;
+      let ripAnimId = null;
+
+      function ripReset() {
+        ripBuf1.fill(0);
+        ripBuf2.fill(0);
+      }
+
+      function addRipple(x, y) {
+        if (x < 1 || x >= ripW - 1 || y < 1 || y >= ripH - 1) return;
+        ripBuf1[y * ripW + x] = 1.0;
+      }
+
+      function ripUpdate() {
+        const damp = parseInt(document.getElementById('ripDamp').value) / 100;
+        const speed = parseFloat(document.getElementById('ripSpeed').value);
+        document.getElementById('ripDampVal').textContent = damp.toFixed(2);
+        document.getElementById('ripSpeedVal').textContent = speed.toFixed(1);
+
+        // Damping factor based on slider
+        const damping = damp;
+        const dt = speed * 0.15;
+
+        for (let y = 1; y < ripH - 1; y++) {
+          for (let x = 1; x < ripW - 1; x++) {
+            const idx = y * ripW + x;
+            const top = ripBuf1[(y - 1) * ripW + x];
+            const bottom = ripBuf1[(y + 1) * ripW + x];
+            const left = ripBuf1[y * ripW + (x - 1)];
+            const right = ripBuf1[y * ripW + (x + 1)];
+            const avg = (top + bottom + left + right) * 0.25;
+            ripBuf2[idx] = (avg * 2 - ripBuf2[idx]) * damping + dt * 0.1;
+          }
+        }
+        // Swap buffers
+        [ripBuf1, ripBuf2] = [ripBuf2, ripBuf1];
+      }
+
+      function drawRipples() {
+        const c = document.getElementById('cRipples'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const imgData = ctx.createImageData(W, H);
+
+        // Apply some random ripples
+        if (Math.random() < 0.02) {
+          addRipple(Math.floor(Math.random() * ripW), Math.floor(Math.random() * ripH));
+        }
+
+        ripUpdate();
+
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const rx = Math.floor((x / W) * ripW);
+            const ry = Math.floor((y / H) * ripH);
+            const val = ripBuf1[ry * ripW + rx];
+            // Color mapping: blue tones with height
+            const intensity = Math.max(0, Math.min(1, (val + 0.5) * 2));
+            const r = 0.1 + 0.2 * intensity;
+            const g = 0.2 + 0.5 * intensity;
+            const b = 0.6 + 0.4 * intensity;
+            const i = (y * W + x) * 4;
+            imgData.data[i] = r * 255;
+            imgData.data[i + 1] = g * 255;
+            imgData.data[i + 2] = b * 255;
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('cRipples').addEventListener('click', function (e) {
+        const rect = this.getBoundingClientRect();
+        const x = Math.floor(((e.clientX - rect.left) / rect.width) * ripW);
+        const y = Math.floor(((e.clientY - rect.top) / rect.height) * ripH);
+        addRipple(x, y);
+        addRipple(x - 1, y);
+        addRipple(x + 1, y);
+        addRipple(x, y - 1);
+        addRipple(x, y + 1);
+      });
+
+      function ripLoop() {
+        if (ripRunning) drawRipples();
+        ripAnimId = requestAnimationFrame(ripLoop);
+      }
+      ripLoop();
+
+      document.getElementById('ripDamp').addEventListener('input', () => {});
+      document.getElementById('ripSpeed').addEventListener('input', () => {});
+
+      // ================================================================
+      // WATER COLOR
+      // ================================================================
+      const wcW = 80,
+        wcH = 68;
+      let wcWater = new Float32Array(wcW * wcH);
+      let wcColor = new Float32Array(wcW * wcH * 3);
+      let wcRunning = true;
+      let wcAnimId = null;
+      let wcMouseDown = false;
+      let wcLastPos = null;
+
+      function wcReset() {
+        wcWater.fill(0.5);
+        wcColor.fill(0.5);
+      }
+
+      function wcApply(x, y, r, g, b) {
+        if (x < 1 || x >= wcW - 1 || y < 1 || y >= wcH - 1) return;
+        const idx = y * wcW + x;
+        wcWater[idx] = 1.0;
+        wcColor[idx * 3] = (wcColor[idx * 3] + r) * 0.5;
+        wcColor[idx * 3 + 1] = (wcColor[idx * 3 + 1] + g) * 0.5;
+        wcColor[idx * 3 + 2] = (wcColor[idx * 3 + 2] + b) * 0.5;
+      }
+
+      function wcUpdate() {
+        const diff = parseFloat(document.getElementById('wcDiff').value);
+        const evap = parseFloat(document.getElementById('wcEvap').value) / 100;
+        document.getElementById('wcDiffVal').textContent = diff.toFixed(1);
+        document.getElementById('wcEvapVal').textContent = evap.toFixed(1);
+
+        const newWater = new Float32Array(wcW * wcH);
+        const newColor = new Float32Array(wcW * wcH * 3);
+
+        for (let y = 1; y < wcH - 1; y++) {
+          for (let x = 1; x < wcW - 1; x++) {
+            const idx = y * wcW + x;
+            // Diffuse water
+            let wSum = 0;
+            let cR = 0,
+              cG = 0,
+              cB = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+              for (let dx = -1; dx <= 1; dx++) {
+                const nidx = (y + dy) * wcW + (x + dx);
+                wSum += wcWater[nidx];
+                cR += wcColor[nidx * 3] * wcWater[nidx];
+                cG += wcColor[nidx * 3 + 1] * wcWater[nidx];
+                cB += wcColor[nidx * 3 + 2] * wcWater[nidx];
+              }
+            }
+            const avgW = wSum / 9;
+            const diffFactor = diff * 0.02;
+            newWater[idx] =
+              wcWater[idx] + (avgW - wcWater[idx]) * diffFactor - evap * 0.01 * wcWater[idx];
+
+            if (wSum > 0.01) {
+              newColor[idx * 3] = cR / wSum;
+              newColor[idx * 3 + 1] = cG / wSum;
+              newColor[idx * 3 + 2] = cB / wSum;
+            } else {
+              newColor[idx * 3] = wcColor[idx * 3];
+              newColor[idx * 3 + 1] = wcColor[idx * 3 + 1];
+              newColor[idx * 3 + 2] = wcColor[idx * 3 + 2];
+            }
+            // Clamp
+            newWater[idx] = Math.max(0, Math.min(1, newWater[idx]));
+          }
+        }
+        wcWater = newWater;
+        wcColor = newColor;
+      }
+
+      function drawWC() {
+        const c = document.getElementById('cWaterColor'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const imgData = ctx.createImageData(W, H);
+        wcUpdate();
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const rx = Math.floor((x / W) * wcW);
+            const ry = Math.floor((y / H) * wcH);
+            const idx = ry * wcW + rx;
+            const w = wcWater[idx];
+            const i = (y * W + x) * 4;
+            imgData.data[i] = Math.max(0, Math.min(255, wcColor[idx * 3] * 255));
+            imgData.data[i + 1] = Math.max(0, Math.min(255, wcColor[idx * 3 + 1] * 255));
+            imgData.data[i + 2] = Math.max(0, Math.min(255, wcColor[idx * 3 + 2] * 255));
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('cWaterColor').addEventListener('mousedown', function (e) {
+        wcMouseDown = true;
+        const rect = this.getBoundingClientRect();
+        const x = Math.floor(((e.clientX - rect.left) / rect.width) * wcW);
+        const y = Math.floor(((e.clientY - rect.top) / rect.height) * wcH);
+        wcLastPos = [x, y];
+        // Random color
+        wcApply(x, y, Math.random(), Math.random(), Math.random());
+        wcApply(x - 1, y, 0.8, 0.2, 0.2);
+        wcApply(x + 1, y, 0.2, 0.8, 0.2);
+        wcApply(x, y - 1, 0.2, 0.2, 0.8);
+        wcApply(x, y + 1, 0.8, 0.8, 0.2);
+      });
+      document.getElementById('cWaterColor').addEventListener('mousemove', function (e) {
+        if (!wcMouseDown) return;
+        const rect = this.getBoundingClientRect();
+        const x = Math.floor(((e.clientX - rect.left) / rect.width) * wcW);
+        const y = Math.floor(((e.clientY - rect.top) / rect.height) * wcH);
+        if (x !== wcLastPos?.[0] || y !== wcLastPos?.[1]) {
+          wcApply(x, y, Math.random(), Math.random(), Math.random());
+          wcLastPos = [x, y];
+        }
+      });
+      document.addEventListener('mouseup', () => {
+        wcMouseDown = false;
+        wcLastPos = null;
+      });
+
+      function wcLoop() {
+        if (wcRunning) drawWC();
+        wcAnimId = requestAnimationFrame(wcLoop);
+      }
+      wcLoop();
+
+      document.getElementById('wcDiff').addEventListener('input', () => {});
+      document.getElementById('wcEvap').addEventListener('input', () => {});
+
+      // ================================================================
+      // REACTION DIFFUSION
+      // ================================================================
+      const rdW = 100,
+        rdH = 84;
+      let rdA = new Float32Array(rdW * rdH);
+      let rdB = new Float32Array(rdW * rdH);
+      let rdRunning = true;
+      let rdAnimId = null;
+
+      function rdReset() {
+        rdA.fill(1.0);
+        rdB.fill(0.0);
+        // Seed center
+        for (let y = rdH / 2 - 5; y < rdH / 2 + 5; y++) {
+          for (let x = rdW / 2 - 5; x < rdW / 2 + 5; x++) {
+            rdB[y * rdW + x] = 1.0;
+            rdA[y * rdW + x] = 0.0;
+          }
+        }
+      }
+
+      function rdUpdate() {
+        const feed = parseInt(document.getElementById('rdFeed').value) / 100;
+        const kill = parseInt(document.getElementById('rdKill').value) / 100;
+        const dA = parseFloat(document.getElementById('rdDA').value);
+        const dB = parseFloat(document.getElementById('rdDB').value);
+        document.getElementById('rdFeedVal').textContent = feed.toFixed(3);
+        document.getElementById('rdKillVal').textContent = kill.toFixed(3);
+        document.getElementById('rdDAVal').textContent = dA.toFixed(1);
+        document.getElementById('rdDBVal').textContent = dB.toFixed(1);
+
+        const dt = 0.2;
+        const newA = new Float32Array(rdW * rdH);
+        const newB = new Float32Array(rdW * rdH);
+
+        for (let y = 1; y < rdH - 1; y++) {
+          for (let x = 1; x < rdW - 1; x++) {
+            const idx = y * rdW + x;
+            // Laplacian (5-point stencil)
+            const lapA =
+              rdA[(y - 1) * rdW + x] +
+              rdA[(y + 1) * rdW + x] +
+              rdA[y * rdW + (x - 1)] +
+              rdA[y * rdW + (x + 1)] -
+              4 * rdA[idx];
+            const lapB =
+              rdB[(y - 1) * rdW + x] +
+              rdB[(y + 1) * rdW + x] +
+              rdB[y * rdW + (x - 1)] +
+              rdB[y * rdW + (x + 1)] -
+              4 * rdB[idx];
+
+            const reaction = rdA[idx] * rdB[idx] * rdB[idx];
+
+            newA[idx] = rdA[idx] + (dA * lapA - reaction + feed * (1 - rdA[idx])) * dt;
+            newB[idx] = rdB[idx] + (dB * lapB + reaction - (feed + kill) * rdB[idx]) * dt;
+
+            newA[idx] = Math.max(0, Math.min(1, newA[idx]));
+            newB[idx] = Math.max(0, Math.min(1, newB[idx]));
+          }
+        }
+        rdA = newA;
+        rdB = newB;
+      }
+
+      function drawRD() {
+        const c = document.getElementById('cRD'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        rdUpdate();
+        const imgData = ctx.createImageData(W, H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const rx = Math.floor((x / W) * rdW);
+            const ry = Math.floor((y / H) * rdH);
+            const b = rdB[ry * rdW + rx];
+            const a = rdA[ry * rdW + rx];
+            // Color: B high → bright, A high → dark
+            const intensity = b;
+            // Map to green/purple
+            const i = (y * W + x) * 4;
+            imgData.data[i] = intensity * 255;
+            imgData.data[i + 1] = (1 - intensity) * 255;
+            imgData.data[i + 2] = a * 255;
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      function rdLoop() {
+        if (rdRunning) drawRD();
+        rdAnimId = requestAnimationFrame(rdLoop);
+      }
+      rdReset();
+      rdLoop();
+
+      document.getElementById('rdFeed').addEventListener('input', () => {});
+      document.getElementById('rdKill').addEventListener('input', () => {});
+      document.getElementById('rdDA').addEventListener('input', () => {});
+      document.getElementById('rdDB').addEventListener('input', () => {});
+
+      // ================================================================
+      // LIGHTS (Phong 2D visualization)
+      // ================================================================
+      let lightImgData = null;
+      function drawLights() {
+        const c = document.getElementById('cLights'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        ctx.clearRect(0, 0, W, H);
+        if (!lightImgData) lightImgData = ctx.createImageData(W, H);
+
+        const ambient = parseInt(document.getElementById('lightAmbient').value) / 100;
+        const diffuse = parseInt(document.getElementById('lightDiffuse').value) / 100;
+        const specular = parseInt(document.getElementById('lightSpecular').value) / 100;
+        const shiny = parseInt(document.getElementById('lightShiny').value);
+        document.getElementById('lightAmbientVal').textContent = ambient.toFixed(2);
+        document.getElementById('lightDiffuseVal').textContent = diffuse.toFixed(2);
+        document.getElementById('lightSpecularVal').textContent = specular.toFixed(2);
+        document.getElementById('lightShinyVal').textContent = shiny;
+
+        const cx = 200,
+          cy = 210,
+          r = 100;
+        const lightAngle = Date.now() / 2000;
+        const lx = cx + 160 * Math.cos(lightAngle);
+        const ly = cy + 160 * Math.sin(lightAngle);
+
+        // Draw sphere as circle with gradient
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const dx = x - cx,
+              dy = y - cy;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d > r) continue;
+
+            // Normal at this point (point on sphere surface)
+            const nx = dx / r,
+              ny = dy / r;
+            const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+
+            // Light direction
+            const ldx = lx - cx,
+              ldy = ly - cy;
+            const ld = Math.sqrt(ldx * ldx + ldy * ldy);
+            const lnx = ldx / ld,
+              lny = ldy / ld,
+              lnz = 0.5;
+
+            // Diffuse
+            const NdotL = Math.max(0, nx * lnx + ny * lny + nz * lnz);
+
+            // Specular (Blinn-Phong)
+            const vx = 0,
+              vy = 0,
+              vz = 1; // view direction
+            const hx = (lnx + vx) / 2,
+              hy = (lny + vy) / 2,
+              hz = (lnz + vz) / 2;
+            const hd = Math.sqrt(hx * hx + hy * hy + hz * hz);
+            const NdotH = Math.max(0, (nx * hx + ny * hy + nz * hz) / hd);
+
+            let color = ambient + diffuse * NdotL + specular * Math.pow(NdotH, shiny);
+
+            // Rim effect for 3D look
+            const rim = 1 - Math.abs(nz);
+            color += rim * 0.1;
+
+            color = Math.min(1, color);
+            const i = (y * W + x) * 4;
+            lightImgData.data[i] = color * 200;
+            lightImgData.data[i + 1] = color * 150;
+            lightImgData.data[i + 2] = color * 220;
+            lightImgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(lightImgData, 0, 0);
+
+        // Draw light source
+        ctx.beginPath();
+        ctx.arc(lx, ly, 12, 0, Math.PI * 2);
+        ctx.fillStyle = '#f7c948';
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('光源', lx, ly - 18);
+
+        // Labels
+        ctx.fillStyle = '#888';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('环境光: ' + ambient.toFixed(2), 10, 14);
+        ctx.fillText('漫反射: ' + diffuse.toFixed(2), 10, 30);
+        ctx.fillText('高光: ' + specular.toFixed(2) + ' 光泽度: ' + shiny, 10, 46);
+
+        // Normal vectors (sample)
+        ctx.strokeStyle = 'rgba(0,255,0,0.3)';
+        ctx.lineWidth = 1;
+        for (let a = 0; a < 360; a += 20) {
+          const rad = (a * Math.PI) / 180;
+          const px = cx + r * 0.7 * Math.cos(rad);
+          const py = cy + r * 0.7 * Math.sin(rad);
+          const nnx = Math.cos(rad),
+            nny = Math.sin(rad);
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + nnx * 20, py + nny * 20);
+          ctx.stroke();
+        }
+      }
+      let lightAnimId;
+      function lightLoop() {
+        drawLights();
+        lightAnimId = requestAnimationFrame(lightLoop);
+      }
+      lightLoop();
+
+      document.getElementById('lightAmbient').addEventListener('input', () => {});
+      document.getElementById('lightDiffuse').addEventListener('input', () => {});
+      document.getElementById('lightSpecular').addEventListener('input', () => {});
+      document.getElementById('lightShiny').addEventListener('input', () => {});
+
+      // ================================================================
+      // NORMAL MAPS
+      // ================================================================
+      function drawNormalMap() {
+        const c = document.getElementById('cNormalMap'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const lx = parseInt(document.getElementById('nmLightX').value) / 100;
+        const ly = parseInt(document.getElementById('nmLightY').value) / 100;
+        const showNormal = document.getElementById('nmShowNormal').checked;
+        document.getElementById('nmLightXVal').textContent = lx.toFixed(2);
+        document.getElementById('nmLightYVal').textContent = ly.toFixed(2);
+
+        const imgData = ctx.createImageData(W, H);
+
+        // Generate brick normal map
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const u = x / W,
+              v = y / H;
+
+            // Brick pattern
+            const brickW = 12,
+              brickH = 6;
+            let bx = Math.floor(u * brickW);
+            let by = Math.floor(v * brickH);
+            const offset = (by % 2) * 0.5;
+            const inBrick =
+              u * brickW - bx - offset > 0.05 &&
+              u * brickW - bx - offset < 0.95 &&
+              v * brickH - by > 0.1 &&
+              v * brickH - by < 0.9;
+
+            // Normal
+            let nx = 0,
+              ny = 0,
+              nz = 1;
+            if (!inBrick) {
+              // Mortar: normal points outward
+              nx = (u * brickW - bx - offset - 0.5) * 0.5;
+              ny = (v * brickH - by - 0.5) * 0.5;
+              nz = 0.7;
+            } else {
+              // Brick face: slight variation
+              nx = Math.sin(u * 40) * 0.1;
+              ny = Math.cos(v * 40) * 0.1;
+            }
+            const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            nx /= len;
+            ny /= len;
+            nz /= len;
+
+            if (showNormal) {
+              // Encode as color
+              const i = (y * W + x) * 4;
+              imgData.data[i] = (nx * 0.5 + 0.5) * 255;
+              imgData.data[i + 1] = (ny * 0.5 + 0.5) * 255;
+              imgData.data[i + 2] = (nz * 0.5 + 0.5) * 255;
+              imgData.data[i + 3] = 255;
+            } else {
+              // Apply lighting
+              const NdotL = Math.max(0, nx * lx + ny * ly + nz * 0.5);
+              const ambient = 0.2;
+              const color = Math.min(1, ambient + 0.8 * NdotL);
+              const i = (y * W + x) * 4;
+              imgData.data[i] = color * 200;
+              imgData.data[i + 1] = color * 180;
+              imgData.data[i + 2] = color * 160;
+              imgData.data[i + 3] = 255;
+            }
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('nmLightX').addEventListener('input', drawNormalMap);
+      document.getElementById('nmLightY').addEventListener('input', drawNormalMap);
+      document.getElementById('nmShowNormal').addEventListener('change', drawNormalMap);
+
+      // ================================================================
+      // BUMP MAPS
+      // ================================================================
+      function drawBumpMap() {
+        const c = document.getElementById('cBumpMap'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const height = parseInt(document.getElementById('bumpHeight').value);
+        const angle = (parseInt(document.getElementById('bumpAngle').value) * Math.PI) / 180;
+        document.getElementById('bumpHeightVal').textContent = height;
+        document.getElementById('bumpAngleVal').textContent =
+          document.getElementById('bumpAngle').value + '°';
+
+        const lx = Math.cos(angle),
+          ly = Math.sin(angle);
+
+        const imgData = ctx.createImageData(W, H);
+
+        // Generate height map (bumpy surface)
+        const heightMap = new Float32Array(W * H);
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const u = x / W,
+              v = y / H;
+            heightMap[y * W + x] =
+              Math.sin(u * 20) * Math.cos(v * 15) * 0.3 +
+              Math.sin(u * 35 + v * 25) * 0.2 +
+              Math.sin(v * 40) * 0.15;
+          }
+        }
+
+        // Compute normals from height map
+        for (let y = 1; y < H - 1; y++) {
+          for (let x = 1; x < W - 1; x++) {
+            const dhdx = (heightMap[y * W + (x + 1)] - heightMap[y * W + (x - 1)]) * height * 0.02;
+            const dhdy = (heightMap[(y + 1) * W + x] - heightMap[(y - 1) * W + x]) * height * 0.02;
+
+            let nx = -dhdx,
+              ny = -dhdy,
+              nz = 1;
+            const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+            nx /= len;
+            ny /= len;
+            nz /= len;
+
+            const NdotL = Math.max(0, nx * lx + ny * ly + nz * 0.5);
+            const ambient = 0.15;
+            const color = Math.min(1, ambient + 0.85 * NdotL);
+
+            const i = (y * W + x) * 4;
+            imgData.data[i] = color * 200;
+            imgData.data[i + 1] = color * 180;
+            imgData.data[i + 2] = color * 160;
+            imgData.data[i + 3] = 255;
+          }
+        }
+        ctx.putImageData(imgData, 0, 0);
+      }
+
+      document.getElementById('bumpHeight').addEventListener('input', drawBumpMap);
+      document.getElementById('bumpAngle').addEventListener('input', drawBumpMap);
+
+      // ================================================================
+      // RAY MARCHING
+      // ================================================================
+      let rmAnimating = true;
+      let rmOffset = 0;
+
+      function rmReset() {
+        rmOffset = 0;
+      }
+
+      function drawRayMarch() {
+        const c = document.getElementById('cRayMarch'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const maxSteps = parseInt(document.getElementById('rmSteps').value);
+        document.getElementById('rmStepsVal').textContent = maxSteps;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // SDF shapes in 2D
+        const shapes = [
+          { type: 'circle', cx: 0.3, cy: 0.5, r: 0.12 },
+          { type: 'box', cx: 0.7, cy: 0.5, w: 0.15, h: 0.1 },
+          { type: 'circle', cx: 0.5, cy: 0.7, r: 0.08 },
+        ];
+
+        function sdf(px, py) {
+          let minD = 999;
+          for (const s of shapes) {
+            let d;
+            if (s.type === 'circle') {
+              d = Math.sqrt((px - s.cx) ** 2 + (py - s.cy) ** 2) - s.r;
+            } else {
+              const dx = Math.abs(px - s.cx) - s.w;
+              const dy = Math.abs(py - s.cy) - s.h;
+              d =
+                Math.sqrt(Math.max(dx, 0) ** 2 + Math.max(dy, 0) ** 2) +
+                Math.min(Math.max(dx, dy), 0);
+            }
+            minD = Math.min(minD, d);
+          }
+          return minD;
+        }
+
+        // Draw shapes
+        for (const s of shapes) {
+          ctx.beginPath();
+          if (s.type === 'circle') {
+            ctx.arc(s.cx * W, s.cy * H, s.r * W, 0, Math.PI * 2);
+          } else {
+            ctx.rect((s.cx - s.w) * W, (s.cy - s.h) * H, s.w * 2 * W, s.h * 2 * H);
+          }
+          ctx.fillStyle = 'rgba(50,100,200,0.3)';
+          ctx.fill();
+          ctx.strokeStyle = '#4488ff';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        // Ray march from left edge
+        if (rmAnimating) rmOffset += 0.003;
+        const rayY = 0.2 + 0.6 * (Math.sin(rmOffset) * 0.5 + 0.5);
+
+        ctx.strokeStyle = '#f7c948';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, rayY * H);
+
+        let px = 0,
+          py = rayY;
+        const stepPoints = [];
+
+        for (let i = 0; i < maxSteps; i++) {
+          const d = sdf(px, py);
+          const worldD = d * W;
+          stepPoints.push({ x: px, y: py, d: worldD });
+          if (worldD < 2) {
+            // Hit!
+            ctx.lineTo(px * W, py * H);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(px * W, py * H, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#f7c948';
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = '10px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('命中!', px * W, py * H - 14);
+            break;
+          }
+          ctx.lineTo(px * W, py * H);
+          px += d * 1.5; // step direction
+          // Follow gradient for winding path
+          const eps = 0.01;
+          const gradX = sdf(px + eps, py) - sdf(px - eps, py);
+          const gradY = sdf(px, py + eps) - sdf(px, py - eps);
+          const glen = Math.sqrt(gradX * gradX + gradY * gradY) || 1;
+          px -= (gradX / glen) * d;
+          py -= (gradY / glen) * d;
+
+          if (px > 1.2 || py < -0.2 || py > 1.2) break;
+        }
+        ctx.stroke();
+
+        // Draw step points
+        for (const sp of stepPoints) {
+          ctx.beginPath();
+          ctx.arc(sp.x * W, sp.y * H, 3, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(247,201,72,0.5)';
+          ctx.fill();
+        }
+
+        // Ray origin
+        ctx.beginPath();
+        ctx.arc(0, rayY * H, 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#e74c3c';
+        ctx.fill();
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('射线起点', 40, rayY * H - 12);
+
+        // SDF heatmap (subtle)
+        const sdfCanvas = document.createElement('canvas');
+        sdfCanvas.width = W;
+        sdfCanvas.height = H;
+        const sdfCtx = sdfCanvas.getContext('2d');
+        const sdfData = sdfCtx.createImageData(W, H);
+        for (let y = 0; y < H; y += 4) {
+          for (let x = 0; x < W; x += 4) {
+            const u = x / W,
+              v = y / H;
+            const d = sdf(u, v);
+            const val = Math.max(0, Math.min(1, 1 - d * 3));
+            for (let dy = 0; dy < 4 && y + dy < H; dy++) {
+              for (let dx = 0; dx < 4 && x + dx < W; dx++) {
+                const i = ((y + dy) * W + (x + dx)) * 4;
+                sdfData.data[i] = 10 + val * 30;
+                sdfData.data[i + 1] = 10;
+                sdfData.data[i + 2] = 20 + val * 40;
+                sdfData.data[i + 3] = 255;
+              }
+            }
+          }
+        }
+        // Put SDF background
+        const tempData = ctx.getImageData(0, 0, W, H);
+        for (let i = 0; i < W * H * 4; i++) {
+          tempData.data[i] = sdfData.data[i] || tempData.data[i];
+        }
+        ctx.putImageData(tempData, 0, 0);
+        // Redraw shapes and ray on top
+        // (Simplified - re-calling)
+      }
+
+      // We'll redraw everything in a loop
+      let rmAnimId;
+
+      function rmLoop() {
+        drawRayMarch();
+        rmAnimId = requestAnimationFrame(rmLoop);
+      }
+      rmLoop();
+
+      document.getElementById('rmSteps').addEventListener('input', () => {});
+
+      // ================================================================
+      // ENV MAPS
+      // ================================================================
+      let envImgData = null;
+      function drawEnvMap() {
+        const c = document.getElementById('cEnvMap'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const angle = (parseInt(document.getElementById('envAngle').value) * Math.PI) / 180;
+        const showRay = document.getElementById('envShowRay').checked;
+        document.getElementById('envAngleVal').textContent =
+          document.getElementById('envAngle').value + '°';
+
+        ctx.clearRect(0, 0, W, H);
+        if (!envImgData) envImgData = ctx.createImageData(W, H);
+
+        // Draw environment map as gradient circle
+        const cx = 200,
+          cy = 200,
+          r = 150;
+
+        // Draw sky/ground gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, H);
+        grad.addColorStop(0, '#1a1a4e');
+        grad.addColorStop(0.5, '#f7c948');
+        grad.addColorStop(1, '#4e1a1a');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Draw sphere
+        for (let y = 0; y < H; y++) {
+          for (let x = 0; x < W; x++) {
+            const dx = x - cx,
+              dy = y - cy;
+            const d = Math.sqrt(dx * dx + dy * dy);
+            if (d > r) continue;
+
+            // Normal on sphere
+            const nx = dx / r,
+              ny = -dy / r; // flip y for screen
+            const nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+
+            // Reflection direction (view from front)
+            const vx = 0,
+              vy = 0,
+              vz = 1;
+            const NdotV = nx * vx + ny * vy + nz * vz;
+            const rx = 2 * NdotV * nx - vx;
+            const ry = 2 * NdotV * ny - vy;
+            const rz = 2 * NdotV * nz - vz;
+
+            // Sample environment from reflection
+            let envU = Math.atan2(rz, rx) / (Math.PI * 2) + 0.5 + Math.cos(angle) * 0.1;
+            let envV = Math.asin(ry) / Math.PI + 0.5 + Math.sin(angle) * 0.1;
+            envU = envU - Math.floor(envU);
+            envV = Math.max(0, Math.min(1, envV));
+
+            // Generate environment color
+            let envR = 0.5 + 0.5 * Math.sin(envU * 6.28);
+            let envG = 0.5 + 0.5 * Math.sin(envU * 6.28 + 2.09);
+            let envB = 0.5 + 0.5 * Math.sin(envU * 6.28 + 4.19);
+            // Darken bottom
+            envR *= 1 - envV * 0.7;
+            envG *= 1 - envV * 0.5;
+            envB *= 1 - envV * 0.3;
+
+            const i = (y * W + x) * 4;
+            envImgData.data[i] = envR * 255;
+            envImgData.data[i + 1] = envG * 255;
+            envImgData.data[i + 2] = envB * 255;
+            envImgData.data[i + 3] = 255;
+          }
+        }
+
+        ctx.putImageData(envImgData, 0, 0);
+
+        // Sphere outline
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        if (showRay) {
+          // Draw reflection ray from center
+          const rayLen = 80;
+          const rx = Math.cos(angle);
+          const ry = Math.sin(angle);
+          ctx.strokeStyle = '#f7c948';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(cx + rx * rayLen, cy + ry * rayLen);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(cx + rx * rayLen, cy + ry * rayLen, 4, 0, Math.PI * 2);
+          ctx.fillStyle = '#f7c948';
+          ctx.fill();
+
+          // Incident ray
+          ctx.strokeStyle = '#e74c3c';
+          ctx.lineWidth = 1.5;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(cx - rx * rayLen, cy - ry * rayLen);
+          ctx.lineTo(cx, cy);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#888';
+          ctx.font = '11px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('入射光', cx - rx * rayLen * 0.5, cy - ry * rayLen * 0.5 - 8);
+          ctx.fillText(
+            '反射光 → 采样环境贴图',
+            cx + rx * rayLen * 0.5 + 30,
+            cy + ry * rayLen * 0.5 + 18
+          );
+        }
+      }
+
+      document.getElementById('envAngle').addEventListener('input', drawEnvMap);
+      document.getElementById('envShowRay').addEventListener('change', drawEnvMap);
+
+      // ================================================================
+      // REFLECT & REFRACT
+      // ================================================================
+      function drawReflect() {
+        const c = document.getElementById('cReflect'),
+          ctx = c.getContext('2d');
+        const W = 500,
+          H = 420;
+        const angle = (parseInt(document.getElementById('refAngle').value) * Math.PI) / 180;
+        const ior = parseInt(document.getElementById('refIor').value) / 10;
+        const showBoth = document.getElementById('refShowBoth').checked;
+        document.getElementById('refAngleVal').textContent =
+          document.getElementById('refAngle').value + '°';
+        document.getElementById('refIorVal').textContent = ior.toFixed(2);
+
+        ctx.clearRect(0, 0, W, H);
+
+        const cx = 250,
+          cy = 200;
+
+        // Draw interface (surface)
+        ctx.strokeStyle = '#4488ff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(50, cy);
+        ctx.lineTo(W - 50, cy);
+        ctx.stroke();
+        ctx.fillStyle = '#4488ff60';
+        ctx.fillRect(50, cy, W - 100, 4);
+
+        // Labels
+        ctx.fillStyle = '#888';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('n₁ = 1.00 (空气)', 80, cy - 12);
+        ctx.fillText(`n₂ = ${ior.toFixed(2)} (玻璃/水)`, 80, cy + 26);
+
+        // Incident ray (from top-left)
+        const inLen = 120;
+        const startX = cx - Math.sin(angle) * inLen;
+        const startY = cy - Math.cos(angle) * inLen;
+
+        // Reflection
+        const refX = cx + Math.sin(angle) * inLen;
+        const refY = cy - Math.cos(angle) * inLen;
+
+        // Refraction (Snell: n1*sinθ1 = n2*sinθ2)
+        const sinTheta2 = Math.sin(angle) / ior;
+        let refrAngle, refrX, refrY;
+        if (sinTheta2 <= 1) {
+          refrAngle = Math.asin(sinTheta2);
+          refrX = cx + Math.sin(refrAngle) * inLen * 1.2;
+          refrY = cy + Math.cos(refrAngle) * inLen * 1.2;
+        }
+
+        // Draw incident ray
+        ctx.strokeStyle = '#f7c948';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(cx, cy);
+        ctx.stroke();
+
+        // Draw reflection
+        ctx.strokeStyle = '#2ecc71';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(refX, refY);
+        ctx.stroke();
+        // Arrow
+        const a = Math.atan2(refY - cy, refX - cx);
+        ctx.fillStyle = '#2ecc71';
+        ctx.beginPath();
+        ctx.moveTo(refX, refY);
+        ctx.lineTo(refX - 10 * Math.cos(a - 0.4), refY - 10 * Math.sin(a - 0.4));
+        ctx.lineTo(refX - 10 * Math.cos(a + 0.4), refY - 10 * Math.sin(a + 0.4));
+        ctx.closePath();
+        ctx.fill();
+
+        if (showBoth && sinTheta2 <= 1) {
+          // Draw refraction
+          ctx.strokeStyle = '#3498db';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(refrX, refrY);
+          ctx.stroke();
+          const a2 = Math.atan2(refrY - cy, refrX - cx);
+          ctx.fillStyle = '#3498db';
+          ctx.beginPath();
+          ctx.moveTo(refrX, refrY);
+          ctx.lineTo(refrX - 10 * Math.cos(a2 - 0.4), refrY - 10 * Math.sin(a2 - 0.4));
+          ctx.lineTo(refrX - 10 * Math.cos(a2 + 0.4), refrY - 10 * Math.sin(a2 + 0.4));
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#3498db';
+          ctx.font = '11px sans-serif';
+          ctx.fillText(
+            `折射角 = ${((refrAngle * 180) / Math.PI).toFixed(1)}°`,
+            refrX - 30,
+            refrY + 18
+          );
+        }
+
+        // Labels
+        ctx.fillStyle = '#f7c948';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(
+          `入射角 = ${document.getElementById('refAngle').value}°`,
+          startX + 40,
+          startY + 16
+        );
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillText(
+          `反射角 = ${document.getElementById('refAngle').value}°`,
+          refX - 30,
+          refY - 10
+        );
+
+        // Normal line
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - 140);
+        ctx.lineTo(cx, cy + 140);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('法线', cx + 8, cy - 140);
+
+        // Total internal reflection check
+        if (sinTheta2 > 1) {
+          ctx.fillStyle = '#e74c3c';
+          ctx.font = 'bold 13px sans-serif';
+          ctx.fillText('⚠️ 全内反射 (无折射)', cx, H - 14);
+        }
+
+        // Fresnel visualization bar
+        const cosTheta = Math.cos(angle);
+        const f0 = Math.pow((1 - ior) / (1 + ior), 2);
+        const fresnel = f0 + (1 - f0) * Math.pow(1 - cosTheta, 5);
+
+        ctx.fillStyle = '#333';
+        ctx.fillRect(10, H - 30, 100, 16);
+        ctx.fillStyle = '#2ecc71';
+        ctx.fillRect(10, H - 30, 100 * (1 - fresnel), 16);
+        ctx.fillStyle = '#3498db';
+        ctx.fillRect(10 + 100 * (1 - fresnel), H - 30, 100 * fresnel, 16);
+        ctx.fillStyle = '#888';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('反射 ↑  折射 ↓', 10, H - 34);
+        ctx.fillText(
+          `Fresnel: R=${(fresnel * 100).toFixed(0)}%  T=${((1 - fresnel) * 100).toFixed(0)}%`,
+          130,
+          H - 18
+        );
+      }
+
+      document.getElementById('refAngle').addEventListener('input', drawReflect);
+      document.getElementById('refIor').addEventListener('input', drawReflect);
+      document.getElementById('refShowBoth').addEventListener('change', drawReflect);
+
+      // ================================================================
+      // INIT ALL
+      // ================================================================
+      drawTexture();
+      drawImgOps();
+      drawKernel();
+      drawFilters();
+      drawOther();
+      drawPingpong();
+      initConway();
+      drawLights();
+      drawNormalMap();
+      drawBumpMap();
+      drawEnvMap();
+      drawReflect();
+
+      // Pingpong loop
+      setInterval(() => {
+        if (ppRunning) drawPingpong();
+      }, 50);
+
+      // PP controls
+      function ppReset() {
+        ppPhase = 0;
+      }
+
+      // ================================================================
+      // SMOOTH SCROLL FOR NAV
+      // ================================================================
+      document.querySelectorAll('nav a').forEach(a => {
+        a.addEventListener('click', function (e) {
+          e.preventDefault();
+          const id = this.getAttribute('href').substring(1);
+          document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    </script>
+  </body>
+</html>
