@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <title>为什么用 -lx？—— 顺时针旋转矩阵可视化</title>
+    <title>为什么用 -lx？—— 绕 Y 轴旋转矩阵的可视化</title>
     <style>
       * {
         margin: 0;
@@ -53,7 +53,6 @@
         display: block;
         border-radius: 8px;
       }
-      /* 控制面板 */
       .controls {
         display: flex;
         flex-direction: column;
@@ -109,12 +108,6 @@
         line-height: 1.5;
         margin-top: 6px;
       }
-      .formula-box .highlight {
-        color: #f7c948;
-      }
-      .formula-box .wrong {
-        color: #e74c3c;
-      }
       .formula-box .correct {
         color: #2ecc71;
       }
@@ -130,7 +123,7 @@
         font-size: 12px;
         color: #888;
         margin-top: 10px;
-        max-width: 1020px;
+        max-width: 1060px;
         text-align: center;
         line-height: 1.7;
       }
@@ -140,46 +133,16 @@
         border-radius: 4px;
         font-size: 12px;
       }
-      .cwrap {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      /* CCW / CW 标记 */
-      .dir-tag {
-        position: absolute;
-        font-size: 13px;
-        font-weight: bold;
-        padding: 2px 8px;
-        border-radius: 6px;
-      }
     </style>
   </head>
   <body>
     <h1>🔄 为什么用 <code>-lx</code>？</h1>
-    <p class="subtitle">从标准 XY 到 Three.js XZ：逆时针如何变成顺时针</p>
+    <p class="subtitle">Three.js 右手系中，绕 Y 轴旋转矩阵的直观解释</p>
 
-    <!-- ======================================================== -->
-    <!-- 第一行：坐标系对比（CCW → CW）                           -->
-    <!-- ======================================================== -->
-    <div class="section-title">📐 坐标系对比：标准 XY vs Three.js XZ</div>
+    <!-- 第一行：绕 Y 轴旋转矩阵推导 -->
+    <div class="section-title">📐 右手系绕 Y 轴旋转矩阵（俯视图）</div>
     <div class="container" style="margin-bottom: 14px">
-      <div class="panel" style="position: relative">
-        <div
-          style="
-            text-align: center;
-            margin-bottom: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #2ecc71;
-          "
-        >
-          📐 标准 XY 坐标系（Y ↑）→ CCW
-        </div>
-        <canvas id="cXY" width="380" height="380"></canvas>
-      </div>
+      <!-- 左侧：右手系示意图 -->
       <div class="panel" style="position: relative">
         <div
           style="
@@ -190,63 +153,74 @@
             color: #f7c948;
           "
         >
-          🔄 翻转 Y 轴 → Y 向下（镜像）
+          Three.js XZ 平面俯视图（Y 轴朝外）
         </div>
-        <canvas id="cMirror" width="380" height="380"></canvas>
-      </div>
-      <div class="panel" style="position: relative">
-        <div
-          style="
-            text-align: center;
-            margin-bottom: 6px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #e74c3c;
-          "
-        >
-          📐 Three.js XZ 平面（Z ↓）→ CW
-        </div>
-        <canvas id="cXZ" width="380" height="380"></canvas>
+        <canvas id="c3D" width="450" height="450"></canvas>
       </div>
 
-      <!-- 右侧对比公式 -->
-      <div class="panel" style="min-width: 240px">
+      <!-- 右侧：矩阵推导 -->
+      <div class="panel" style="min-width: 260px; align-self: flex-start">
         <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #f7c948">
-          旋转矩阵推导
+          绕 Y 轴旋转 θ 角（右手系）
         </div>
         <div class="formula-box" style="font-size: 13px">
-          <div style="color: #aaa">标准 CCW (XY 坐标系):</div>
+          <div style="color: #aaa; margin-bottom: 4px">标准 3D 旋转矩阵（绕 Y）:</div>
+          <div style="margin: 6px 0 8px; font-size: 14px">
+            <span style="color: #888">⎡</span> cosθ &nbsp; 0 &nbsp; sinθ
+            <span style="color: #888">⎤</span><br />
+            <span style="color: #888">⎢</span> &nbsp; 0 &nbsp; &nbsp; 1 &nbsp; &nbsp; 0 &nbsp;
+            <span style="color: #888">⎥</span><br />
+            <span style="color: #888">⎣</span> -sinθ &nbsp; 0 &nbsp; cosθ
+            <span style="color: #888">⎦</span>
+          </div>
+
+          <div style="color: #aaa">展开到 XZ 平面（Y=0）:</div>
           <div style="margin: 4px 0 6px">
-            x' = x·cosθ <span style="color: #e74c3c">-</span> y·sinθ<br />
-            y' = x·sinθ <span style="color: #2ecc71">+</span> y·cosθ
+            x' = x·cosθ <span class="correct">+</span> z·sinθ<br />
+            z' = <span class="correct">-x·sinθ</span> + z·cosθ
           </div>
-          <div style="color: #aaa">📌 Y 取反 (y' = -y) 代入:</div>
+
+          <div style="color: #aaa">墙壁只有 X 方向偏移 lx，z=0:</div>
           <div style="margin: 4px 0 6px">
-            x' = x·cosθ <span class="correct">+</span> y·sinθ<br />
-            z' = <span class="correct">-x·sinθ</span> + y·cosθ &nbsp;
-            <span style="color: #888">(z = -y)</span>
+            wx = cx + lx·cosθ &nbsp;&nbsp;<span style="color: #888">(x 分量)</span><br />
+            wz = cz <span class="correct">+ (-lx)·sinθ</span> &nbsp;<span style="color: #888"
+              >(z 分量)</span
+            >
           </div>
-          <div style="color: #aaa">代入 (lx, 0):</div>
-          <div style="margin: 4px 0">
-            wx = cx + lx·cosθ<br />
-            wz = cz <span class="correct">+ (-lx)·sinθ</span>
-          </div>
+
           <div style="border-top: 1px solid #333; padding-top: 6px">
-            <span style="color: #f7c948">✅ 关键:</span> Y 取反后,<br />
-            <span style="color: #e74c3c">"- y·sinθ"</span> →
-            <span class="correct">"+ y·sinθ"</span> (X分量)<br />
-            <span class="correct">"- x·sinθ"</span> 出现在 Z 分量!
+            <span style="color: #f7c948">✅ 为什么是 -lx？</span><br />
+            因为绕 Y 轴旋转矩阵的第三行第一列是 <span class="correct">-sinθ</span>，<br />
+            代入 x=lx 后，z 分量产生 <span class="correct">-lx·sinθ</span>。<br />
+            <span style="color: #888">代码写的是</span>
+            <code style="background: #0f3460"
+              >wz = cz + <span style="color: #f7c948">-lx</span> * sr * S</code
+            >
           </div>
+        </div>
+
+        <div
+          style="
+            margin-top: 8px;
+            padding: 8px;
+            background: #0f3460;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #aaa;
+            line-height: 1.6;
+          "
+        >
+          <strong style="color: #f7c948">📌 为什么是顺时针？</strong><br />
+          从 Y 正方向往下看（俯视图），右手系的正角度旋转使 X→Z 方向，<br />
+          在 XZ 平面上表现为<strong style="color: #e74c3c">顺时针（CW）</strong>。<br />
+          这正是矩阵第三行出现 <span class="correct">-sinθ</span> 的原因。
         </div>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- 第二行：墙壁旋转对比                                      -->
-    <!-- ======================================================== -->
+    <!-- 第二行：墙壁旋转对比 -->
     <div class="section-title">🏎️ 墙壁旋转对比</div>
     <div class="container">
-      <!-- 左侧：正确版本 -->
       <div class="panel">
         <div
           style="
@@ -258,13 +232,11 @@
         >
           <span class="tag-correct">✅ 用了 -lx（正确）</span>
           <span style="color: #888; font-size: 12px"
-            >wz = cz <span class="correct">- lx·sinθ</span></span
+            >wz = cz <span style="color: #2ecc71">- lx·sinθ</span></span
           >
         </div>
         <canvas id="cCorrect" width="500" height="500"></canvas>
       </div>
-
-      <!-- 右侧：错误版本 -->
       <div class="panel">
         <div
           style="
@@ -276,13 +248,11 @@
         >
           <span class="tag-wrong">❌ 没加负号（错误）</span>
           <span style="color: #888; font-size: 12px"
-            >wz = cz <span class="wrong">+ lx·sinθ</span></span
+            >wz = cz <span style="color: #e74c3c">+ lx·sinθ</span></span
           >
         </div>
         <canvas id="cWrong" width="500" height="500"></canvas>
       </div>
-
-      <!-- 控制面板 -->
       <div class="panel controls">
         <div>
           <label>旋转角度 θ</label>
@@ -295,10 +265,10 @@
         <div>
           <label>赛道朝向编码</label>
           <select id="orientSelect">
-            <option value="0">0 → 0° (朝右)</option>
-            <option value="16">16 → 90° (朝下)</option>
-            <option value="10">10 → 180° (朝左)</option>
-            <option value="22">22 → 270° (朝上)</option>
+            <option value="0">0 → 0° (朝右/X+)</option>
+            <option value="16">16 → 90° (朝下/Z+)</option>
+            <option value="10">10 → 180° (朝左/X-)</option>
+            <option value="22">22 → 270° (朝上/Z-)</option>
           </select>
         </div>
         <div class="legend">
@@ -326,7 +296,7 @@
           </div>
         </div>
         <div class="formula-box">
-          <div>顺时针旋转矩阵:</div>
+          <div style="color: #aaa">绕 Y 旋转矩阵（俯视 CW）:</div>
           <div style="margin-top: 4px">
             x' = x·cosθ + z·sinθ<br />
             z' = <span class="correct">-x·sinθ</span> + z·cosθ
@@ -334,76 +304,69 @@
           <div style="margin-top: 6px; border-top: 1px solid #333; padding-top: 6px">
             代入 (lx, 0):<br />
             wx = cx + lx·cosθ<br />
-            wz = cz + <span class="highlight">(-lx)</span>·sinθ
+            wz = cz + <span style="color: #f7c948">(-lx)</span>·sinθ
           </div>
         </div>
       </div>
     </div>
 
     <div class="note">
-      <strong>核心原理：</strong> 标准 2D 旋转矩阵使用 Y ↑ 坐标系（逆时针 CCW）。 Three.js 俯视图用
-      XZ 平面（Z ↓），相当于把 Y 轴取反。 对 Y 取反后代入 CCW
-      矩阵，<strong>自然</strong>就得到了顺时针 (CW) 形式的矩阵： X 分量的
-      <code>- y·sinθ</code> 变号成 <code>+ z·sinθ</code>， Y 分量的 <code>+ x·sinθ</code> 变号成
-      <code>- x·sinθ</code> 移到 Z 分量。 所以墙壁的 Z 坐标要用 <code>-lx·sinθ</code>，代码写的是
-      <code>+ -lx * sr * S</code>。
+      <strong>根本原因：</strong> Three.js 使用右手坐标系，绕 Y 轴旋转的正角度遵循右手定则。 从 Y
+      正方向（上方）俯视 XZ 平面，正角度旋转是<strong>顺时针</strong>方向的， 旋转矩阵为
+      <code>x' = x·cosθ + z·sinθ</code>，
+      <code>z' = <span style="color: #2ecc71">-x·sinθ</span> + z·cosθ</code>。 墙壁只有 X 方向偏移
+      lx，代入后 z 分量中的 <code>-lx·sinθ</code> 就是代码中 <code>+ -lx * sr * S</code> 的来源。
     </div>
 
     <script>
-      // ============================================================
-      // 参数
-      // ============================================================
       const WALL_X = 4.75;
       const CELL_HALF = 9.99 / 2;
       const SCALE = 18;
 
-      // ============================================================
-      // DOM
-      // ============================================================
-      const ctxXY = document.getElementById('cXY').getContext('2d');
-      const ctxMir = document.getElementById('cMirror').getContext('2d');
-      const ctxXZ = document.getElementById('cXZ').getContext('2d');
+      const ctx3D = document.getElementById('c3D').getContext('2d');
       const ctxRight = document.getElementById('cCorrect').getContext('2d');
       const ctxWrong = document.getElementById('cWrong').getContext('2d');
       const slider = document.getElementById('angleSlider');
       const angleDisp = document.getElementById('angleDisplay');
       const orientSel = document.getElementById('orientSelect');
 
-      // ============================================================
-      // 坐标工具
-      // ============================================================
       function toPixel(x, z, cx, cy, sc) {
         return [cx + x * sc, cy + z * sc];
       }
 
-      // ============================================================
-      // 画箭头
-      // ============================================================
-      function drawArrow(ctx, fromX, fromY, toX, toY, color, lw) {
-        const a = Math.atan2(toY - fromY, toX - fromX);
+      function drawArrow(ctx, fx, fy, tx, ty, color, lw) {
+        const a = Math.atan2(ty - fy, tx - fx);
         ctx.strokeStyle = color;
         ctx.lineWidth = lw || 2;
         ctx.beginPath();
-        ctx.moveTo(fromX, fromY);
-        ctx.lineTo(toX, toY);
+        ctx.moveTo(fx, fy);
+        ctx.lineTo(tx, ty);
         ctx.stroke();
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.moveTo(toX, toY);
-        ctx.lineTo(toX - 8 * Math.cos(a - 0.4), toY - 8 * Math.sin(a - 0.4));
-        ctx.lineTo(toX - 8 * Math.cos(a + 0.4), toY - 8 * Math.sin(a + 0.4));
+        ctx.moveTo(tx, ty);
+        ctx.lineTo(tx - 8 * Math.cos(a - 0.4), ty - 8 * Math.sin(a - 0.4));
+        ctx.lineTo(tx - 8 * Math.cos(a + 0.4), ty - 8 * Math.sin(a + 0.4));
         ctx.closePath();
         ctx.fill();
       }
 
       // ============================================================
-      // 画坐标系背景
+      // 3D 右手系示意图
       // ============================================================
-      function drawCoordBackground(ctx, W, H, sc, cx, cy, xLabel, yLabel, yUp) {
-        // 网格
+      function draw3DScene(angleDeg) {
+        const W = 450,
+          H = 450,
+          sc = 30,
+          cx = 225,
+          cy = 225;
+        const ctx = ctx3D;
+        ctx.clearRect(0, 0, W, H);
+
+        // 背景网格
         ctx.strokeStyle = '#2a2a4a';
         ctx.lineWidth = 0.5;
-        for (let i = -12; i <= 12; i++) {
+        for (let i = -10; i <= 10; i++) {
           const [px] = toPixel(i, 0, cx, cy, sc);
           ctx.beginPath();
           ctx.moveTo(px, 0);
@@ -415,200 +378,172 @@
           ctx.lineTo(W, pz);
           ctx.stroke();
         }
-        // 坐标轴
-        ctx.strokeStyle = '#777';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(0, cy);
-        ctx.lineTo(W, cy);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(cx, 0);
-        ctx.lineTo(cx, H);
-        ctx.stroke();
-        // 轴标签
-        ctx.fillStyle = '#aaa';
-        ctx.font = '13px sans-serif';
-        ctx.fillText(xLabel + ' →', W - 35, cy - 6);
-        ctx.fillText(yLabel + (yUp ? ' ↑' : ' ↓'), cx + 6, yUp ? 16 : H - 6);
-      }
 
-      // ============================================================
-      // 绘制坐标系对比的三个画布
-      // ============================================================
-      function drawCoords(angleDeg) {
+        // 坐标轴
+        function drawAxis(x1, y1, x2, y2, label, color) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+          ctx.fillStyle = color;
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(label, x2, y2 - 6);
+          drawArrow(ctx, x1, y1, x2, y2, color, 2);
+        }
+        drawAxis(cx, cy, cx + 7 * sc, cy, 'X+', '#e74c3c'); // X 轴
+        drawAxis(cx, cy, cx, cy + 7 * sc, 'Z+', '#3498db'); // Z 轴
+        // Y 朝外（屏幕外），画个小标记
+        ctx.fillStyle = '#888';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('⊙ Y 朝外（屏幕外）', cx + 10, cy - 10);
+
+        // 红色标记 CW 旋转方向
+        ctx.font = '12px sans-serif';
+        ctx.fillStyle = '#e74c3c80';
+        ctx.fillText('⟳ CW 顺时针', cx + 3.5 * sc, cy - 5 * sc);
+
         const rad = (angleDeg * Math.PI) / 180;
         const cr = Math.cos(rad),
           sr = Math.sin(rad);
-        const R = 4; // 单位向量长度（格子数）
 
-        // ---- 辅助：在某个坐标系中画旋转点 ----
-        function plotRotation(ctx, label, W, H, sc, cx, cy, yUp, mat) {
-          drawCoordBackground(ctx, W, H, sc, cx, cy, 'X', yUp ? 'Y' : 'Z', yUp);
-          const unit = R * sc;
+        // 画一个方块模拟单元格旋转，展示顺时针方向
+        const half = 4.5; // 格子大小（像素单位）
+        const corners = [
+          [-half, -half],
+          [half, -half],
+          [half, half],
+          [-half, half],
+        ];
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        for (let i = 0; i <= 4; i++) {
+          const [lx, lz] = corners[i % 4];
+          // CW 旋转矩阵
+          const wx = lx * cr + lz * sr;
+          const wz = -lx * sr + lz * cr;
+          const [px, py] = toPixel(wx, wz, cx, cy, sc);
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
 
-          // 原始点 (R, 0)
-          let [ox, oy] = toPixel(R, 0, cx, cy, sc);
+        // 中心点
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#f7c948';
+        ctx.fill();
+
+        // 方向箭头：从中心指出的朝向
+        const al = half * 0.7;
+        const tx = al * cr,
+          tz = -al * sr;
+        const [sx, sy] = toPixel(0, 0, cx, cy, sc);
+        const [ex, ey] = toPixel(tx, tz, cx, cy, sc);
+        drawArrow(ctx, sx, sy, ex, ey, '#f7c948', 2);
+        ctx.fillStyle = '#f7c948';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('朝向', ex, ey - 10);
+
+        // 墙上两个点的旋转演示
+        // 取 lx = ±4.75 的两个墙壁位置
+        for (const side of [-1, 1]) {
+          const lx = side * 4.75;
+          // 正确旋转：CW
+          const wwx = lx * cr;
+          const wwz = -lx * sr;
+          const [px, py] = toPixel(wwx, wwz, cx, cy, sc);
+          const color = side === -1 ? '#2ecc71' : '#3498db';
           ctx.beginPath();
-          ctx.arc(ox, oy, 5, 0, Math.PI * 2);
-          ctx.fillStyle = '#555';
+          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.fillStyle = color;
           ctx.fill();
-
-          // 旋转后的点
-          let rx, ry;
-          if (mat === 'ccw') {
-            // 标准 CCW: x' = x·cosθ - y·sinθ,  y' = x·sinθ + y·cosθ
-            // 代入 (R, 0): x'=R·cosθ, y'=R·sinθ
-            rx = cx + R * cr * sc;
-            // Y 向上，所以减去
-            ry = cy - R * sr * sc;
-          } else if (mat === 'mirror') {
-            // 镜像：先 CCW 旋转，再把 Y 取反
-            const wx = R * cr; // CCW x'
-            const wy = R * sr; // CCW y'
-            rx = cx + wx * sc;
-            ry = cy + wy * sc; // Y 取反 → 减变加
-          } else {
-            // CW: x' = x·cosθ + z·sinθ,  z' = -x·sinθ + z·cosθ
-            // 代入 (R, 0): x'=R·cosθ, z'=-R·sinθ
-            rx = cx + R * cr * sc;
-            ry = cy + R * sr * sc; // 注意这里的 sr 在 CW 公式中是负的
-          }
-
-          // 从原点到旋转点的连线
-          ctx.setLineDash([4, 4]);
-          ctx.strokeStyle = '#f7c948';
-          ctx.lineWidth = 1.5;
+          // 从中心连线
+          ctx.strokeStyle = color + '60';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 4]);
           ctx.beginPath();
           ctx.moveTo(cx, cy);
-          ctx.lineTo(rx, ry);
+          ctx.lineTo(px, py);
           ctx.stroke();
           ctx.setLineDash([]);
-
-          // 旋转点
-          ctx.beginPath();
-          ctx.arc(rx, ry, 6, 0, Math.PI * 2);
-          ctx.fillStyle = '#f7c948';
-          ctx.fill();
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 13px sans-serif';
+          ctx.fillStyle = color;
+          ctx.font = '11px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText("P'", rx, ry - 14);
-
-          // 原始点标签
-          ctx.fillStyle = '#888';
-          ctx.font = '12px sans-serif';
-          ctx.fillText('(R,0)', ox, oy + 18);
-
-          // 旋转弧线
-          ctx.strokeStyle = '#f7c94840';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          const steps = 40;
-          for (let i = 0; i <= steps; i++) {
-            const t = (i / steps) * rad;
-            let px, py;
-            if (mat === 'ccw') {
-              px = cx + R * Math.cos(t) * sc;
-              py = cy - R * Math.sin(t) * sc;
-            } else if (mat === 'mirror') {
-              px = cx + R * Math.cos(t) * sc;
-              py = cy + R * Math.sin(t) * sc;
-            } else {
-              px = cx + R * Math.cos(t) * sc;
-              py = cy + R * Math.sin(t) * sc; // sin(t) 因为 z = -y, 在标准 CCW 中 y 是 R·sin(t)，取反变负后 +R·sin(t) 实际是 -R·sin(t)
-            }
-            if (i === 0) ctx.moveTo(px, py);
-            else ctx.lineTo(px, py);
-          }
-          ctx.stroke();
-
-          // 角度标记
-          ctx.fillStyle = '#f7c94880';
-          ctx.font = '12px sans-serif';
-          const mid = rad / 2;
-          let lx, ly;
-          if (mat === 'ccw') {
-            lx = cx + R * 0.6 * Math.cos(mid) * sc;
-            ly = cy - R * 0.6 * Math.sin(mid) * sc;
-          } else if (mat === 'mirror') {
-            lx = cx + R * 0.6 * Math.cos(mid) * sc;
-            ly = cy + R * 0.6 * Math.sin(mid) * sc;
-          } else {
-            lx = cx + R * 0.6 * Math.cos(mid) * sc;
-            ly = cy + R * 0.6 * Math.sin(mid) * sc;
-          }
-          ctx.fillText('θ=' + angleDeg + '°', lx - 8, ly - 6);
-
-          // 画完旋转方向箭头
-          const arrowR = R * 0.8 * sc;
-          const aStart = 0.2,
-            aEnd = rad - 0.2;
-          const stepCount = 20;
-          for (let i = 0; i < stepCount; i++) {
-            const t = aStart + (i / stepCount) * (aEnd - aStart);
-            const dt = (aEnd - aStart) / stepCount;
-            let x1, y1, x2, y2;
-            if (mat === 'ccw') {
-              x1 = cx + ((arrowR * Math.cos(t)) / R) * 4;
-              y1 = cy - ((arrowR * Math.sin(t)) / R) * 4;
-              x2 = cx + ((arrowR * Math.cos(t + dt)) / R) * 4;
-              y2 = cy - ((arrowR * Math.sin(t + dt)) / R) * 4;
-            } else {
-              x1 = cx + ((arrowR * Math.cos(t)) / R) * 4;
-              y1 = cy + ((arrowR * Math.sin(t)) / R) * 4;
-              x2 = cx + ((arrowR * Math.cos(t + dt)) / R) * 4;
-              y2 = cy + ((arrowR * Math.sin(t + dt)) / R) * 4;
-            }
-            if (i % 4 === 0) {
-              ctx.fillStyle = mat === 'ccw' ? '#2ecc71' : '#e74c3c';
-              ctx.beginPath();
-              ctx.arc(x2, y2, 2.5, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-
-          // 旋转方向标签
-          ctx.fillStyle = mat === 'ccw' ? '#2ecc71' : '#e74c3c';
-          ctx.font = 'bold 13px sans-serif';
-          ctx.textAlign = 'center';
-          if (mat === 'ccw') ctx.fillText('⟲ CCW 逆时针', cx, 22);
-          else if (mat === 'mirror') ctx.fillText('🪞 Y 翻转 → 方向反转', cx, 22);
-          else ctx.fillText('⟳ CW 顺时针', cx, 22);
-
-          // 公式
-          ctx.fillStyle = '#888';
-          ctx.font = '11px "Courier New", monospace';
-          ctx.textAlign = 'left';
-          let f;
-          if (mat === 'ccw') f = "x'=x·cos-y·sin,  y'=x·sin+y·cos";
-          else if (mat === 'mirror') f = "Y取反: y→-z,  x'=x·cos+z·sin,  z'= -x·sin+z·cos";
-          else f = "x'=x·cos+z·sin,  z'= -x·sin+z·cos";
-          ctx.fillText(f, 8, H - 8);
+          ctx.fillText(side === -1 ? '左墙·CW' : '右墙·CW', px, py - 12);
         }
 
-        const W = 380,
-          H = 380,
-          sc = 36,
-          cx = 190,
-          cy = 190;
-        // 1) 标准 XY (CCW)
-        plotRotation(ctxXY, 'XY', W, H, sc, cx, cy, true, 'ccw');
-        // 2) Y 取反（镜像）
-        plotRotation(ctxMir, 'Mirror', W, H, sc, cx, cy, false, 'mirror');
-        // 3) Three.js XZ (CW)
-        plotRotation(ctxXZ, 'XZ', W, H, sc, cx, cy, false, 'cw');
+        // 错误位置（不用 -lx）
+        for (const side of [-1, 1]) {
+          const lx = side * 4.75;
+          const wwx = lx * cr;
+          const wwz = lx * sr; // 没有 -lx!
+          const [px, py] = toPixel(wwx, wwz, cx, cy, sc);
+          const color = side === -1 ? '#2ecc71' : '#3498db';
+          ctx.strokeStyle = color + '40';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([2, 4]);
+          ctx.beginPath();
+          ctx.arc(px, py, 5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.fillStyle = color + '40';
+          ctx.font = '10px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(side === -1 ? '左墙✗' : '右墙✗', px, py + 16);
+          ctx.setLineDash([]);
+        }
+
+        // 旋转弧线
+        ctx.strokeStyle = '#f7c94840';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const R = 3.8;
+        for (let i = 0; i <= 40; i++) {
+          const t = (i / 40) * rad;
+          const px = cx + R * Math.cos(t) * sc;
+          const py = cy + R * Math.sin(t) * sc;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // 角度标签
+        const mid = rad / 2;
+        const lx = cx + R * 0.6 * Math.cos(mid) * sc;
+        const ly = cy + R * 0.6 * Math.sin(mid) * sc;
+        ctx.fillStyle = '#f7c948';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('θ=' + angleDeg + '°', lx, ly - 4);
+
+        // 底部公式
+        ctx.fillStyle = '#888';
+        ctx.font = '12px "Courier New", monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText("x' = x·cosθ + z·sinθ    z' = -x·sinθ + z·cosθ", 8, H - 6);
+
+        // 解释 CW 的原因
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('右手系：俯视 XZ 平面，正角度为顺时针 (CW)', W - 8, H - 24);
       }
 
       // ============================================================
-      // 绘制墙壁画布（原有逻辑增强）
+      // 墙壁画布
       // ============================================================
       function drawWalls(ctx, useNegativeLx, angleDeg) {
         const W = 500,
           H = 500;
         ctx.clearRect(0, 0, W, H);
 
-        // 网格
         ctx.strokeStyle = '#2a2a4a';
         ctx.lineWidth = 0.5;
         for (let i = -12; i <= 12; i++) {
@@ -623,7 +558,7 @@
           ctx.lineTo(W, pz);
           ctx.stroke();
         }
-        // 坐标轴
+
         ctx.strokeStyle = '#555';
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
@@ -647,8 +582,6 @@
           cr = Math.cos(rad),
           sr = Math.sin(rad);
         const half = CELL_HALF;
-
-        // 单元格虚线框（也按 CW 旋转）
         const corners = [
           [-half, -half],
           [half, -half],
@@ -680,14 +613,12 @@
           drawArrow(ctx, sx, sy, ex, ey, '#f7c948', 2);
         }
 
-        // 中心点
         const [pcx, pcy] = toPixel(cx, cz, 250, 250, SCALE);
         ctx.beginPath();
         ctx.arc(pcx, pcy, 5, 0, Math.PI * 2);
         ctx.fillStyle = '#f7c948';
         ctx.fill();
 
-        // 左右墙壁
         const wallColor = ['#2ecc71', '#3498db'];
         const wallLabel = ['左墙 (lx=-WALL_X)', '右墙 (lx=+WALL_X)'];
         for (const side of [-1, 1]) {
@@ -746,30 +677,26 @@
           ctx.fill();
         }
 
-        // 公式文本
         ctx.fillStyle = '#888';
         ctx.font = '13px "Courier New", monospace';
         ctx.textAlign = 'left';
         ctx.fillText(
-          useNegativeLx ? '公式: wz = cz + (-lx)·sinθ  ✓' : '公式: wz = cz + (+lx)·sinθ  ✗',
+          useNegativeLx ? 'wz = cz + (-lx)·sinθ  ✓  (正确)' : 'wz = cz + (+lx)·sinθ  ✗  (错误)',
           12,
           22
         );
         ctx.fillText('θ = ' + angleDeg + '°', 12, 42);
-        // CW / CCW 标记
+
         ctx.fillStyle = useNegativeLx ? '#2ecc71' : '#e74c3c';
         ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(useNegativeLx ? '⟳ CW 正确' : '⟲ 错误方向', W - 12, 42);
+        ctx.fillText(useNegativeLx ? '✅ 正确 CW' : '❌ 方向错误', W - 12, 42);
       }
 
-      // ============================================================
-      // 更新
-      // ============================================================
       function update() {
         const angleDeg = parseFloat(slider.value);
         angleDisp.textContent = angleDeg + '°';
-        drawCoords(angleDeg);
+        draw3DScene(angleDeg);
         drawWalls(ctxRight, true, angleDeg);
         drawWalls(ctxWrong, false, angleDeg);
       }
